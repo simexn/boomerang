@@ -1,0 +1,8 @@
+{
+  "prepack": "svelte-kit sync",
+  "dependencies": {
+    "@microsoft/signalr": "^8.0.0"
+  }
+  
+  
+}

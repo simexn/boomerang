@@ -1,0 +1,16 @@
+:root {
+    --bg: #fff;
+    --fg: #000;
+    --prim: #14213E;
+    --prim-tp: #3962b0c0;
+    --prim-fg: #e5e5e5;
+    --sec: #1E325C;
+    --sec-tp: #6a8ed0c0;
+    --sec-fg: #fff;
+}
+
+* {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-width: 0;
+    box-sizing: border-box;
+}
