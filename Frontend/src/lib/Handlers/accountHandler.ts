@@ -1,6 +1,8 @@
 import { browser } from "$app/environment";
 import { getToken } from "$lib/Handlers/authHandler";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
 export interface User{
     id: number;
     userName: string;
@@ -11,7 +13,7 @@ export interface User{
 
 export async function fetchUserInfo() {
     let token = await getToken();
-    const response = await fetch('https://localhost:5000/account/getUserInfo', {
+    const response = await fetch(`${backendUrl}/account/getUserInfo`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -33,7 +35,13 @@ export async function fetchUserInfo() {
         return user;   
     }
     else{
-        return null;
+        const user: User = {
+            id: 0,
+            userName: '',
+            email: '',
+            accountCreated: ''
+        }
+        return user;
     }
 }
 
@@ -56,7 +64,7 @@ export async function handleAccountRegister(formData: { username: string, email:
     console.log(formData);
     const requestBody = JSON.stringify(formData);
   
-    const response = await fetch('https://localhost:5000/account/register', {
+    const response = await fetch(`${backendUrl}/account/register`, {
         method: 'POST',
         headers: {    
             'Content-Type': 'application/json'
@@ -76,7 +84,7 @@ export async function handleAccountRegister(formData: { username: string, email:
 
 export async function handleAccountLogin(formData:{email: string, password: string}) {
     const requestBody = JSON.stringify(formData);
-    const response = await fetch('https://localhost:5000/auth/login', {
+    const response = await fetch(`${backendUrl}/auth/login`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

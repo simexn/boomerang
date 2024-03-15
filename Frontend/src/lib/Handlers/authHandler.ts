@@ -1,5 +1,6 @@
 import { browser } from "$app/environment";
 
+
 export async function getToken() {
     let cookie;
     if (browser) {

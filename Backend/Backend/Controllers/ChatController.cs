@@ -65,6 +65,12 @@ namespace Backend.Controllers
                 ChatId = chat.Id
             }
             );
+            chat.Admins.Add(new ChatAdmin
+            {
+                UserId = user.Id,
+                ChatId = chat.Id
+            }
+            );
 
             _context.Update(chat);
             await _context.SaveChangesAsync();

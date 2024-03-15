@@ -2,20 +2,32 @@
     import '$lib/css/mainstyles.css'
     import { page } from '$app/stores'
     import { onMount } from 'svelte';
-    import { fade, slide } from 'svelte/transition';
+    import { fade, slide, fly } from 'svelte/transition';
     import {handleJoinRoom, handleRoomSubmit} from '$lib/Handlers/groupHandler'
     import {fetchChats} from '$lib/Handlers/groupHandler'
 
-    let createModalActive = false;
-    let joinModalActive = false;
+    
+    let activeTab = 'create';
+    let isNewGroupNameValid = true;
+    let isInviteCodeValid = true;
+    let modalBody: any;
+    let groupDropdownActive = true;
+    let modalActive = false;
     let newGroupName: string;
     let inviteCode: string;
+    let activeChatId: any = null;
 
     export let chats: any =[];
     
     onMount(async() => {
-       chats = await fetchChats();
+        chats = await fetchChats();
+        activeChatId = Number(sessionStorage.getItem('activeChatId'));
     });
+    
+    function setActiveChat(chatId: any) {
+        activeChatId = Number(chatId);
+        sessionStorage.setItem('activeChatId', chatId);
+    }
 
     async function createNewChat(event: Event){
         event.preventDefault();
@@ -23,139 +35,237 @@
             newGroupName,
             inviteCode
         }
+        if(formData.newGroupName == null || formData.newGroupName == undefined || formData.newGroupName.length < 1 ){
+            isNewGroupNameValid = false;
+            return;
+        }
+
+        if(formData.inviteCode.length < 8 && formData.inviteCode.length > 1){
+            isInviteCodeValid = false;
+            return;
+        }
+        isInviteCodeValid = true;
         chats = await handleRoomSubmit(formData);
         newGroupName = "";
-        createModalActive = false;
+        inviteCode = "";
+        modalActive = false;
     }  
 
     async function joinGroup(event: Event){
         event.preventDefault();
 
-        
+        if(inviteCode.length < 8 && inviteCode.length > 1){
+            isInviteCodeValid = false;
+            return;
+        }
+        isInviteCodeValid = true;
         chats = await handleJoinRoom(inviteCode);
         inviteCode = "";
-        joinModalActive = false;
+        modalActive = false;
     }
 </script>
-<main>
-    <div class="side-menu">
-        <div>
-            {#each chats as chat (chat.id)}
-                <a class="room-button" href="../chat/{chat.id}">{chat.name}</a>
-            {/each}
-            <button class="room-button" id="create-room-button" on:click={() => createModalActive = true}>+</button>
+
+<div style="width: 100%; box-sizing:border-box; display:flex; flex-direction:row;">
+    <div class="sidebar d-flex flex-column flex-shrink-0 p-3 text-white" style="width: 280px; box-sizing:border-box">
+        <div class="d-flex flex-row align-items-center">
+            <button class="dropdown-button" on:click={() => groupDropdownActive = !groupDropdownActive}><span>Groups
+            <i class="fa fa-caret-right" class:rotate={groupDropdownActive}></i></span></button>
+            <div class="add-group-button-wrap">
+                <i class="fa fa-plus add-group-button" on:click={() => modalActive = true}></i>
+            </div>
         </div>
-        <button class="room-button" id="join-room-button" on:click={() => joinModalActive = true}>Join a Chat</button> <!-- New button -->
+       <hr class="mb-1" style="padding: 0; margin:0; width:100%">
+       {#if groupDropdownActive}
+       <div class="dropdown-container" class:active={groupDropdownActive} transition:slide={{duration: 500}}> 
+            <ul class="nav nav-pills flex-column mb-auto">
+                {#each chats as chat, index (chat.id)}
+                <li class="nav-item" style="" transition:slide={{duration: 300}}>
+                    <a class:active={activeChatId === chat.id} class="nav-link sidebar-group" href="../chat/{chat.id}" on:click={() => setActiveChat(chat.id)}><b>{chat.name}</b></a>
+                </li>
+                {/each}
+                
+            </ul>
+        </div>
+        {/if}
+        <hr class="mt-1" style="padding: 0; margin:0; width:100%">
     </div>
-    <slot/>    
-</main>
-{#if (createModalActive)}
-<div class="modal" id="create-room-modal">      
-    <form class="modal-body" on:submit={createNewChat} in:slide out:fade={{duration:100}} action="">
-        <button class="close" on:click={() => createModalActive = false}>X</button>
-        <header>Create room</header>
-        <div>
-            <input name="name" bind:value={newGroupName}>
-            <input name="inviteCode" bind:value={inviteCode}>	
+    <div style="display: flex; flex-direction:column; width:100%; height:100%; box-sizing:border-box">
+        <slot/>
+    </div>
+</div>
+
+          
+
+    
+
+{#if (modalActive)}
+<div class="modal" transition:fade={{duration: 200}}>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header p-0">
+                <div class="d-flex flex-row justify-content-between w-100">
+                    <h5 class="modal-title btn w-50 h-50 pt-1 pb-1 {activeTab === 'create' ? 'active' : ''}" on:click={() => activeTab = 'create'}>Create a chat</h5>
+                    <h5 class="modal-title btn w-50 h-50 pt-1 pb-1 {activeTab === 'join' ? 'active' : ''}" on:click={() => activeTab = 'join'}>Join a chat</h5>
+                </div>
+            </div>
+            <div class="modal-body" bind:this={modalBody}>
+                {#if activeTab === 'create'}
+                    <!-- Content for 'Create a chat' -->
+                    <form on:submit|preventDefault={createNewChat} in:fly={{x: -200, duration: 500}} on:introstart={() => modalBody.style.overflowY = 'hidden'} on:outroend={() => modalBody.style.overflowY = 'auto'}>
+                        <div class="mb-3">
+                            <label for="newGroupName" class="form-label">Group Name</label>
+                            <input type="text" bind:value={newGroupName} class="form-control" id="newGroupName" class:invalid-input={!isNewGroupNameValid} required>
+                            {#if !isNewGroupNameValid}
+                                <div class="invalid-feedback">
+                                    Group name must be at least 1 character long.
+                                </div>
+                            {/if}
+                        </div>
+                        <div class="mb-3">
+                            <label for="inviteCodeCreate" class="form-label">Invite Code</label>
+                            <input type="text" maxlength="8" placeholder="(optional)" bind:value={inviteCode} class="form-control" id="inviteCodeCreate" class:invalid-input={!isInviteCodeValid}>
+                            {#if !isInviteCodeValid}
+                                <div class="invalid-feedback">
+                                    Invite code must be 8 characters long.
+                                </div>
+                            {/if}
+                        </div>
+                    </form>
+                {:else if activeTab === 'join'}
+                    <!-- Content for 'Join a chat' -->
+                    <form on:submit|preventDefault={joinGroup} in:fly={{x: 200, duration: 500}} on:introstart={() => modalBody.style.overflowY = 'hidden'} on:outroend={() => modalBody.style.overflowY = 'auto'}>
+                        <div class="mb-3">
+                            <label for="inviteCodeJoin" class="form-label">Invite Code</label>
+                            <input type="text" maxlength="8" bind:value={inviteCode} class="form-control" id="inviteCodeJoin" class:invalid-input={!isInviteCodeValid}>
+                            {#if !isInviteCodeValid}
+                                <div class="invalid-feedback">
+                                    Invite code must be 8 characters long.
+                                </div>
+                            {/if}
+                        </div>
+                    </form>
+                {/if}
+            </div>
+            <div class="modal-footer">
+                {#if activeTab === 'create'}
+                    <button type="submit" class="btn btn-primary" on:click|preventDefault={createNewChat}>Submit</button>
+                {:else if activeTab === 'join'}
+                    <button type="submit" class="btn btn-primary" on:click|preventDefault={joinGroup}>Submit</button>
+                {/if}
+                <button type="button" class="btn btn-secondary" on:click={() => modalActive = false}>Close</button>
+            </div>
         </div>
-        <footer>
-            <button type="submit">Create</button>
-        </footer>
-    </form>
+    </div>
 </div>
 {/if}
 
-{#if (joinModalActive)}
-<div class="modal" id="create-room-modal">      
-    <form class="modal-body" on:submit={joinGroup} in:slide out:fade={{duration:100}} action="">
-        <button class="close" on:click={() => joinModalActive = false}>X</button>
-        <header>Join a room</header>
-        <div>
-            <input name="inviteCode" bind:value={inviteCode}>
-            	
-        </div>
-        <footer>
-            <button type="submit">Create</button>
-        </footer>
-    </form>
-</div>
-{/if}
+    <style>
+        .modal {                                              
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
 
-<style>    
-    main{
-       flex-grow:1;
-       display: flex;
-       flex-direction: row;
-   }
+            .modal-content{
+                width: 20rem;
+            }
 
-  
-   
-   .side-menu{
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    background-color:var(--sec);
-    min-width:100px;
-    z-index: 50;
-    height: 100%; /* Make sure the side-menu takes up the full height */
-}
-   .room-button{
-       color: white;
-       background-color: darkgray;
-       text-decoration: none;
-       display: flex;
-       justify-content: center;
-       align-items: center;
-       margin: 0.75rem 1rem;
-       height: 50px;
-       border-radius: 5px;
-       box-shadow: 0 1px 3px 1px black;
-       min-width: 6rem;
-   }
-   .room-button:hover{
-       box-shadow: 0px 2px 3px 1px black;
-   }
+            h5.modal-title{
+                border-radius: 0!important;
+            }
+            .modal-body {
+                height: 300px;
+                overflow:hidden;
+                overflow-x:hidden; /* Adjust this value as needed */
+                overflow-y: auto; /* Enable scrolling if the content is taller than the modal body */
+            }
+            .invalid-input{
+                border: 1px solid red;
+            }
+            .invalid-feedback{
+                display: block;
+            }
 
-   .modal{
-       display: flex;
-       position: absolute;
-       justify-content: center;
-       align-items: center;
-       flex-direction: column;
-       min-height: 100vh;
-       min-width: 100vw;
-       z-index: 200;
-       top:0;
-       left:0;
-       background-color: rgba(0.2, 0.2, 0.2, 0.8);
-   }
- 
-   .modal-body > .close{
-       position:absolute;
-       top:5px;
-       right: 5px;
-       margin-top: 0;
-   }
-   .modal-body{
-       position:relative;
-       min-width:300px;
-       display:flex;
-       flex-direction: column;
-       background-color: yellow;
-       padding:2rem;
-   }
+            .btn.active {
+                    background-color: blue; /* Change this to your preferred color */
+                    color: white; /* Change this to your preferred color */
+                }
+        .sidebar{
+            background-color: var(--sec);
+            padding-top:0 !important;
+            
+        }
+        .sidebar-group{
+            color: var(--prim-fg);
+            text-align:center;
+            display: block;
+            width: 100%;
+            
+        }
 
-   .modal-body > *{
-       margin-top: 0.5rem;
-   }
-   .modal-body > header{
-       color: #FFF;
-       font-size:24px;
-   }
-   .modal-body>div>input{
-       width:100%;
-   }
-   .modal-body > footer{
-       text-align: center;
-   }
-</style>
+        .nav-link{
+            padding:1rem !important;
+        }
+        
+        
+        .dropdown-button {
+            display: flex;
+            
+            text-decoration: none;
+            font-size: 26px;
+            color: #818181;
+            border: none;
+            background: none;
+            width: calc(80% + 2*1rem);
+            text-align: left;
+            cursor: pointer;
+            outline: none;
+            margin-left: -1rem;
+            padding-right:0;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: #818181;
+        }
+        .dropdown-button:hover {
+            color: #f1f1f1;
+            background-color: var(--sec-tp);
+        }
+
+        .fa-caret-right{
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        
+        .rotate{
+            transform: rotate(90deg);
+                
+        }
+    .add-group-button{
+        border: none;
+        background:transparent;
+        color: #818181;
+        padding: 5px;
+       
+    }
+
+    .add-group-button:hover{
+        border-radius: 5px;
+        color: #f1f1f1;
+        background-color: var(--sec-tp);
+    }
+
+
+    .add-group-button-wrap{
+        width: 28px;
+        height: 71px;
+        margin: 2px 16px 2px 16px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    
+        
+    </style>

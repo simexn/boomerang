@@ -1,4 +1,6 @@
 import { getToken } from './authHandler';
+import type { User } from './accountHandler';
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 export interface Group {
     id: number;
@@ -6,6 +8,8 @@ export interface Group {
     isGroup: boolean
     creatorId: number;
     inviteCode: string;
+    users: User[];
+    admins: User[];
 }
 
 function generateInviteCode(length: number) {
@@ -20,7 +24,7 @@ function generateInviteCode(length: number) {
 export async function fetchGroupInfo(groupId: string){
     let token = await getToken();
     
-    const response = await fetch(`https://localhost:5000/group/getGroupInfo?chatId=${groupId}`, {
+    const response = await fetch(`${backendUrl}/group/getGroupInfo?chatId=${groupId}`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -37,22 +41,54 @@ export async function fetchGroupInfo(groupId: string){
             name: data.chat.name,
             isGroup: data.chat.isGroup,
             creatorId: data.chat.creatorId,
-            inviteCode: data.chat.inviteCode
+            inviteCode: data.chat.inviteCode,
+            users: data.users,
+            admins: data.admins
         }
         return groupInfo;
     } else {
         console.error('Error fetching chat:', await response.text());
-        return null;
+        const groupInfo: Group = {
+            id: 0,
+            name: '',
+            isGroup: false,
+            creatorId: 0,
+            inviteCode: '',
+            users: [],
+            admins: []
+        };
+        return groupInfo;
     }
+}
 
+export async function fetchGroupUsers(groupId: string){
+    let token = await getToken();
     
+    const response = await fetch(`${backendUrl}/group/getGroupUsers?chatId=${groupId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+    });
+    
+    const data = await response.json();
+    
+    if (response.ok && data) {
+        let users: User[] = data.users;
+        return users;
+    } else {
+        console.error('Error fetching chat:', await response.text());
+        return [];
+    }
 }
 
 export async function fetchChats() {
     try {
         let token = await getToken();
         
-        const response = await fetch('https://localhost:5000/chat/getAllChats' , {
+        const response = await fetch(`${backendUrl}/chat/getAllChats` , {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -75,13 +111,14 @@ export async function fetchChats() {
 export async function handleRoomSubmit(formData: {newGroupName: string, inviteCode: string}) {
     let token = await getToken();
     
-    if (formData.inviteCode === '') {
+    if (formData.inviteCode === '' || formData.inviteCode === null || formData.inviteCode === undefined) {
         formData.inviteCode = generateInviteCode(6);
     }
 
+    console.log(formData)
     const requestBody = JSON.stringify(formData);
 
-    const response = await fetch('https://localhost:5000/chat/createRoom', {
+    const response = await fetch(`${backendUrl}/chat/createRoom`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -106,7 +143,7 @@ export async function handleJoinRoom(inviteCode: string) {
     let token = await getToken();
     
 
-    const response = await fetch('https://localhost:5000/group/joinGroup', {
+    const response = await fetch(`${backendUrl}/group/joinGroup`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -131,7 +168,7 @@ export async function handleJoinRoom(inviteCode: string) {
 export async function handleLeaveGroup(chatId: string) {
     const token = await getToken();
 
-    const response = await fetch(`https://localhost:5000/group/leaveGroup/${chatId}`, {
+    const response = await fetch(`${backendUrl}/group/leaveGroup/${chatId}`, {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -150,7 +187,7 @@ export async function handleLeaveGroup(chatId: string) {
 export async function handleDeleteGroup(chatId: string) {
     const token = await getToken();
 
-    const response = await fetch(`https://localhost:5000/group/deleteGroup/${chatId}`, {
+    const response = await fetch(`${backendUrl}/group/deleteGroup/${chatId}`, {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${token}`,

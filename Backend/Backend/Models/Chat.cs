@@ -11,6 +11,7 @@ namespace Backend.Models
         {
             Messages = new List<Message>();
             Users = new List<ChatUser>();
+            Admins = new List<ChatAdmin>();
         }
         [Key]
         public int Id { get; set; }
@@ -21,7 +22,7 @@ namespace Backend.Models
 
         [Required]
         public string InviteCode { get; set; }
-       
+
         public int? CreatorId { get; set; }
         [ForeignKey("CreatorId")]
         [JsonIgnore]
@@ -30,7 +31,7 @@ namespace Backend.Models
         public virtual ICollection<Message> Messages { get; set; }
         [JsonIgnore]
         public virtual ICollection<ChatUser> Users { get; set; }
-        
-
+        [JsonIgnore]
+        public virtual ICollection<ChatAdmin> Admins { get; set; }
     }
 }

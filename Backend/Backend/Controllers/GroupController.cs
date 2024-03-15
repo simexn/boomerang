@@ -63,23 +63,56 @@ namespace Backend.Controllers
             }
 
             _context.ChatUsers.Remove(chatUser);
+
+            var chatAdmin = await _context.ChatAdmins.FirstOrDefaultAsync(ca => ca.ChatId == chatId && ca.UserId == userId);
+            if (chatAdmin != null)
+            {
+                _context.ChatAdmins.Remove(chatAdmin);
+            }
+
+            
             await _context.SaveChangesAsync();
 
             var group = await _context.Chats
                 .Include(c => c.Users)
                 .FirstOrDefaultAsync(c => c.Id == chatId);
 
-            
-            if (group.Users.Count == 0)
-            {
-                _context.Chats.Remove(group);
-                await _context.SaveChangesAsync();
-            }
+
 
             if (userId == group.CreatorId)
             {
-                group.CreatorId = group.Users.FirstOrDefault().UserId;
-                _context.Update(group);
+                var newAdmin = group.Admins.OrderBy(a => Guid.NewGuid()).FirstOrDefault();
+
+                if (newAdmin != null)
+                {
+                    group.CreatorId = newAdmin.UserId;
+                }
+                else
+                {
+                    var newUser = group.Users.OrderBy(u => Guid.NewGuid()).FirstOrDefault();
+
+                    if (newUser != null)
+                    {
+                        group.CreatorId = newUser.UserId;
+
+                        // Add the new creator to the group's admins
+                        var newAdminUser = new ChatAdmin
+                        {
+                            UserId = newUser.UserId,
+                            ChatId = group.Id
+                        };
+                        _context.ChatAdmins.Add(newAdminUser);
+                    }
+                    else
+                    {
+                        if (group.Users.Count == 0)
+                        {
+                            _context.Chats.Remove(group);
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+                }
+
                 await _context.SaveChangesAsync();
             }
 
@@ -87,7 +120,7 @@ namespace Backend.Controllers
         }
 
 
-        [HttpDelete("deleteGroup/{chatId}")]
+            [HttpDelete("deleteGroup/{chatId}")]
         public async Task<IActionResult> DeleteGroup(int chatId)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -118,6 +151,9 @@ namespace Backend.Controllers
         {
             var chat = await _context.Chats
                 .Include(c => c.Users)
+                .ThenInclude(cu => cu.User)
+                .Include(c => c.Admins)
+                .ThenInclude(ca => ca.User)
                 .FirstOrDefaultAsync(c => c.Id == chatId);
 
             if (chat == null)
@@ -125,7 +161,29 @@ namespace Backend.Controllers
                 return NotFound("Chat not found");
             }
 
-            return new JsonResult(new { chat });
+            var users = chat.Users.Select(cu => cu.User).ToList();
+            var admins = chat.Admins.Select(ca => ca.User).ToList();
+
+            return new JsonResult(new { chat, users, admins });
         }
+
+        [HttpGet("getGroupUsers")]
+        public async Task<IActionResult> GetGroupUsers([FromQuery] int chatId)
+        {
+            var chatUsers = await _context.ChatUsers
+                .Include(cu => cu.User)
+                .Where(cu => cu.ChatId == chatId)
+                .ToListAsync();
+
+            if (!chatUsers.Any())
+            {
+                return NotFound("Chat not found");
+            }
+
+            var users = chatUsers.Select(cu => cu.User).ToList();
+
+            return new JsonResult(new { users });
+        }
+
     }
 }

@@ -126,6 +126,21 @@ namespace Backend.Migrations
                     b.ToTable("Chats");
                 });
 
+            modelBuilder.Entity("Backend.Models.ChatAdmin", b =>
+                {
+                    b.Property<int>("ChatId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ChatId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ChatAdmins");
+                });
+
             modelBuilder.Entity("Backend.Models.ChatUser", b =>
                 {
                     b.Property<int>("ChatId")
@@ -313,6 +328,25 @@ namespace Backend.Migrations
                     b.Navigation("Creator");
                 });
 
+            modelBuilder.Entity("Backend.Models.ChatAdmin", b =>
+                {
+                    b.HasOne("Backend.Models.Chat", "Chat")
+                        .WithMany("Admins")
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Backend.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Chat");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Backend.Models.ChatUser", b =>
                 {
                     b.HasOne("Backend.Models.Chat", "Chat")
@@ -404,6 +438,8 @@ namespace Backend.Migrations
 
             modelBuilder.Entity("Backend.Models.Chat", b =>
                 {
+                    b.Navigation("Admins");
+
                     b.Navigation("Messages");
 
                     b.Navigation("Users");

@@ -1,20 +1,31 @@
 <script lang="ts">
     import { page } from '$app/stores';
+    import { tick } from 'svelte';
     import { handleMessageSubmit, fetchMessages } from "$lib/Handlers/chatHandler";
     import { handleLeaveGroup, handleDeleteGroup } from "$lib/Handlers/groupHandler";
     import {getToken} from "$lib/Handlers/authHandler"; 
     import { onMount } from 'svelte';
     import { HubConnectionBuilder } from '@microsoft/signalr';
-    import { fetchGroupInfo } from '$lib/Handlers/groupHandler';
+    import { fetchGroupInfo, fetchGroupUsers } from '$lib/Handlers/groupHandler';
     import { fetchUserInfo } from '$lib/Handlers/accountHandler';
 
     import type { User } from "$lib/Handlers/accountHandler";
     import type { Group } from "$lib/Handlers/groupHandler";
     import type { Message } from "$lib/Handlers/chatHandler";
+    import { fly, slide } from 'svelte/transition';
+    import { get } from 'svelte/store';
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-    let userInfo: User | null;
-    let groupInfo: Group | null;
+    let imageUrl = '/src/lib/img/user-icon-placeholder.png'
+
+    let userInfo: User;
+    let scrollContainer: any;
+    let groupInfo: Group;
     let messages: Message[] = [];
+    let chatUsers: User[]= [];
+    let isUsersSidebarOpen = false;
+    let isUserHovered = false;
+    let userSidebarDropdown : any = null;
 
     let sendMessageText: string;
     let chatId: string;
@@ -32,10 +43,24 @@
         await getGroupInfo();
         await loadMessages();
 
+        console.log("group info is:" + groupInfo)
+        
+        
+        console.log(messages)
+        
+
         if(userInfo && groupInfo && userInfo.id == groupInfo.creatorId) {
             isCreator = true;
         }
     });
+
+    function openDropdown(userId : any, event: any) {
+        event.stopPropagation();
+        userSidebarDropdown = userSidebarDropdown === userId ? null : userId;
+    }
+    function closeDropdown() {
+    userSidebarDropdown = null;
+  }
 
     async function loadMessages() {
         messages = await fetchMessages(chatId);
@@ -48,19 +73,24 @@
         
 
         connection = new HubConnectionBuilder()
-            .withUrl("https://localhost:5000/chatHub")
+            .withUrl(`${backendUrl}/chatHub`)
             .build();
 
-        connection.on("ReceiveMessage", function(data: any){
+        connection.on("ReceiveMessage", async function(data: any){
+            
             let messageToAdd:Message = {
                 id: data.id,
                 message: data.text,
                 chatId: data.chatId,
                 fromUser: data.fromUser.userName,
+                fromUserId: data.fromUser.id,
                 date: new Date(data.timestamp).toLocaleString()
             };
 
             messages = [...messages, messageToAdd];
+
+            await tick();
+            scrollContainer.scrollTop = scrollContainer.scrollHeight;
         });
 
         await connection.start()
@@ -68,7 +98,8 @@
                 connection.invoke('getConnectionId')
                 .then(function(connectionId: string){
                     _connectionId = connectionId;
-                    
+                    loadMessages();
+                    getGroupInfo();
                     joinRoom();
                 })
             })
@@ -97,12 +128,19 @@
         } 
     }
 
+    function toggleSidebar() {
+        isUsersSidebarOpen = !isUsersSidebarOpen;
+    }
+
+
     async function getUserInfo(){
         userInfo = await fetchUserInfo();
+        
     }
     async function getGroupInfo(){       
             groupInfo = await fetchGroupInfo(chatId);        
     }
+    
 
 
     async function leaveGroup(){
@@ -126,123 +164,342 @@
 </script>
 
 
-
-<div class="chat">    
-    <div class="chat-header">
-        <button on:click={async () => await leaveGroup()}>Leave Group</button>
-        {#if isCreator} <!-- render the delete button only if the user is the group creator -->
-            <button on:click={async () => await deleteGroup()}>Delete Group</button>
-        {/if}
+<svelte:window on:click={closeDropdown} />
+<div class="chat-container d-flex flex-column">    
+   <div class="chat-header d-flex justify-content-between align-items-center p-3 border-bottom">
+        <div>
+            <h3>{groupInfo?.name}</h3>
+            <i class="fa fa-users" aria-hidden="true" on:click={toggleSidebar}></i>
+        </div>
+        <div>
+            <button class="btn btn-danger" on:click={leaveGroup}>Leave</button>
+            {#if isCreator}
+            <button class="btn btn-danger" on:click={deleteGroup}>Delete</button>
+            {/if}
+        </div>
     </div>
-    <div class="chat-body">
-        {#if messages.length != 0}
-            {#each messages as message (message.id)}
-                <div class="message">
-                    <header>{message.fromUser}</header>
-                    <p>{message.message}</p>
-                    <footer>{message.date}</footer>
-                </div>
-            {/each}
-        {/if}
-    </div>
-    <div class="post-create__container AdvancedTextEditor__ctr" id="post-create">
-        <form id="create_post" class="">
-            <div class="AdvancedTextEditor">
-                <div class="AdvancedTextEditor__body">
-                    <div role="application" id="centerChannelFooter" aria-label="message input complimentary region"
-                        tabindex="-1" class="AdvancedTextEditor__cell a11y__region">
-                        <div class="textarea-wrapper">
-                            <div class="">
-                                <div aria-live="polite" role="alert" class="sr-only"></div>
-                                <div>
-                                    <div>
-                                        <div class="form-control custom-textarea custom-textarea--emoji-picker"
-                                            spellcheck="true" data-testid="post_textbox_placeholder"
-                                            style="overflow: hidden; text-overflow: ellipsis; opacity: 0.5; pointer-events: none; position: absolute; white-space: nowrap; background: none; border-color: transparent;">
-                                            Write to Town Square</div><textarea data-testid="post_textbox"
-                                            id="post_textbox" autocomplete="off"
-                                            class="form-control custom-textarea custom-textarea--emoji-picker"
-                                            spellcheck="true" role="textbox" aria-label="write to town square"
-                                            dir="auto" style="visibility: visible; height: 46px;"></textarea>
-                                        <div style="height: 0px; overflow: hidden;"><textarea
-                                                id="post_textbox-reference" dir="auto" rows="1" autocomplete="off"
-                                                class="form-control custom-textarea custom-textarea--emoji-picker"
-                                                spellcheck="true" aria-hidden="true"
-                                                style="visibility: visible;"></textarea></div>
-                                    </div>
+    <div class ="d-flex flex-column">
+        <div class="chat-body-container d-flex flex-row">
+            <div class="chat-body" style="max-width: {isUsersSidebarOpen ? 'calc(100% - 300px)' : '100%'}; overflow-y: auto;">
+                {#if isUsersSidebarOpen}
+                <div class="users-sidebar d-flex flex-column" transition:fly={{x: 1000, duration: 500}}>
+                    {#each groupInfo.users as user (user.id)}
+                     {#if groupInfo.admins.some(admin => admin.id === user.id)}
+                        <div class="user-section">
+                            <h5>Group admins: </h5>
+                            <div role="navigation" class="user d-flex d-row align-items-center" 
+                                on:focus="{() => isUserHovered = true}" 
+                                on:mouseover="{() => isUserHovered = true}" 
+                                on:blur="{() => isUserHovered = false}" 
+                                on:mouseout="{() => isUserHovered = false}">
+                            <div class="d-flex d-row align-items-center">
+                                <img width="20px" height="20px" src={imageUrl} alt={user.userName} />
+                                <p class="pb-0 mb-0">{user.userName}</p>
+                            </div>
+                                <div class="d-flex flex-row">
+                                    <i class="dots fa-solid fa-ellipsis-vertical" on:click|stopPropagation={(event) => openDropdown(user.id, event)}></i>
+                                    {#if user.id === userSidebarDropdown}
+                                        <div role="navigation" class="dropdown-menu show">
+                                        <a class="dropdown-item" href="#">Action</a>
+                                        <a class="dropdown-item" href="#">Another action</a>
+                                        <a class="dropdown-item" href="#">Something else here</a>
+                                        
+                                        {#if user.id !== userInfo.id && (groupInfo.creatorId === userInfo.id || (groupInfo.admins.some(admin => admin.id === userInfo.id) && user.id !== groupInfo.creatorId))}
+                                            <div class="dropdown-divider"></div>
+                                                <button class="dropdown-item" on:click|stopPropagation={null}>Kick</button>
+                                                <button class="dropdown-item" on:click|stopPropagation={null}>Ban</button>
+                                            
+                                        {/if}
+                                        </div>
+                                    {/if}
+                                    
                                 </div>
                             </div>
                         </div>
+                    {:else}
+                        <div class="user-section">
+                            <h5>Group members: </h5>
+                            <div role="navigation" class="user d-flex d-row align-items-center" 
+                                on:focus="{() => isUserHovered = true}" 
+                                on:mouseover="{() => isUserHovered = true}" 
+                                on:blur="{() => isUserHovered = false}" 
+                                on:mouseout="{() => isUserHovered = false}">
+                            <div class="d-flex d-row align-items-center">
+                                <img width="20px" height="20px" src={imageUrl} alt={user.userName} />
+                                <p class="pb-0 mb-0">{user.userName}</p>
+                            </div>
+                                <div class="d-flex flex-row">
+                                    <i class="dots fa-solid fa-ellipsis-vertical" on:click|stopPropagation={(event) => openDropdown(user.id, event)}></i>
+                                    {#if user.id === userSidebarDropdown}
+                                        <div role="navigation" class="dropdown-menu show">
+                                        <a class="dropdown-item" href="#">Action</a>
+                                        <a class="dropdown-item" href="#">Another action</a>
+                                        <a class="dropdown-item" href="#">Something else here</a>
+                                        
+                                        {#if user.id !== userInfo.id && (groupInfo.creatorId === userInfo.id || (groupInfo.admins.some(admin => admin.id === userInfo.id) && user.id !== groupInfo.creatorId))}
+                                            <div class="dropdown-divider"></div>
+                                                <button class="dropdown-item" on:click|stopPropagation={null}>Kick</button>
+                                                <button class="dropdown-item" on:click|stopPropagation={null}>Ban</button>
+                                            
+                                        {/if}
+                                        </div>
+                                    {/if}
+                                </div>
+                            </div>
+                        </div>
+                    {/if}
+                    {/each}
                 </div>
-                <div id="postCreateFooter" role="form" class="AdvancedTextEditor__footer"><span
-                        class="msg-typing"></span></div>
+                {/if}
+                <div style="max-height:49rem; overflow-y: auto;" bind:this={scrollContainer}>
+                    <div style="position: relative;overflow: hidden;max-width: 100%;padding: 8px 0.5em 0 1.5em;transition: height 200ms,background-color 200ms;word-wrap: break-word;">
+                        <div style="position: relative;display: table;width: 100%;padding: 0 0 0 5px;margin: 0 auto;table-layout: fixed;">
+                            
+                            {#each messages as message}
+                            <div class="message" style="display: flex; align-items: start;">
+                                
+                                <div id="img">
+                                    <button class="message-avatar-wrap">
+                                        <span class="message-avatar">
+                                            <img style="width:32px; height:32px;" alt="User" src={imageUrl}>
+                                        </span>
+                                    </button>
+                                </div>
+                                <div>
+                                    <div class="message-header">
+                                        <div class="message-sender">
+                                            <button class="message-sender-button">{message.fromUser}</button>
+                                        </div>
+                                        <div class="message-date">
+                                            <a href="/" style="display: inline-block;color: inherit;">{message.date}</a>
+                                        </div>              
+                                    </div>   
+                                    <div class="message-body">                    
+                                        <p>{message.message}</p>                                           
+                                    </div>
+                                    {#if userInfo && message.fromUserId === userInfo.id}
+                                    <div class="message-actions">
+                                        <i class="icon-edit">✎</i>
+                                        <i class="icon-delete">✖</i>
+                                    </div>
+                                    {/if}
+                                </div>
+                            </div>
+                            {/each}
+                        </div>
+                    </div>
+                </div>   
             </div>
-        </form>
+        </div>   
     </div>
+
+    
+
+    <div class="chat-footer" style="max-width: {isUsersSidebarOpen ? 'calc(100% - 300px)' : '100%'};" >
+        <ul class="list-unstyled">
+            <li class="bg-white mb-3">
+                <div class="d-flex">
+                    <input class="form-control" bind:value={sendMessageText} placeholder="Message" id="textAreaExample2"/>
+                    <button type="button" class="btn btn-info btn-rounded float-end" on:click={async () => await sendMessage()}>Send</button>
+                </div>
+            </li> 
+        </ul>
     </div>
+</div>
+
+
 
 <style>
-    .chat{
+    .chat-container{
         flex-grow: 1;
         display: flex;
         flex-direction: column;
-        max-height: 100%;
+        height: 100%;
+        overflow: hidden;
+        
     }
-    .chat-header{
-        background-color: var(--bg);
-        display: flex;
-        justify-content: flex-end;
-        padding: 1rem;
-    }
-    .chat-body{
-        background-color: var(--bg);
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
+    .chat-body-container{
+    flex-grow: 1;
+    display: flex;
+    overflow: auto; /* add scrolling if the content overflows */
+}
 
-        padding-bottom: 1rem;
-        overflow: auto;
-    }
-    
-    .chat-footer{
-        background-color: var(--bg);
-        min-height: 115px;
-    }
-    .message-input{
-        z-index: 12;
+.message {
+    transition: background-color 100ms;
+    position:relative;
+}
+.message-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    justify-content: flex-end;
+    padding: 4px;
+    visibility: hidden;
+}
+.message:hover {
+    background-color: #f5f5f5;
+}
+
+.message:hover .message-actions {
+    visibility: visible;
+}
+
+.icon-edit, .icon-delete {
+    margin-left: 8px;
+    cursor: pointer;
+}
+
+.chat-header{
+    position: relative;
+    z-index: 15;
     width: 100%;
-    flex: 0 0 auto;
+    max-height: 63px;
+    flex: 0 0 63px;
+    border-bottom: 1px solid rgba(var(--center-channel-color-rgb), 0.12);
     background: var(--center-channel-bg);
+    font-size: 14px;
+}
+    .chat-header h3{
+        margin-bottom:2px;
     }
+    .chat-header i{
+        cursor:pointer;
+        
+        padding-top:4px;
+        margin-bottom:8px;
+        padding-bottom:4px;
 
-    .message{
+        padding-left:2px;
+        padding-right:2px;
+        border-radius: 5px;
+    }
+        .chat-header i:hover{
+            background-color: #b4b4b4;
+        }
+    
+.message-header{
+    position:relative;
+    display: flex;
+    width: 100%;
+    margin-bottom: 2px;
+    white-space: nowrap;
+}
+    .message-avatar-wrap{
+        position: relative;
+        display: inline-block;
+        height: 32px;
+        padding: 0;
+        border: none;
+        background: transparent;
+    }
+        .message-avatar{
+            display: inline-flex;
+            overflow: hidden;
+            align-items: center;
+            justify-content: center;
+        }
+        #img {
+        min-width: 40px; /* adjust as needed */
+        flex-shrink: 0;
+        }
+    .message-sender{
         display: flex;
-        flex-direction: row;
-        margin-top:0.2rem;
+        min-width: 0;
+        flex: 0 auto;
+        margin-right: 8px;
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+        .message-sender-button{
+            border: none;
+            background: transparent;
+        }
+    .message-date{
+        max-width: 100%;flex-basis: 0;flex-grow: 1;
     }
 
-    .message:first-child{
-        margin-top: auto;
-    }
+        
 
-    .message > *{
-        padding:0.2rem;
-    }
+.message-body{
+    transition-property: height ;transition-duration: 250ms;transition-timing-function: ease;height: auto;overflow: visible;
+    width: 100%; word-wrap:break-word;
+    position: relative;overflow: clip;
+    max-height:600px;
+    text-align: left;
+    margin-left:5px;
 
-    .message > header{
-        font-weight: bold;
-        min-width: 100px;
-        text-align: right;
-    }
 
-    .message > p{
-        margin:0;
-        flex-grow:5;
-    }
+}
 
-    .message > footer{
-        min-width:60px;
-        text-align: center;
-    }
+.users-sidebar {
+        position: fixed;
+        right: 0;
+        width: 300px; /* adjust as needed */
+        height: 100%;
+        background-color: #f1f1f1; /* adjust as needed */
+        overflow-y: auto;
+        padding: 20px;
+        box-sizing: border-box;
+        transition: transform 0.3s ease-in-out;
+        transform: translateX(0);
+        flex-shrink: 0;
+        border-left: solid 1px #e5e5e5;
+}
 
+    .user-section{
+        margin-bottom: 10px;
+    }
+        .user{
+            position:relative;
+            display:flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+            .dropdown-menu{
+                position: absolute;
+                top: 100%; /* This positions the dropdown right under the user div */
+                right: 0;
+            }
+            .dots{
+                visibility: hidden;
+                margin-left: 15px;
+                margin-right: 15px;
+                padding-left:10px;
+                padding-right:10px;
+                padding-top:2px;
+                padding-bottom:2px;
+                border-radius: 10px;
+                
+            }
+                
+                
+        .user:hover .dots{
+            visibility: visible;
+            
+            
+        }
+            .user:hover .dots:hover{
+                cursor: pointer;
+                background-color: #a8a8a8;
+            }
+        .user:hover{
+            background-color: #e5e5e5;
+        }
+        .user img{
+            margin-right:5px
+        }
+
+
+    
+.chat-footer{
+    overflow-y: auto; 
+    margin-left: 5px;
+    margin-right:5px;
+}
+
+
+
+ 
 </style>

@@ -1,18 +1,19 @@
 import {getToken} from './authHandler';
-
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 export interface Message{
     id: number;
     message: string;
     chatId: number;
     fromUser: number;
+    fromUserId: number;
     date: string;
 }
 
 export async function fetchMessages(chatId: string){
     let token = await getToken();
     
-    const response = await fetch(`https://localhost:5000/chat/getMessages?chatId=${chatId}`, {
+    const response = await fetch(`${backendUrl}/chat/getMessages?chatId=${chatId}`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -31,6 +32,7 @@ export async function fetchMessages(chatId: string){
                 message: message.text,
                 chatId: message.chatId,
                 fromUser: message.fromUser.userName,
+                fromUserId: message.fromUser.id,
                 date: new Date(message.timestamp).toLocaleString()
             }));
     
@@ -55,7 +57,7 @@ export async function handleMessageSubmit(messageToSubmit: string, chatId: strin
 
     const requestBody = JSON.stringify(array);
 
-    const response = await fetch('https://localhost:5000/chat/sendMessage', {
+    const response = await fetch(`${backendUrl}/chat/sendMessage`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
