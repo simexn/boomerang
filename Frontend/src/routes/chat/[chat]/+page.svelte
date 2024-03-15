@@ -14,7 +14,7 @@
     import type { Message } from "$lib/Handlers/chatHandler";
     import { fly, slide } from 'svelte/transition';
     import { get } from 'svelte/store';
-    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    const backendUrl = 'http://simexn-001-site1.ktempurl.com'
 
     let imageUrl = '/src/lib/img/user-icon-placeholder.png'
 
@@ -111,7 +111,7 @@
     async function joinRoom() {
         let token = await getToken();
 
-        const response = await fetch('https://localhost:5000/chat/joinRoom', {
+        const response = await fetch(`${backendUrl}/chat/joinRoom`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,

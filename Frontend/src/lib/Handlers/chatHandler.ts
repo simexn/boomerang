@@ -1,5 +1,5 @@
 import {getToken} from './authHandler';
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
+const backendUrl = 'http://simexn-001-site1.ktempurl.com'
 
 export interface Message{
     id: number;
