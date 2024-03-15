@@ -1,6 +1,6 @@
 import { getToken } from './authHandler';
 import type { User } from './accountHandler';
-const backendUrl = 'http://simexn-001-site1.ktempurl.com'
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 export interface Group {
     id: number;

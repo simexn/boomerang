@@ -14,7 +14,7 @@
     import type { Message } from "$lib/Handlers/chatHandler";
     import { fly, slide } from 'svelte/transition';
     import { get } from 'svelte/store';
-    const backendUrl = 'http://simexn-001-site1.ktempurl.com'
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
     let imageUrl = '/src/lib/img/user-icon-placeholder.png'
 
