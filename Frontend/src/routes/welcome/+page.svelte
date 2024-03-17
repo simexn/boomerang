@@ -9,6 +9,7 @@
     let confirmPassword = '';
     let birthDate = '';
     let pronouns = '';
+    console.log(import.meta.env.VITE_BACKEND_URL);
 
     async function handleSubmit(event: Event) {
         event.preventDefault();
