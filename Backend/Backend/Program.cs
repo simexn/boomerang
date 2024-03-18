@@ -31,9 +31,16 @@ namespace Backend
             builder.Services.AddCors(options => {
                 options.AddPolicy(name: SveltePolicy,
                     policy => {
-                        policy.WithOrigins("http://localhost:5555").AllowAnyHeader().AllowCredentials().AllowAnyMethod();
+                        policy.WithOrigins(
+                            "https://boomerangr.vercel.app",
+                            "http://localhost:5555"
+                        )
+                        .AllowAnyHeader()
+                        .AllowCredentials()
+                        .AllowAnyMethod();
                     });
             });
+
 
             builder.Services.AddSignalR();
 
@@ -94,7 +101,8 @@ namespace Backend
             app.UseRouting();
 
             app.UseCors(SveltePolicy);
-            
+
+            app.MapControllers();
 
             app.MapHub<ChatHub>("/chatHub");
 

@@ -8,6 +8,13 @@ export interface Message{
     fromUser: number;
     fromUserId: number;
     date: string;
+    }
+
+export interface ChatItem {
+    id: number;
+    content: string;
+    timestamp: string;
+    userName: string;
 }
 
 export async function fetchMessages(chatId: string){
@@ -26,18 +33,16 @@ export async function fetchMessages(chatId: string){
     
     
     if (response.ok) {
-        if (data.messages) {
-            const messages: Message[] = await data.messages.map((message: any) => ({
-                id: message.id,
-                message: message.text,
-                chatId: message.chatId,
-                fromUser: message.fromUser.userName,
-                fromUserId: message.fromUser.id,
-                date: new Date(message.timestamp).toLocaleString()
+        if (data.chatItems) {
+            const chatItems: ChatItem[] = await data.chatItems.map((item: any) => ({
+                id: item.id,
+                content: item.content,
+                timestamp: new Date(item.timestamp).toLocaleString(),
+                userName: item.userName
             }));
     
-            console.log(messages);
-            return messages;
+            console.log(chatItems);
+            return chatItems;
         } else {
             
             return [];
@@ -47,6 +52,7 @@ export async function fetchMessages(chatId: string){
         throw new Error(data);
     }
 };
+
 
 
 export async function handleMessageSubmit(messageToSubmit: string, chatId: string, roomId: string){

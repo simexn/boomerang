@@ -12,16 +12,17 @@
     import type { User } from "$lib/Handlers/accountHandler";
     import type { Group } from "$lib/Handlers/groupHandler";
     import type { Message } from "$lib/Handlers/chatHandler";
+    import type {ChatItem} from "$lib/Handlers/chatHandler";
     import { fly, slide } from 'svelte/transition';
     import { get } from 'svelte/store';
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-    let imageUrl = '/src/lib/img/user-icon-placeholder.png'
+    let imageUrl = '/user-icon-placeholder.png'
 
     let userInfo: User;
     let scrollContainer: any;
     let groupInfo: Group;
-    let messages: Message[] = [];
+    let chatItems: ChatItem[] = [];
     let chatUsers: User[]= [];
     let isUsersSidebarOpen = false;
     let isUserHovered = false;
@@ -46,7 +47,7 @@
         console.log("group info is:" + groupInfo)
         
         
-        console.log(messages)
+        
         
 
         if(userInfo && groupInfo && userInfo.id == groupInfo.creatorId) {
@@ -63,7 +64,7 @@
   }
 
     async function loadMessages() {
-        messages = await fetchMessages(chatId);
+        chatItems = await fetchMessages(chatId);
     }
     async function setupConnection() {
         if (connection) {
@@ -76,23 +77,48 @@
             .withUrl(`${backendUrl}/chatHub`)
             .build();
 
-        connection.on("ReceiveMessage", async function(data: any){
-            
-            let messageToAdd:Message = {
-                id: data.id,
-                message: data.text,
-                chatId: data.chatId,
-                fromUser: data.fromUser.userName,
-                fromUserId: data.fromUser.id,
-                date: new Date(data.timestamp).toLocaleString()
-            };
+            connection.on("ReceiveMessage", async function(data: any){
+    
+                let chatItemToAdd:ChatItem = {
+                    id: data.id,
+                    content: data.text,
+                    timestamp: new Date(data.timestamp).toLocaleString(),
+                    userName: data.fromUser.userName
+                };
 
-            messages = [...messages, messageToAdd];
+                chatItems = [...chatItems, chatItemToAdd];
 
-            await tick();
-            scrollContainer.scrollTop = scrollContainer.scrollHeight;
+                await tick();
+                scrollContainer.scrollTop = scrollContainer.scrollHeight;
+            });
+
+            connection.on("UserJoined", function(user: any) {
+                groupInfo.users = [...groupInfo.users, user];
+
+                let chatItemToAdd:ChatItem = {
+                    id: Date.now(), // Use the current timestamp as a temporary ID
+                    content: 'UserJoined',
+                    timestamp: new Date().toLocaleString(),
+                    userName: user.userName
+                };
+
+                chatItems = [...chatItems, chatItemToAdd];
+            });
+
+
+        connection.on("UserLeft", function(user: any) {
+            groupInfo.users = groupInfo.users.filter(u => u.id !== user.id);
+
+            let chatItemToAdd:ChatItem = {
+                    id: Date.now(), // Use the current timestamp as a temporary ID
+                    content: 'UserLeft',
+                    timestamp: new Date().toLocaleString(),
+                    userName: user.userName
+                };
+
+                chatItems = [...chatItems, chatItemToAdd];
         });
-
+        
         await connection.start()
             .then(function(){
                 connection.invoke('getConnectionId')
@@ -255,7 +281,7 @@
                     <div style="position: relative;overflow: hidden;max-width: 100%;padding: 8px 0.5em 0 1.5em;transition: height 200ms,background-color 200ms;word-wrap: break-word;">
                         <div style="position: relative;display: table;width: 100%;padding: 0 0 0 5px;margin: 0 auto;table-layout: fixed;">
                             
-                            {#each messages as message}
+                            {#each chatItems as item}
                             <div class="message" style="display: flex; align-items: start;">
                                 
                                 <div id="img">
@@ -266,26 +292,33 @@
                                     </button>
                                 </div>
                                 <div>
-                                    <div class="message-header">
-                                        <div class="message-sender">
-                                            <button class="message-sender-button">{message.fromUser}</button>
+                                    {#if item.content === 'UserJoined' || item.content === 'UserLeft'}
+                                        <p style="color: grey; font-style: italic;">
+                                            {item.userName} has {item.content === 'UserJoined' ? 'joined' : 'left'} the chat
+                                        </p>
+                                    {:else}
+                                        <div class="message-header">
+                                            <div class="message-sender">
+                                                <button class="message-sender-button">{item.userName}</button>
+                                            </div>
+                                            <div class="message-date">
+                                                <a href="/" style="display: inline-block;color: inherit;">{item.timestamp}</a>
+                                            </div>              
+                                        </div>   
+                                        <div class="message-body">                    
+                                            <p>{item.content}</p>                                           
                                         </div>
-                                        <div class="message-date">
-                                            <a href="/" style="display: inline-block;color: inherit;">{message.date}</a>
-                                        </div>              
-                                    </div>   
-                                    <div class="message-body">                    
-                                        <p>{message.message}</p>                                           
-                                    </div>
-                                    {#if userInfo && message.fromUserId === userInfo.id}
-                                    <div class="message-actions">
-                                        <i class="icon-edit">✎</i>
-                                        <i class="icon-delete">✖</i>
-                                    </div>
+                                        {#if userInfo && item.userName === userInfo.userName}
+                                        <div class="message-actions">
+                                            <i class="icon-edit">✎</i>
+                                            <i class="icon-delete">✖</i>
+                                        </div>
+                                        {/if}
                                     {/if}
                                 </div>
                             </div>
-                            {/each}
+                        {/each}
+
                         </div>
                     </div>
                 </div>   

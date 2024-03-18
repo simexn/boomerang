@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<sitemanifest>
+  <IisApp path="C:\Users\sbuha\Desktop\Undertale.v1.08-SiMPLEX\diplomna rabota\Backend\Backend\obj\Release\net8.0\PubTmp\Out\" />
+  <dbfullsql path="C:\Users\sbuha\Desktop\Undertale.v1.08-SiMPLEX\diplomna rabota\Backend\Backend\obj\Release\net8.0\PubTmp\EFSQLScripts\Backend.Data.ApplicationDbContext.sql" />
+</sitemanifest>

@@ -43,11 +43,25 @@ namespace Backend.Controllers
             };
 
             _context.ChatUsers.Add(chatUser);
+
+            var chatEvent = new ChatEvent
+            {
+                UserId = userId,
+                ChatId = chat.Id,
+                Timestamp = DateTime.Now,
+                Event = ChatEvent.EventType.UserJoined
+            };
+
+            _context.ChatEvents.Add(chatEvent);
+
             await _context.SaveChangesAsync();
 
+            
+            await _chat.Clients.Group(chat.Id.ToString()).SendAsync("UserJoined", user);
+
             return new JsonResult(new { chat });
-           
         }
+
 
 
         [HttpDelete("leaveGroup/{chatId}")]
@@ -70,14 +84,24 @@ namespace Backend.Controllers
                 _context.ChatAdmins.Remove(chatAdmin);
             }
 
-            
+            var chatEvent = new ChatEvent
+            {
+                UserId = userId,
+                ChatId = chatId,
+                Timestamp = DateTime.Now,
+                Event = ChatEvent.EventType.UserLeft
+            };
+
+            _context.ChatEvents.Add(chatEvent);
+
             await _context.SaveChangesAsync();
 
             var group = await _context.Chats
                 .Include(c => c.Users)
                 .FirstOrDefaultAsync(c => c.Id == chatId);
 
-
+            // Send a "UserLeft" message to the clients in the group chat
+            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserLeft", user);
 
             if (userId == group.CreatorId)
             {
@@ -120,7 +144,9 @@ namespace Backend.Controllers
         }
 
 
-            [HttpDelete("deleteGroup/{chatId}")]
+
+
+        [HttpDelete("deleteGroup/{chatId}")]
         public async Task<IActionResult> DeleteGroup(int chatId)
         {
             var user = await _userManager.GetUserAsync(User);

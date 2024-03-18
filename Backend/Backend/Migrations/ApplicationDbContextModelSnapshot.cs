@@ -141,6 +141,35 @@ namespace Backend.Migrations
                     b.ToTable("ChatAdmins");
                 });
 
+            modelBuilder.Entity("Backend.Models.ChatEvent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChatId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Event")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ChatEvents");
+                });
+
             modelBuilder.Entity("Backend.Models.ChatUser", b =>
                 {
                     b.Property<int>("ChatId")
@@ -332,6 +361,25 @@ namespace Backend.Migrations
                 {
                     b.HasOne("Backend.Models.Chat", "Chat")
                         .WithMany("Admins")
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Backend.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Chat");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Backend.Models.ChatEvent", b =>
+                {
+                    b.HasOne("Backend.Models.Chat", "Chat")
+                        .WithMany()
                         .HasForeignKey("ChatId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

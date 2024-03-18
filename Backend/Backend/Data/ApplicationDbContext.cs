@@ -16,6 +16,7 @@ namespace Backend.Data
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<ChatUser> ChatUsers { get; set; }
         public DbSet<ChatAdmin> ChatAdmins { get; set; }
+        public DbSet<ChatEvent> ChatEvents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

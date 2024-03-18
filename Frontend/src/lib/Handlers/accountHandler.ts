@@ -45,7 +45,7 @@ export async function fetchUserInfo() {
     }
 }
 
-async function isLoggedIn() {
+export async function isLoggedIn() {
     let cookie;
     if (browser) {
         cookie = document.cookie.split('; ').find(row => row.startsWith('token'));
@@ -93,18 +93,14 @@ export async function handleAccountLogin(formData:{email: string, password: stri
         body: requestBody
     });
 
+    if (!response.ok) {
+        throw new Error(response.statusText);
+    }
+
     const data = await response.json();
 
-    if (response.ok) {
-        document.cookie = `token=${data.token};path=/;Secure;SameSite=Strict;`;
-        window.location.href = '/chat/home'; // Redirect to home page
-        
-    }
-    if (!response.ok) {
-        return response.text().then(text => { throw new Error(text) });
-    }
-
+    document.cookie = `token=${data.token};path=/;Secure;SameSite=Strict;`;
+    window.location.href = '/chat/home'; // Redirect to home page
 
     return response;
 }
-

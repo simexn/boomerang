@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Backend.Models.InputModels;
 using System.Diagnostics;
 using System.Text.Json;
+using Backend.Models.ViewModels;
 
 namespace Backend.Controllers
 {
@@ -113,14 +114,36 @@ namespace Backend.Controllers
 
 
         [HttpGet("getMessages")]
-        public async Task<IActionResult> GetMessages([FromQuery] string chatId)
+        public async Task<IActionResult> GetMessages([FromQuery] int chatId)
         {
-            var messages = await _context.Messages.Where(x => x.ChatId == Int32.Parse(chatId))
-                .Include(x => x.FromUser)
+            var messages = await _context.Messages
+                .Where(m => m.ChatId == chatId)
+                .Select(m => new ChatItem
+                {
+                    Id = m.Id,
+                    Content = m.Text,
+                    Timestamp = m.Timestamp,
+                    UserName = m.FromUser.UserName
+                })
                 .ToListAsync();
 
-            return new JsonResult(new { messages });
+            var events = await _context.ChatEvents
+                .Where(e => e.ChatId == chatId)
+                .Select(e => new ChatItem
+                {
+                    Id = e.Id,
+                    Content = e.Event.ToString(),
+                    Timestamp = e.Timestamp,
+                    UserName = e.User.UserName,
+                    EventType = e.Event.ToString()
+                })
+                .ToListAsync();
+
+            var chatItems = messages.Concat(events).OrderBy(i => i.Timestamp).ToList();
+
+            return new JsonResult(new { chatItems });
         }
+
 
 
         [HttpPost("joinRoom")]
