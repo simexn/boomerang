@@ -2,12 +2,13 @@
     import { page } from '$app/stores';
     import { tick } from 'svelte';
     import { handleMessageSubmit, fetchMessages } from "$lib/Handlers/chatHandler";
-    import { handleLeaveGroup, handleDeleteGroup } from "$lib/Handlers/groupHandler";
+    import { handleLeaveGroup, handleDeleteGroup, handleKickUser, handlePromoteUser, handleDemoteUser, handleTransferOwnership } from "$lib/Handlers/groupHandler";
     import {getToken} from "$lib/Handlers/authHandler"; 
     import { onMount } from 'svelte';
     import { HubConnectionBuilder } from '@microsoft/signalr';
-    import { fetchGroupInfo, fetchGroupUsers } from '$lib/Handlers/groupHandler';
+    import { fetchGroupInfo} from '$lib/Handlers/groupHandler';
     import { fetchUserInfo } from '$lib/Handlers/accountHandler';
+    
 
     import type { User } from "$lib/Handlers/accountHandler";
     import type { Group } from "$lib/Handlers/groupHandler";
@@ -15,6 +16,7 @@
     import type {ChatItem} from "$lib/Handlers/chatHandler";
     import { fly, slide } from 'svelte/transition';
     import { get } from 'svelte/store';
+    import { goto } from '$app/navigation';
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
     let imageUrl = '/user-icon-placeholder.png'
@@ -40,16 +42,12 @@
     $: chatId && setupConnection();
 
     onMount(async () => {
-        await getUserInfo();
-        await getGroupInfo();
-        await loadMessages();
+        // await getUserInfo();
+        // await getGroupInfo();
+        // await loadMessages();
 
         console.log("group info is:" + groupInfo)
         
-        
-        
-        
-
         if(userInfo && groupInfo && userInfo.id == groupInfo.creatorId) {
             isCreator = true;
         }
@@ -92,8 +90,10 @@
                 scrollContainer.scrollTop = scrollContainer.scrollHeight;
             });
 
-            connection.on("UserJoined", function(user: any) {
+            connection.on("UserJoined", async function(user: any) {
                 groupInfo.users = [...groupInfo.users, user];
+
+                groupInfo.admins = groupInfo.admins.filter(admin => admin.id !== user.id);
 
                 let chatItemToAdd:ChatItem = {
                     id: Date.now(), // Use the current timestamp as a temporary ID
@@ -103,11 +103,15 @@
                 };
 
                 chatItems = [...chatItems, chatItemToAdd];
+
+                await tick();
+                scrollContainer.scrollTop = scrollContainer.scrollHeight;
             });
 
 
-        connection.on("UserLeft", function(user: any) {
+        connection.on("UserLeft", async function(user: any) {
             groupInfo.users = groupInfo.users.filter(u => u.id !== user.id);
+            groupInfo.admins = groupInfo.admins.filter(admin => admin.id !== user.id);
 
             let chatItemToAdd:ChatItem = {
                     id: Date.now(), // Use the current timestamp as a temporary ID
@@ -117,16 +121,97 @@
                 };
 
                 chatItems = [...chatItems, chatItemToAdd];
+
+                await tick();
+                scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        });
+
+        connection.on("UserKicked", async function(user: any) {
+            if (user.id === userInfo.id) {
+                goto('/chat/home');
+                
+            }
+            groupInfo.users = groupInfo.users.filter(u => u.id !== user.id);
+
+            let chatItemToAdd:ChatItem = {
+                    id: Date.now(), // Use the current timestamp as a temporary ID
+                    content: 'UserKicked',
+                    timestamp: new Date().toLocaleString(),
+                    userName: user.userName
+                };
+
+                chatItems = [...chatItems, chatItemToAdd];
+
+                await tick();
+                scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        });
+        
+        connection.on("UserBanned", async function(user: any){
+            if (user.id === userInfo.id) {
+                goto('/some-other-page');
+            }
+        });
+
+        connection.on("UserPromoted", async function(user: any){
+            groupInfo.admins = [...groupInfo.admins, user];
+
+            let chatItemToAdd:ChatItem = {
+                id: Date.now(),
+                content: 'UserPromoted',
+                timestamp: new Date().toLocaleString(),
+                userName: user.userName
+            }
+
+            chatItems = [...chatItems, chatItemToAdd];
+
+            await tick();
+            scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        });
+
+        connection.on("UserDemoted", async function(user: any){
+            groupInfo.admins = groupInfo.admins.filter(admin => admin.id !== user.id);
+
+            let chatItemToAdd:ChatItem = {
+                id: Date.now(),
+                content: 'UserDemoted',
+                timestamp: new Date().toLocaleString(),
+                userName: user.userName
+            }
+
+            chatItems = [...chatItems, chatItemToAdd];
+
+            await tick();
+            scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        });
+
+        connection.on("OwnershipTransferred", async function(user: any){
+            groupInfo.creatorId = user.id;
+            groupInfo.admins = [...groupInfo.admins, user];
+
+            let chatItemToAdd:ChatItem = {
+                id: Date.now(),
+                content: 'OwnershipTransferred',
+                timestamp: new Date().toLocaleString(),
+                userName: user.userName
+            }
+
+            chatItems = [...chatItems, chatItemToAdd];
+
+            await tick();
+            scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        
         });
         
         await connection.start()
             .then(function(){
                 connection.invoke('getConnectionId')
-                .then(function(connectionId: string){
+                .then(async function(connectionId: string){
                     _connectionId = connectionId;
-                    loadMessages();
-                    getGroupInfo();
-                    joinRoom();
+                    await loadMessages();
+                    await getGroupInfo();
+                    await joinRoom();
+                    await tick();
+                    scrollContainer.scrollTop = scrollContainer.scrollHeight;
                 })
             })
             .catch(function(err: any){
@@ -153,12 +238,9 @@
             console.error('Error joining room:', await response.text());
         } 
     }
-
     function toggleSidebar() {
         isUsersSidebarOpen = !isUsersSidebarOpen;
     }
-
-
     async function getUserInfo(){
         userInfo = await fetchUserInfo();
         
@@ -166,26 +248,35 @@
     async function getGroupInfo(){       
             groupInfo = await fetchGroupInfo(chatId);        
     }
-    
-
-
     async function leaveGroup(){
         await handleLeaveGroup(chatId);
         window.location.href = '/chat/home';
 
     }
-    
-
     async function deleteGroup(){
         if (isCreator) {
             await handleDeleteGroup(chatId);
             window.location.href = '/chat/home';
         }
     }
-
     async function sendMessage() {
         message = await handleMessageSubmit(sendMessageText, chatId, chatId);
         sendMessageText = "";
+    }
+    
+    async function kickUser(userId: number){
+        await handleKickUser(chatId, userId);
+        //groupInfo.users = groupInfo.users.filter(user => user.id !== userId);
+    }
+
+    async function promoteUser(userId: number){
+        await handlePromoteUser(chatId, userId);
+    }
+    async function demoteUser(userId: number){
+        await handleDemoteUser(chatId, userId);
+    }
+    async function transferOwnership(userId: number){
+        await handleTransferOwnership(chatId, userId);
     }
 </script>
 
@@ -208,74 +299,84 @@
         <div class="chat-body-container d-flex flex-row">
             <div class="chat-body" style="max-width: {isUsersSidebarOpen ? 'calc(100% - 300px)' : '100%'}; overflow-y: auto;">
                 {#if isUsersSidebarOpen}
-                <div class="users-sidebar d-flex flex-column" transition:fly={{x: 1000, duration: 500}}>
-                    {#each groupInfo.users as user (user.id)}
-                     {#if groupInfo.admins.some(admin => admin.id === user.id)}
-                        <div class="user-section">
-                            <h5>Group admins: </h5>
-                            <div role="navigation" class="user d-flex d-row align-items-center" 
-                                on:focus="{() => isUserHovered = true}" 
-                                on:mouseover="{() => isUserHovered = true}" 
-                                on:blur="{() => isUserHovered = false}" 
-                                on:mouseout="{() => isUserHovered = false}">
-                            <div class="d-flex d-row align-items-center">
-                                <img width="20px" height="20px" src={imageUrl} alt={user.userName} />
-                                <p class="pb-0 mb-0">{user.userName}</p>
-                            </div>
-                                <div class="d-flex flex-row">
-                                    <i class="dots fa-solid fa-ellipsis-vertical" on:click|stopPropagation={(event) => openDropdown(user.id, event)}></i>
-                                    {#if user.id === userSidebarDropdown}
-                                        <div role="navigation" class="dropdown-menu show">
-                                        <a class="dropdown-item" href="#">Action</a>
-                                        <a class="dropdown-item" href="#">Another action</a>
-                                        <a class="dropdown-item" href="#">Something else here</a>
-                                        
-                                        {#if user.id !== userInfo.id && (groupInfo.creatorId === userInfo.id || (groupInfo.admins.some(admin => admin.id === userInfo.id) && user.id !== groupInfo.creatorId))}
-                                            <div class="dropdown-divider"></div>
-                                                <button class="dropdown-item" on:click|stopPropagation={null}>Kick</button>
-                                                <button class="dropdown-item" on:click|stopPropagation={null}>Ban</button>
-                                            
-                                        {/if}
+                    <div class="users-sidebar d-flex flex-column" transition:fly={{x: 1000, duration: 500}}>
+                        <h5>Group admins: </h5>
+                        {#each groupInfo.users as user (user.id)}
+                            {#if groupInfo.admins.some(admin => admin.id === user.id)}
+                                <div class="user-section">
+                                    <div role="navigation" class="user d-flex d-row align-items-center" 
+                                        on:focus="{() => isUserHovered = true}" 
+                                        on:mouseover="{() => isUserHovered = true}" 
+                                        on:blur="{() => isUserHovered = false}" 
+                                        on:mouseout="{() => isUserHovered = false}">
+                                        <div class="d-flex d-row align-items-center">
+                                            <img width="20px" height="20px" src={imageUrl} alt={user.userName} />
+                                            <p class="pb-0 mb-0">{user.userName}</p>
                                         </div>
-                                    {/if}
-                                    
-                                </div>
-                            </div>
-                        </div>
-                    {:else}
-                        <div class="user-section">
-                            <h5>Group members: </h5>
-                            <div role="navigation" class="user d-flex d-row align-items-center" 
-                                on:focus="{() => isUserHovered = true}" 
-                                on:mouseover="{() => isUserHovered = true}" 
-                                on:blur="{() => isUserHovered = false}" 
-                                on:mouseout="{() => isUserHovered = false}">
-                            <div class="d-flex d-row align-items-center">
-                                <img width="20px" height="20px" src={imageUrl} alt={user.userName} />
-                                <p class="pb-0 mb-0">{user.userName}</p>
-                            </div>
-                                <div class="d-flex flex-row">
-                                    <i class="dots fa-solid fa-ellipsis-vertical" on:click|stopPropagation={(event) => openDropdown(user.id, event)}></i>
-                                    {#if user.id === userSidebarDropdown}
-                                        <div role="navigation" class="dropdown-menu show">
-                                        <a class="dropdown-item" href="#">Action</a>
-                                        <a class="dropdown-item" href="#">Another action</a>
-                                        <a class="dropdown-item" href="#">Something else here</a>
-                                        
-                                        {#if user.id !== userInfo.id && (groupInfo.creatorId === userInfo.id || (groupInfo.admins.some(admin => admin.id === userInfo.id) && user.id !== groupInfo.creatorId))}
-                                            <div class="dropdown-divider"></div>
-                                                <button class="dropdown-item" on:click|stopPropagation={null}>Kick</button>
-                                                <button class="dropdown-item" on:click|stopPropagation={null}>Ban</button>
-                                            
-                                        {/if}
+                                        <div class="d-flex flex-row">
+                                            <i class="dots fa-solid fa-ellipsis-vertical" on:click|stopPropagation={(event) => openDropdown(user.id, event)}></i>
+                                            {#if user.id === userSidebarDropdown}
+                                                <div role="navigation" class="dropdown-menu show">
+                                                    <a class="dropdown-item" href="#">View Info</a>
+                                                    {#if user.id !== userInfo.id && (groupInfo.creatorId === userInfo.id || (groupInfo.admins.some(admin => admin.id === userInfo.id) && user.id !== groupInfo.creatorId))}
+                                                        {#if groupInfo.creatorId === userInfo.id}
+                                                            <button class="dropdown-item" on:click|stopPropagation={() => transferOwnership(user.id)}>Transfer Ownership</button>
+                                                            {#if groupInfo.admins.some(admin => admin.id === user.id)}
+                                                                <button class="dropdown-item" on:click|stopPropagation={() => demoteUser(user.id)}>Demote to Member</button>
+                                                            {/if}
+                                                        {/if}
+                                                        <div class="dropdown-divider"></div>
+                                                        <button class="dropdown-item" on:click|stopPropagation={() => kickUser(user.id)}>Kick</button>
+                                                        <button class="dropdown-item" on:click|stopPropagation={null}>Ban</button>
+                                                    {/if}
+                                                </div>
+                                            {/if}
                                         </div>
-                                    {/if}
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    {/if}
-                    {/each}
-                </div>
+                            {/if}
+                        {/each}
+                        <h5>Group members: </h5>
+                        {#each groupInfo.users as user (user.id)}
+                            {#if !groupInfo.admins.some(admin => admin.id === user.id)}
+                                <div class="user-section">
+                                    <div role="navigation" class="user d-flex d-row align-items-center" 
+                                        on:focus="{() => isUserHovered = true}" 
+                                        on:mouseover="{() => isUserHovered = true}" 
+                                        on:blur="{() => isUserHovered = false}" 
+                                        on:mouseout="{() => isUserHovered = false}">
+                                        <div class="d-flex d-row align-items-center">
+                                            <img width="20px" height="20px" src={imageUrl} alt={user.userName} />
+                                            <p class="pb-0 mb-0">{user.userName}</p>
+                                        </div>
+                                        <div class="d-flex flex-row">
+                                            <i class="dots fa-solid fa-ellipsis-vertical" on:click|stopPropagation={(event) => openDropdown(user.id, event)}></i>
+                                            {#if user.id === userSidebarDropdown}
+                                                <div role="navigation" class="dropdown-menu show">
+                                                    <a class="dropdown-item" href="#">View Info</a>
+                                                    <div class="dropdown-divider"></div>
+                                                    {#if user.id !== userInfo.id && (groupInfo.creatorId === userInfo.id || (groupInfo.admins.some(admin => admin.id === userInfo.id) && user.id !== groupInfo.creatorId))}
+                                                        {#if groupInfo.creatorId === userInfo.id}
+                                                            <button class="dropdown-item" on:click|stopPropagation={() => transferOwnership(user.id)}>Transfer Ownership</button>
+                                                            {#if groupInfo.admins.some(admin => admin.id === user.id)}
+                                                                <button class="dropdown-item" on:click|stopPropagation={null}>Demote to Member</button>
+                                                            {/if}
+                                                        {/if}
+                                                        {#if groupInfo.creatorId === userInfo.id || groupInfo.admins.some(admin => admin.id === userInfo.id)}
+                                                            <button class="dropdown-item" on:click|stopPropagation={() => promoteUser(user.id)}>Promote to Admin</button>
+                                                        {/if}
+                                                        <div class="dropdown-divider"></div>
+                                                        <button class="dropdown-item" on:click|stopPropagation={() => kickUser(user.id)}>Kick</button>
+                                                        <button class="dropdown-item" on:click|stopPropagation={null}>Ban</button>
+                                                    {/if}
+                                                </div>
+                                            {/if}
+                                        </div>
+                                    </div>
+                                </div>
+                            {/if}
+                        {/each}
+                    </div>
                 {/if}
                 <div style="max-height:49rem; overflow-y: auto;" bind:this={scrollContainer}>
                     <div style="position: relative;overflow: hidden;max-width: 100%;padding: 8px 0.5em 0 1.5em;transition: height 200ms,background-color 200ms;word-wrap: break-word;">
@@ -292,9 +393,13 @@
                                     </button>
                                 </div>
                                 <div>
-                                    {#if item.content === 'UserJoined' || item.content === 'UserLeft'}
-                                        <p style="color: grey; font-style: italic;">
-                                            {item.userName} has {item.content === 'UserJoined' ? 'joined' : 'left'} the chat
+                                    {#if item.content === 'UserJoined' || item.content === 'UserLeft' || item.content === 'UserPromoted' || item.content === 'UserDemoted' || item.content === 'OwnershipTransferred'}
+                                        <p style="color: {item.content === 'UserPromoted' ? 'green' : item.content === 'UserDemoted' ? 'red' : item.content === 'OwnershipTransferred' ? 'yellow' : 'grey'}; font-style: italic;">
+                                            {item.userName} has {item.content === 'UserJoined' ? 'joined' : item.content === 'UserLeft' ? 'left' : item.content === 'UserPromoted' ? 'been promoted in' : item.content === 'UserDemoted' ? 'been demoted in' : 'transferred ownership in'} the chat
+                                        </p>
+                                    {:else if item.content === 'UserKicked'}
+                                        <p style="color: red; font-style: italic;">
+                                            {item.userName} has been kicked from the chat
                                         </p>
                                     {:else}
                                         <div class="message-header">
@@ -308,12 +413,14 @@
                                         <div class="message-body">                    
                                             <p>{item.content}</p>                                           
                                         </div>
-                                        {#if userInfo && item.userName === userInfo.userName}
-                                        <div class="message-actions">
-                                            <i class="icon-edit">✎</i>
-                                            <i class="icon-delete">✖</i>
-                                        </div>
-                                        {/if}
+                                        {#each chatItems as item (item.id)}
+                                            {#if userInfo && item.userName === userInfo.userName && !(item.content in ['UserJoined', 'UserLeft', 'UserPromoted', 'UserDemoted', 'UserKicked', 'OwnershipTransferred'])}
+                                                <div class="message-actions">
+                                                    <i class="icon-edit">✎</i>
+                                                    <i class="icon-delete">✖</i>
+                                                </div>
+                                            {/if}
+                                        {/each}
                                     {/if}
                                 </div>
                             </div>

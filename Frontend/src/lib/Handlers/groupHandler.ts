@@ -61,7 +61,7 @@ export async function fetchGroupInfo(groupId: string){
     }
 }
 
-export async function fetchGroupUsers(groupId: string){
+async function fetchGroupUsers(groupId: string){
     let token = await getToken();
     
     const response = await fetch(`${backendUrl}/group/getGroupUsers?chatId=${groupId}`, {
@@ -200,6 +200,80 @@ export async function handleDeleteGroup(chatId: string) {
         throw new Error(message);
     }
 
+    return response;
+}
+
+export async function handleKickUser(chatId: string, userId: number) {
+    const token = await getToken();
+
+    const response = await fetch(`${backendUrl}/group/kickUser/${chatId}/${userId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+    });
+
+    if (!response.ok) {
+        const message = `An error has occurred: ${response.status}`;
+        throw new Error(message);
+    }
+
+    return response;
+}
+
+export async function handlePromoteUser(chatId: string, userId: number){
+    const token = await getToken();
+    console.log(backendUrl)
+    const response = await fetch(`${backendUrl}/group/promoteUser/${chatId}/${userId}`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+    });
+
+    if (!response.ok) {
+        
+        const message = `An error has occurred: ${response.json()}`;
+        throw new Error(message);
+    }
+    return response;
+}
+
+export async function handleDemoteUser(chatId: string, userId: number){
+    const token = await getToken();
+    const response = await fetch(`${backendUrl}/group/demoteUser/${chatId}/${userId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+    });
+
+    if (!response.ok) {
+        
+        const message = `An error has occurred: ${response.json()}`;
+        throw new Error(message);
+    }
+    return response;
+}
+
+export async function handleTransferOwnership(chatId: string, userId: number){
+    const token = await getToken();
+    const response = await fetch(`${backendUrl}/group/transferOwnership/${chatId}/${userId}`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+    });
+
+    if (!response.ok) {
+        
+        const message = `An error has occurred: ${response.json()}`;
+        throw new Error(message);
+    }
     return response;
 }
 

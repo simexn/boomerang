@@ -13,7 +13,13 @@ namespace Backend.Models
         public enum EventType
         {
             UserJoined,
-            UserLeft
+            UserLeft,
+            UserKicked,
+            UserBanned,
+            UserPromoted,
+            UserDemoted,
+            OwnershipTransferred,
+            UserUnbanned
         }
 
         // Navigation properties

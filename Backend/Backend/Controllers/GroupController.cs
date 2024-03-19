@@ -1,4 +1,5 @@
-﻿using Backend.Data;
+﻿using System.Linq;
+using Backend.Data;
 using Backend.Hubs;
 using Backend.Models;
 using Microsoft.AspNetCore.Identity;
@@ -23,6 +24,27 @@ namespace Backend.Controllers
             _logger = logger;
             _userManager = userManager;
             _chat = chat;
+        }
+
+        [HttpGet("getGroupInfo")]
+        public async Task<IActionResult> GetGroupInfo([FromQuery] int chatId)
+        {
+            var chat = await _context.Chats
+                .Include(c => c.Users)
+                .ThenInclude(cu => cu.User)
+                .Include(c => c.Admins)
+                .ThenInclude(ca => ca.User)
+                .FirstOrDefaultAsync(c => c.Id == chatId);
+
+            if (chat == null)
+            {
+                return NotFound("Chat not found");
+            }
+
+            var users = chat.Users.Select(cu => cu.User).ToList();
+            var admins = chat.Admins.Select(ca => ca.User).ToList();
+
+            return new JsonResult(new { chat, users, admins });
         }
 
         [HttpPost("joinGroup")]
@@ -61,7 +83,6 @@ namespace Backend.Controllers
 
             return new JsonResult(new { chat });
         }
-
 
 
         [HttpDelete("leaveGroup/{chatId}")]
@@ -172,26 +193,7 @@ namespace Backend.Controllers
             return Ok();
         }
 
-        [HttpGet("getGroupInfo")]
-        public async Task<IActionResult> GetGroupInfo([FromQuery] int chatId)
-        {
-            var chat = await _context.Chats
-                .Include(c => c.Users)
-                .ThenInclude(cu => cu.User)
-                .Include(c => c.Admins)
-                .ThenInclude(ca => ca.User)
-                .FirstOrDefaultAsync(c => c.Id == chatId);
-
-            if (chat == null)
-            {
-                return NotFound("Chat not found");
-            }
-
-            var users = chat.Users.Select(cu => cu.User).ToList();
-            var admins = chat.Admins.Select(ca => ca.User).ToList();
-
-            return new JsonResult(new { chat, users, admins });
-        }
+        
 
         [HttpGet("getGroupUsers")]
         public async Task<IActionResult> GetGroupUsers([FromQuery] int chatId)
@@ -210,6 +212,206 @@ namespace Backend.Controllers
 
             return new JsonResult(new { users });
         }
+
+        [HttpDelete("kickUser/{chatId}/{userId}")]
+        public async Task<IActionResult> KickUser(int chatId, int userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            var chat = await _context.Chats
+                .Include(c => c.Users)
+                .Include(c=>c.Admins)
+                .FirstOrDefaultAsync(c => c.Id == chatId);
+
+            if (chat == null)
+            {
+                return NotFound("Chat not found");
+            }
+
+            var chatUser = chat.Users.FirstOrDefault(cu => cu.UserId == userId);
+            if (chatUser == null)
+            {
+                return NotFound("User not found in group");
+            }
+
+            chat.Users.Remove(chatUser);
+
+            var chatAdmin = chat.Admins.FirstOrDefault(ca => ca.UserId == userId);
+            if (chatAdmin != null)
+            {
+                chat.Admins.Remove(chatAdmin);
+            }
+
+
+            var chatEvent = new ChatEvent
+            {
+                UserId = userId,
+                ChatId = chat.Id,
+                Timestamp = DateTime.Now,
+                Event = ChatEvent.EventType.UserKicked
+            };
+
+            _context.ChatEvents.Add(chatEvent);
+
+            await _context.SaveChangesAsync();
+
+            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserKicked", user);
+
+            return Ok();
+        }
+
+        [HttpPost("promoteUser/{chatId}/{userId}")]
+        public async Task<IActionResult> PromoteUser(int chatId, int userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                _logger.LogError($"User with Id {userId} not found");
+                return NotFound("User not found");
+            }
+
+            var chat = await _context.Chats
+                .Include(c => c.Admins)
+                .FirstOrDefaultAsync(c => c.Id == chatId);
+
+            if (chat == null)
+            {
+                return NotFound("Chat not found");
+            }
+
+            var chatUser = chat.Users.FirstOrDefault(cu => cu.UserId == userId);
+            //if (chatUser == null)
+            //{
+            //    return new JsonResult("User not found in group");
+            //}
+
+            var chatAdmin = new ChatAdmin
+            {
+                UserId = userId,
+                ChatId = chat.Id
+            };
+
+            _context.ChatAdmins.Add(chatAdmin);
+
+            var chatEvent = new ChatEvent
+            {
+                UserId = userId,
+                ChatId = chat.Id,
+                Timestamp = DateTime.Now,
+                Event = ChatEvent.EventType.UserPromoted
+            };
+
+            _context.ChatEvents.Add(chatEvent);
+
+            await _context.SaveChangesAsync();
+
+            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserPromoted", user);
+
+            return Ok();
+        }
+
+        [HttpDelete("demoteUser/{chatId}/{userId}")]
+        public async Task<IActionResult> DemoteUser(int chatId, int userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            var chat = await _context.Chats
+                .Include(c => c.Admins)
+                .FirstOrDefaultAsync(c => c.Id == chatId);
+
+            if (chat == null)
+            {
+                return NotFound("Chat not found");
+            }
+
+            var chatAdmin = chat.Admins.FirstOrDefault(ca => ca.UserId == userId);
+            if (chatAdmin == null)
+            {
+                return NotFound("User not found in group");
+            }
+
+            chat.Admins.Remove(chatAdmin);
+
+            var chatEvent = new ChatEvent
+            {
+                UserId = userId,
+                ChatId = chat.Id,
+                Timestamp = DateTime.Now,
+                Event = ChatEvent.EventType.UserDemoted
+            };
+
+            _context.ChatEvents.Add(chatEvent);
+
+            await _context.SaveChangesAsync();
+
+            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserDemoted", user);
+
+            return Ok();
+        }
+
+        [HttpPost("transferOwnership/{chatId}/{userId}")]
+        public async Task<IActionResult> TransferOwnership(int chatId, int userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            var chat = await _context.Chats
+                .Include(c => c.Admins)
+                .FirstOrDefaultAsync(c => c.Id == chatId);
+
+            if (chat == null)
+            {
+                return NotFound("Chat not found");
+            }
+
+            var chatUser = chat.Users.FirstOrDefault(cu => cu.UserId == userId);
+            //if (chatUser == null)
+            //{
+            //    return NotFound("User not found in group");
+            //}
+
+            chat.CreatorId = userId;
+
+            var chatAdmin = chat.Admins.FirstOrDefault(ca => ca.UserId == userId);
+            if (chatAdmin == null)
+            {
+                var newAdmin = new ChatAdmin
+                {
+                    UserId = userId,
+                    ChatId = chat.Id
+                };
+                _context.ChatAdmins.Add(newAdmin);
+            }
+
+            var chatEvent = new ChatEvent
+            {
+                UserId = userId,
+                ChatId = chat.Id,
+                Timestamp = DateTime.Now,
+                Event = ChatEvent.EventType.OwnershipTransferred
+            };
+
+            _context.ChatEvents.Add(chatEvent);
+
+            await _context.SaveChangesAsync();
+
+            await _chat.Clients.Group(chatId.ToString()).SendAsync("OwnershipTransferred", user);
+
+            return Ok();
+        }
+
+
 
     }
 }

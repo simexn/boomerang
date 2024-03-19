@@ -592,3 +592,55 @@ GO
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240318150920_ChatItems'
+)
+BEGIN
+    CREATE TABLE [ChatEvents] (
+        [Id] int NOT NULL IDENTITY,
+        [Timestamp] datetime2 NOT NULL,
+        [Event] int NOT NULL,
+        [UserId] int NOT NULL,
+        [ChatId] int NOT NULL,
+        CONSTRAINT [PK_ChatEvents] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_ChatEvents_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE CASCADE,
+        CONSTRAINT [FK_ChatEvents_Chats_ChatId] FOREIGN KEY ([ChatId]) REFERENCES [Chats] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240318150920_ChatItems'
+)
+BEGIN
+    CREATE INDEX [IX_ChatEvents_ChatId] ON [ChatEvents] ([ChatId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240318150920_ChatItems'
+)
+BEGIN
+    CREATE INDEX [IX_ChatEvents_UserId] ON [ChatEvents] ([UserId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240318150920_ChatItems'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20240318150920_ChatItems', N'8.0.0');
+END;
+GO
+
+COMMIT;
+GO
+
