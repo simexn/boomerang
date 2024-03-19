@@ -263,7 +263,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20240129114100_init', N'8.0.0');
+    VALUES (N'20240129114100_init', N'8.0.3');
 END;
 GO
 
@@ -316,7 +316,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20240130085020_UpdatedModels', N'8.0.0');
+    VALUES (N'20240130085020_UpdatedModels', N'8.0.3');
 END;
 GO
 
@@ -359,7 +359,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20240223131108_PronounsAndChatCreator', N'8.0.0');
+    VALUES (N'20240223131108_PronounsAndChatCreator', N'8.0.3');
 END;
 GO
 
@@ -399,7 +399,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20240229155349_addedChatUser', N'8.0.0');
+    VALUES (N'20240229155349_addedChatUser', N'8.0.3');
 END;
 GO
 
@@ -457,7 +457,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20240307144857_InviteRoomCodeAdded', N'8.0.0');
+    VALUES (N'20240307144857_InviteRoomCodeAdded', N'8.0.3');
 END;
 GO
 
@@ -497,7 +497,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20240315130745_chatadmins', N'8.0.0');
+    VALUES (N'20240315130745_chatadmins', N'8.0.3');
 END;
 GO
 
@@ -585,7 +585,7 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20240315142126_chatadminsfix', N'8.0.0');
+    VALUES (N'20240315142126_chatadminsfix', N'8.0.3');
 END;
 GO
 
@@ -637,7 +637,39 @@ IF NOT EXISTS (
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20240318150920_ChatItems', N'8.0.0');
+    VALUES (N'20240318150920_ChatItems', N'8.0.3');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240319130615_UserKickedEvent'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20240319130615_UserKickedEvent', N'8.0.3');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240319142246_UserIdFixAttempt'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20240319142246_UserIdFixAttempt', N'8.0.3');
 END;
 GO
 

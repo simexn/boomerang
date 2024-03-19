@@ -46,6 +46,8 @@
         // await getGroupInfo();
         // await loadMessages();
 
+
+
         console.log("group info is:" + groupInfo)
         
         if(userInfo && groupInfo && userInfo.id == groupInfo.creatorId) {
@@ -207,9 +209,9 @@
                 connection.invoke('getConnectionId')
                 .then(async function(connectionId: string){
                     _connectionId = connectionId;
-                    await loadMessages();
-                    await getGroupInfo();
-                    await joinRoom();
+                     loadMessages();
+                     getGroupInfo();
+                     joinRoom();
                     await tick();
                     scrollContainer.scrollTop = scrollContainer.scrollHeight;
                 })

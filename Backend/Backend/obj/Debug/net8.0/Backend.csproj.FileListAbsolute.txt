@@ -140,3 +140,9 @@ C:\Users\sbuha\Desktop\Undertale.v1.08-SiMPLEX\diplomna rabota\Backend\Backend\o
 C:\Users\sbuha\Desktop\Undertale.v1.08-SiMPLEX\diplomna rabota\Backend\Backend\obj\Debug\net8.0\ref\Backend.dll
 C:\Users\sbuha\Desktop\Undertale.v1.08-SiMPLEX\diplomna rabota\Backend\Backend\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\sbuha\Desktop\Undertale.v1.08-SiMPLEX\diplomna rabota\Backend\Backend\obj\Debug\net8.0\Backend.sourcelink.json
+C:\Users\sbuha\Desktop\Undertale.v1.08-SiMPLEX\diplomna rabota\Backend\Backend\bin\Debug\net8.0\Microsoft.AspNetCore.Cryptography.Internal.dll
+C:\Users\sbuha\Desktop\Undertale.v1.08-SiMPLEX\diplomna rabota\Backend\Backend\bin\Debug\net8.0\Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
+C:\Users\sbuha\Desktop\Undertale.v1.08-SiMPLEX\diplomna rabota\Backend\Backend\bin\Debug\net8.0\Microsoft.Extensions.FileProviders.Embedded.dll
+C:\Users\sbuha\Desktop\Undertale.v1.08-SiMPLEX\diplomna rabota\Backend\Backend\bin\Debug\net8.0\Microsoft.Extensions.Identity.Core.dll
+C:\Users\sbuha\Desktop\Undertale.v1.08-SiMPLEX\diplomna rabota\Backend\Backend\bin\Debug\net8.0\Microsoft.Extensions.Identity.Stores.dll
+C:\Users\sbuha\Desktop\Undertale.v1.08-SiMPLEX\diplomna rabota\Backend\Backend\bin\Debug\net8.0\Microsoft.Extensions.Options.dll

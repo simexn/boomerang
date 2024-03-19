@@ -7,5 +7,18 @@ by editing this MSBuild file. In order to learn more about this please visit htt
   <PropertyGroup>
     <TimeStampOfAssociatedLegacyPublishXmlFile />
     <EncryptedPassword />
+    <_PublishTargetUrl>ftp://win5146.site4now.net:21/site1</_PublishTargetUrl>
+    <History>False|2024-03-19T15:47:21.8612936Z;False|2024-03-19T17:46:15.3100036+02:00;False|2024-03-19T17:45:37.4125786+02:00;False|2024-03-19T17:44:10.6805253+02:00;</History>
+    <LastFailureDetails />
   </PropertyGroup>
+  <ItemGroup>
+    <DestinationConnectionStrings Include="DefaultConnection">
+      <Value>Data Source=SQL5110.site4now.net%3bInitial Catalog=db_aa6814_boomerang%3bUser Id=db_aa6814_boomerang_admin%3bPassword=boomerang1</Value>
+    </DestinationConnectionStrings>
+  </ItemGroup>
+  <ItemGroup>
+    <EFMigrations Include="Backend.Data.ApplicationDbContext">
+      <Value>Data Source=SQL5110.site4now.net%3bInitial Catalog=db_aa6814_boomerang%3bUser Id=db_aa6814_boomerang_admin%3bPassword=boomerang1</Value>
+    </EFMigrations>
+  </ItemGroup>
 </Project>
