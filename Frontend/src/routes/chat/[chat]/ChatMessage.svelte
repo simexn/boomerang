@@ -27,21 +27,23 @@
         isEditing.set(null);
     }
 
+    async function cancelEdit(id: number) {
+        isEditing.set(null);
+        chatItems.map(item => item.id === id ? item.content = originalMessage : item);
+    }
     
     async function deleteMessage(id: number) {
         await handleDeleteMessage(chatId, id);
     }
-
-    
-    
 </script>
-<div class="messages-container" style="height: 47rem; overflow-y: auto;" bind:this={scrollContainer}>
+
+<div class="messages-container" bind:this={scrollContainer}>
     {#each chatItems as item}
         <div class="message" style="display: flex; align-items: start;">
             {#if item.isEvent}
                 <EventMessage {item} />
             {:else}
-                <UserMessage {item} {imageUrl} {userInfo} {isEditingMessage} {deleteMessage} {confirmEdit} {isEditing} />
+                <UserMessage {item} {imageUrl} {userInfo} {isEditingMessage} {deleteMessage} {confirmEdit} {cancelEdit} {isEditing} />
             {/if}
         </div>
     {/each}
@@ -49,14 +51,15 @@
 
 <style>
 .messages-container{
-    
-    padding: 8px 0.5em 0 1.5em;
+    display: flex;
+    flex-direction: column;
     word-wrap: break-word;
     padding: 0 0 0 5px;
-    margin: 0 auto;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    box-sizing: border-box;
     overflow: auto;
-    height: 100%;
-
 }
 .message {
     transition: background-color 100ms;

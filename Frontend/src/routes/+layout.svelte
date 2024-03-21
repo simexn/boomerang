@@ -19,17 +19,17 @@
 <style>
     .container-fluid {
         box-sizing: border-box;
-        
         padding:0;
         display: flex;
         flex-direction: column;
         height: 100vh;
-        
+        overflow: hidden;
     }
         main {
-            flex-grow: 1;
+            height:100%;
             display: flex;
             flex-direction: row;
+            overflow: hidden;
         }
             nav{
                 background-color: var(--prim);

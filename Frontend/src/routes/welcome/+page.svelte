@@ -1,17 +1,80 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
     import { handleAccountRegister, handleAccountLogin } from '$lib/Handlers/accountHandler';
+    import { fade } from 'svelte/transition';
 
     let isLoginForm = false;
+    let accountRegistered = false;
     let username = '';
+    const usernameRegex = /^[a-zA-Z][a-zA-Z0-9]{0,3}$/;
     let email = '';
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     let password = '';
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
     let confirmPassword = '';
     let birthDate = '';
     let pronouns = '';
-    console.log(import.meta.env.VITE_BACKEND_URL);
 
-    async function handleSubmit(event: Event) {
+    let usernameMessage = '';
+    let emailMessage = '';
+    let passwordMessage = '';
+    let confirmPasswordMessage = '';
+    $: {
+        if (username.length === 0) {
+            usernameMessage = '';
+        } else if (!/^[a-zA-Z]/.test(username)) {
+            usernameMessage = 'Username must start with a letter.';
+        } else if (!/^[a-zA-Z0-9]*$/.test(username)) {
+            usernameMessage = 'Username can have only letters and numbers.';
+        }else if (username.length > 20) {
+            usernameMessage = 'Username too long.';
+        } else if(username.length < 4){
+            usernameMessage = 'Username must be at least 4 characters long.';
+        } else {
+            usernameMessage = '';
+        }
+    }
+
+    $: {
+        if (email.length === 0) {
+            emailMessage = '';
+        } else if (!emailRegex.test(email)) {
+            emailMessage = 'Invalid email address.';
+        } else {
+            emailMessage = '';
+        }
+    }
+    $: {
+        if (password.length === 0) {
+            passwordMessage = '';
+        } else if (!passwordRegex.test(password)) {
+            passwordMessage = 'Password must contain at least 6 characters, one uppercase letter, one number and one special character.';
+        } else {
+            passwordMessage = '';
+        }
+    }
+    $: {
+        if (confirmPassword.length === 0) {
+            confirmPasswordMessage = '';
+        } else if (confirmPassword !== password) {
+            confirmPasswordMessage = 'Passwords do not match.';
+        } else {
+            confirmPasswordMessage = '';
+        }
+    }
+    let submittable = false;
+    $: {
+        if (usernameMessage === '' && emailMessage === '' && passwordMessage === '' && confirmPasswordMessage === '' && username !== '' && email !== '' && password !== '' && confirmPassword !== '') {
+            submittable = false;
+        } else {
+            submittable = true;
+        }
+
+    }
+
+
+    console.log(import.meta.env.VITE_BACKEND_URL);
+    async function userRegister(event: Event) {
         event.preventDefault();
         const formData = { 
             username, 
@@ -22,73 +85,156 @@
             pronouns
 
         };
-
-        const response = isLoginForm ? await handleAccountLogin(formData) : await handleAccountRegister(formData);
+        const response = await handleAccountRegister(formData);
 
         // If the operation was successful, redirect the user to another page
         if (response.ok) {
-            console.log("button pressed");
+            accountRegistered = true;
         }
     }
 
+    async function userLogin(event: Event) {
+        event.preventDefault();
+        const formData = { 
+            email, 
+            password
+        };
+        const response = await handleAccountLogin(formData);
+
+        // If the operation was successful, redirect the user to another page
+        if (response.ok) {
+           
+        }
+        
+    }
     function switchForm() {
         isLoginForm = !isLoginForm;
     }
 </script>
 
 <div class="wrap">
-    <div class="center">
-        <h1>Добре дошли в Бумеранг</h1>
-        <p>където думите пътуват и се връщат!</p>
-        <button on:click={switchForm}>
-             {isLoginForm ? 'Нуждаете се от регистрация?' : 'Имате регистрация?'}
-        </button>
-        <form class="account-form" on:submit={handleSubmit} method="POST">
-            {#if !isLoginForm}
-                <div class="form-group">
-                    <label for="username">Потребителско име</label>
-                    <input name="username" bind:value={username}>
+    <div class="body">        
+        <div class="site-info">
+            <h1>Boomerangr</h1>
+            <p>Where words travel and return!
+                Register an account to start chatting, or login if you already have one
+            </p>
+        </div>
+        <div class="account-form">
+            <div class="card shadow-2-strong card-registration" style="border-radius: 15px;">
+                <div class="d-flex flex-row justify-content-evenly w-100">
+                    <h3 class="form-type-register w-50 h-50 text-center mb-4  pb-md-0 mb-md-5" class:active={!isLoginForm} on:click={() => isLoginForm = false}>Register</h3>
+                    <h3 class="form-type-login w-50 h-50 text-center pb-md-0 mb-md-5" class:active={isLoginForm} on:click={() => isLoginForm = true}>Login</h3>
                 </div>
-            {/if}
-            <div class="form-group">
-                <label for="email">Имейл</label>
-                <input type="email" name="email" bind:value={email}>
-            </div>
-            <div class="form-group">
-                <label for="password">Парола</label>
-                <input type="password" name="password" bind:value={password}>
-            </div>
-            {#if !isLoginForm}
-                <div class="form-group">
-                    <label for="confirmPassword">Потвърди парола</label>
-                    <input name="confirmPassword" bind:value={confirmPassword}>
-                </div>
-                <div class="form-group">
-                    <label for="birthDate">Дата на раждане</label>
-                    <input type="date" name="birthDate" bind:value={birthDate}>
-                </div>
-                <div class="form-group" style="height:fit-content; padding:0.3rem 0.75rem;">
-                    <span>Как да се обръщаме към вас?</span>
-                    <div>
-                        <input type="radio" name="gender" value="male" bind:group={pronouns}>
-                        <label for="male">Той / него</label>
+                <div class="card-body p-4 p-md-5">
+                    
+                    {#if !isLoginForm}
+                    <form in:fade={{ duration: 500 }} on:submit={userRegister}>        
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+        
+                        <div class="form-outline">
+                            <input type="text" class:red-outline={usernameMessage != ""} id="firstName" bind:value={username} class="form-control form-control-lg" />
+                            <label class="form-label" for="firstName">Username</label>
+                            <p class="text-danger" style="font-size:.6rem"><i>{usernameMessage}</i></p>
+                        </div>
+        
+                        </div>
+                        <div class="col-md-6 mb-4">
+        
+                        <div class="form-outline">
+                            <input type="text" class:red-outline={emailMessage != ""} id="lastName" bind:value={email} class="form-control form-control-lg" />
+                            <label class="form-label" for="lastName">E-mail</label>
+                            <p class="text-danger" style="font-size:.6rem"><i>{emailMessage}</i></p>
+                        </div>
+        
+                        </div>
                     </div>
-                    <div>
-                        <input type="radio" name="gender" value="female" bind:group={pronouns}>
-                        <label for="female">Тя / нея</label>
+                    <div class="row">
+                        <div class="col-md-6 mb-4 d-flex align-items-center">
+                        <div class="form-outline datepicker w-100">
+                            <input type="text" class="form-control form-control-lg" id="birthdayDate" />
+                            <label for="birthdayDate" class="form-label">Birthday</label>
+                        </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                        <h6 class="mb-2 pb-1">Gender: </h6>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="femaleGender"
+                            value="female" checked />
+                            <label class="form-check-label" for="femaleGender">Female</label>
+                        </div>
+        
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="maleGender"
+                            value="male" />
+                            <label class="form-check-label" for="maleGender">Male</label>
+                        </div>
+        
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="otherGender"
+                            value="other" />
+                            <label class="form-check-label" for="otherGender">Other</label>
+                        </div>
+        
+                        </div>
                     </div>
-                    <div>
-                        <input type="radio" name="gender" value="other" bind:group={pronouns}>
-                        <label for="other">Предпочитам да не посочвам</label>
-                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-4 pb-2">
+                        <div class="form-outline">
+                            <input type="password" class:red-outline={passwordMessage != ""} id="emailAddress" bind:value={password} class="form-control form-control-lg" />
+                            <label class="form-label" for="emailAddress">Password</label>
+                            <p class="text-danger" style="font-size:.6rem"><i>{passwordMessage}</i></p>
+                        </div>
+                        </div>
+                        <div class="col-md-6 mb-4 pb-2">
+                        <div class="form-outline">
+                            <input type="password" class:red-outline={confirmPasswordMessage != ""} id="phoneNumber" bind:value={confirmPassword} class="form-control form-control-lg" />
+                            <label class="form-label" for="phoneNumber">Confirm Password</label>
+                            <p class="text-danger" style="font-size:.6rem"><i>{confirmPasswordMessage}</i></p>
+                        </div>
+                        </div>
+                    </div>    
+                    {#if (accountRegistered)}
+                    <div class="alert alert-success" role="alert">
+                        Account registered successfully!
+                      </div>
+                    {/if}
+                    <div class="mt-2 pt-2">
+                        <input class="btn btn-primary btn-lg" type="submit" value="Submit" disabled={submittable}/>
+                    </div>     
+                    </form>
+                    {:else}
+                    <form on:submit={userLogin}>        
+                        <div>
+                            <div class="mb-4">
+            
+                            <div class="form-outline">
+                                <input type="text" id="firstName" bind:value={username} class="form-control form-control-lg" />
+                                <label class="form-label" for="firstName">Username</label>
+                            </div>
+                            <div class="form-outline">
+                                <input type="password" id="emailAddress" bind:value={password} class="form-control form-control-lg" />
+                                <label class="form-label" for="emailAddress">Password</label>
+                            </div>
+                        </div>
+                        <div class="mt-2 pt-2">
+                            <input class="btn btn-primary btn-lg" type="submit" value="Submit" />
+                        </div>
+                    </form>
+                    {/if}
                 </div>
-            {/if}
-            <button type="submit">{isLoginForm ? 'Влез' : 'Създай профил'}</button>
-        </form>
+            </div>        
+        </div>          
     </div>
 </div>
 
 <style>
+    .red-outline{
+        border-color: red !important;
+        box-shadow: 0 0 0 0.25rem rgba(255,0,0,.25) !important;
+        transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    }
     .wrap{
         width: 100%;
         height: 100%;
@@ -97,18 +243,64 @@
         justify-content: center;
         background: linear-gradient(to top, var(--prim), var(--bg));
     }
-        .center{
+    .body {
             display: flex;
             flex-direction: column;
+        }
+    @media only screen and (min-width: 992px){
+        .body{
+            margin: auto;
+            
+            display: flex;
+            flex-direction: row;
+            
+           
+            
+        }
+    }
+        .card-body{
+            padding-top:0 !important;
+        }
+        .site-info{
+            word-wrap: break-word;
+            width: 100%;
+            line-height: 1.2;
+            justify-content: center;
+            align-items: center;
+            
+        }
+        .account-form{
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
         }
-            .account-form{
-                width: 45rem;
-                background: linear-gradient(to top, var(--prim-tp), var(--sec-tp));
-                backdrop-filter: blur(10px);
-                border-radius: 8px 8px 0 8px;
-                padding:1rem;
-                position: relative;
+            .site-info h1{
+                font-size: 6rem;
+                color: var(--prim-tp);
+            }
+            .site-info p{
+                font-family: "Open Sans",sans-serif;
+                font-style: normal;
+                font-weight: 400;
+                font-size: 1.2rem;
+                line-height: 28px;
+                color: var(--portal-denim-72);
+                margin-bottom: 2rem;
+                text-align: unset;
+            }
+            .form-type-register{
+                border-top-left-radius: 15px;
+                cursor: pointer;
+            }
+            .form-type-login{
+                border-top-right-radius: 15px;
+                cursor: pointer;
+            }
+            .account-form .active{
+                background-color: var(--prim-tp);
+                transition: background-color 0.5s;
             }
                 .form-group{
                     position:relative;
@@ -131,6 +323,10 @@
                         border:none;
                         border-radius: 6px;
                     }
+                .account-form{
+                    size-adjust: auto;
+                    background-color: none;
+                } 
                 .account-form > button{
                     position:absolute;
                     width:8rem;
@@ -139,5 +335,11 @@
                     right: 0;
 
                 }
+
+                .card{
+                    height:36rem;
+                    width: 40rem;   
+                }
+        
 
 </style>

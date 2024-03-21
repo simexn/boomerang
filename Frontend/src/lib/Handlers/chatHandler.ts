@@ -57,7 +57,7 @@ export async function fetchMessages(chatId: string){
                 };
             });
     
-            console.log(chatItems);
+            
             return chatItems;
         } else {
             const chatItems: ChatItem[] = await data.chatItems.map((item: any) => ({

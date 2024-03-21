@@ -94,6 +94,8 @@ export async function handleAccountLogin(formData:{email: string, password: stri
     });
 
     if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error data:', errorData);
         throw new Error(response.statusText);
     }
 

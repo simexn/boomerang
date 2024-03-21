@@ -22,6 +22,7 @@
         }
     }
 </script>
+
 <div class="chat-header d-flex justify-content-between align-items-center p-3 border-bottom">
     <div>
         <h3>{groupInfo?.name}</h3>
@@ -37,15 +38,16 @@
 
 <style>
     .chat-header{
-    position: relative;
-    z-index: 15;
-    width: 100%;
-    height:100%;
-    flex: 0 0 63px;
-    border-bottom: 1px solid rgba(var(--center-channel-color-rgb), 0.12);
-    background: var(--center-channel-bg);
-    font-size: 14px;
-}
+        position: relative;
+        z-index: 15;
+        width: 100%;
+        min-height: 7rem;
+        height: 7rem;
+        border-bottom: 1px solid rgba(var(--center-channel-color-rgb), 0.12);
+        background: var(--center-channel-bg);
+        font-size: 14px;
+        box-sizing: border-box;
+    }
     .chat-header h3{
         margin-bottom:2px;
     }

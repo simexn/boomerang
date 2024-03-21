@@ -16,10 +16,12 @@
     let newGroupName: string;
     let inviteCode: string;
     let activeChatId: any = null;
+    
 
     export let chats: any =[];
     
     onMount(async() => {
+        
         chats = await fetchChats();
         activeChatId = Number(sessionStorage.getItem('activeChatId'));
     });
@@ -65,7 +67,7 @@
     }
 </script>
 
-<div style=" display:flex; flex-direction:row;">
+<div class="snd-layout-wrapper">
     <div class="sidebar d-flex flex-column flex-shrink-0 p-3 text-white">
         <div class="d-flex flex-row">
             <button class="dropdown-button" on:click={() => groupDropdownActive = !groupDropdownActive}><span>Groups
@@ -160,6 +162,13 @@
 {/if}
 
     <style>
+        .snd-layout-wrapper {
+            display:flex;
+            flex-direction:row;
+            overflow: hidden !important;
+            height: 100% !important;
+            max-height: 100% !important;
+        }
         .modal {                                              
             background-color: rgba(0, 0, 0, 0.5);
             display: flex;

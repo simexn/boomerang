@@ -306,22 +306,15 @@
 
 
 <svelte:window on:click={closeDropdown} />
+
 {#if ready}
-<div class="chat-container d-flex flex-column container-fluid">
-    <div style="height: 8%;">    
-        <ChatHeader {groupInfo} bind:isUsersSidebarOpen {isCreator} {chatId} />
-    </div>
-    <div id="chatBody" class="d-flex flex-column" style="height:87.4%;">
-        <div>            
-            {#if isUsersSidebarOpen}
-                <UserSidebar {groupInfo} {userSidebarDropdown} {userInfo} {imageUrl} {chatId}/>
-            {/if}           
-            <div>   
-                <ChatMessage {chatId} {chatItems} {userInfo} {imageUrl} bind:scrollContainer/>
-            </div>            
-        </div>   
-    </div>
-    <div class="chat-footer" style="height:6.6%;max-width: {isUsersSidebarOpen ? 'calc(100% - 300px)' : '100%'};" >
+<div class="chat-container d-flex flex-column container-fluid">   
+    <ChatHeader {groupInfo} bind:isUsersSidebarOpen {isCreator} {chatId} />       
+    {#if isUsersSidebarOpen}
+        <UserSidebar {groupInfo} {userSidebarDropdown} {userInfo} {imageUrl} {chatId}/>
+    {/if}           
+    <ChatMessage {chatId} {chatItems} {userInfo} {imageUrl} bind:scrollContainer/>  
+    <div class="chat-footer" style="min-height:6rem; height:6rem;" >
         <ul class="list-unstyled">
             <li class="bg-white mb-3">
                 <div class="d-flex">
@@ -330,7 +323,7 @@
                 </div>
             </li> 
         </ul>
-    </div>
+    </div>  
 </div>
 {/if}
 
@@ -340,27 +333,10 @@
     .chat-container{
         padding: 0;
         height:100%;
-        
+        box-sizing: border-box;
     }
-    .chat-body-container{
-    flex-grow: 1;
-    display: flex;
-    overflow: auto; /* add scrolling if the content overflows */
-}
-
-
-
-
-
-
-    
-.chat-footer{
-    overflow-y: auto; 
-    margin-left: 5px;
-    margin-right:5px;
-}
-
-
-
- 
+    .chat-footer{
+        margin-left: 5px;
+        margin-right:5px;
+    } 
 </style>
