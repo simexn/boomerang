@@ -65,9 +65,9 @@
     }
 </script>
 
-<div style="width: 100%; box-sizing:border-box; display:flex; flex-direction:row;">
-    <div class="sidebar d-flex flex-column flex-shrink-0 p-3 text-white" style="width: 280px; box-sizing:border-box">
-        <div class="d-flex flex-row align-items-center">
+<div style=" display:flex; flex-direction:row;">
+    <div class="sidebar d-flex flex-column flex-shrink-0 p-3 text-white">
+        <div class="d-flex flex-row">
             <button class="dropdown-button" on:click={() => groupDropdownActive = !groupDropdownActive}><span>Groups
             <i class="fa fa-caret-right" class:rotate={groupDropdownActive}></i></span></button>
             <div class="add-group-button-wrap">
@@ -89,7 +89,7 @@
         {/if}
         <hr class="mt-1" style="padding: 0; margin:0; width:100%">
     </div>
-    <div style="display: flex; flex-direction:column; width:100%; height:100%; box-sizing:border-box">
+    <div class="chat-content">
         <slot/>
     </div>
 </div>
@@ -167,7 +167,6 @@
             align-items: center;
             z-index: 1000;
         }
-
             .modal-content{
                 width: 20rem;
             }
@@ -187,14 +186,18 @@
             .invalid-feedback{
                 display: block;
             }
-
             .btn.active {
                     background-color: blue; /* Change this to your preferred color */
                     color: white; /* Change this to your preferred color */
                 }
+        .chat-content{
+            width: 100vw;
+            height: 100%;
+        }
         .sidebar{
             background-color: var(--sec);
             padding-top:0 !important;
+            width: 15rem;
             
         }
         .sidebar-group{

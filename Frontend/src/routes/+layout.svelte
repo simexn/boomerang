@@ -6,7 +6,7 @@
 </script>
     
 
-<div class="app">
+<div class="container-fluid">
     <nav class="navbar navbar-expand-lg navbar-light">
         <a class="navbar-brand" href="/">Boomerangr</a>
     </nav>  
@@ -17,14 +17,14 @@
 
 
 <style>
-    .app {
+    .container-fluid {
         box-sizing: border-box;
-        margin:0;
+        
         padding:0;
         display: flex;
         flex-direction: column;
         height: 100vh;
-        width:100vw;
+        
     }
         main {
             flex-grow: 1;

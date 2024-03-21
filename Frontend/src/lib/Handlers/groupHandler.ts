@@ -278,4 +278,31 @@ export async function handleTransferOwnership(chatId: string, userId: number){
 }
 
 
+export async function handleGroupUpdate(formData: {chatId: string, newGroupName: string, inviteCode: string}) {
+    let token = await getToken();
+    
+    const requestBody = JSON.stringify(formData);
+
+    const response = await fetch(`${backendUrl}/group/updateGroup`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: requestBody 
+    });
+
+    if (response.ok){
+        var chats = await fetchChats();
+        return chats;
+    }
+    if (!response.ok) {
+        return response.text().then(text => { throw new Error(text) });
+    }
+
+    const data = await response.text();
+}
+
+
 

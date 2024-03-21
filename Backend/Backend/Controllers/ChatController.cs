@@ -123,7 +123,10 @@ namespace Backend.Controllers
                     Id = m.Id,
                     Content = m.Text,
                     Timestamp = m.Timestamp,
-                    UserName = m.FromUser.UserName
+                    UserName = m.FromUser.UserName,
+                    IsEdited = m.IsEdited,
+                    IsDeleted = m.IsDeleted
+                    
                 })
                 .ToListAsync();
 
@@ -135,7 +138,8 @@ namespace Backend.Controllers
                     Content = e.Event.ToString(),
                     Timestamp = e.Timestamp,
                     UserName = e.User.UserName,
-                    EventType = e.Event.ToString()
+                    EventType = e.Event.ToString(),
+                    IsEvent = true
                 })
                 .ToListAsync();
 
@@ -170,13 +174,41 @@ namespace Backend.Controllers
                 ChatId = Int32.Parse(requestBody[1]),
                 Text = requestBody[0],
                 FromUserId = user.Id,
-                Timestamp = DateTime.Now
+                Timestamp = DateTime.Now,
+                IsEdited = false,
+                IsDeleted = false
+                
             };
 
             _context.Messages.Add(Message);
             await _context.SaveChangesAsync();
 
             await _chat.Clients.Group(requestBody[2]).SendAsync("ReceiveMessage", Message);
+            return Ok();
+        }
+
+        [HttpPost("editMessage/{chatId}/{messageId}/{newContent}")]
+        public async Task<IActionResult> EditMessage(string chatId, string messageId, string newContent)
+        {
+            var message = await _context.Messages.FirstOrDefaultAsync(m => m.Id == Int32.Parse(messageId));
+            message.Text = newContent;
+            message.IsEdited = true;
+            _context.Update(message);
+            await _context.SaveChangesAsync();
+
+            await _chat.Clients.Group(chatId).SendAsync("EditedMessage", message);
+            return Ok();
+        }
+
+        [HttpPost("deleteMessage/{chatId}/{messageId}")]
+        public async Task<IActionResult> DeleteMessage(string chatId, string messageId)
+        {
+            var message = await _context.Messages.FirstOrDefaultAsync(m => m.Id == Int32.Parse(messageId));
+            message.IsDeleted = true;
+            _context.Update(message);
+            await _context.SaveChangesAsync();
+
+            await _chat.Clients.Group(chatId).SendAsync("DeletedMessage", message);
             return Ok();
         }
 

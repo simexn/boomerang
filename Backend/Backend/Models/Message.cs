@@ -16,6 +16,9 @@ namespace Backend.Models
         [Required]
         public DateTime Timestamp { get; set; }
 
+        public bool IsEdited { get; set; }
+        public bool IsDeleted { get; set; }
+
         public int ChatId { get; set; }
         public Chat Chat { get; set; }
     }

@@ -78,7 +78,7 @@ namespace Backend.Controllers
 
             await _context.SaveChangesAsync();
 
-            
+
             await _chat.Clients.Group(chat.Id.ToString()).SendAsync("UserJoined", user);
 
             return new JsonResult(new { chat });
@@ -193,7 +193,7 @@ namespace Backend.Controllers
             return Ok();
         }
 
-        
+
 
         [HttpGet("getGroupUsers")]
         public async Task<IActionResult> GetGroupUsers([FromQuery] int chatId)
@@ -224,7 +224,7 @@ namespace Backend.Controllers
 
             var chat = await _context.Chats
                 .Include(c => c.Users)
-                .Include(c=>c.Admins)
+                .Include(c => c.Admins)
                 .FirstOrDefaultAsync(c => c.Id == chatId);
 
             if (chat == null)
@@ -367,6 +367,7 @@ namespace Backend.Controllers
             }
 
             var chat = await _context.Chats
+                .Include(c => c.Users)
                 .Include(c => c.Admins)
                 .FirstOrDefaultAsync(c => c.Id == chatId);
 
@@ -376,10 +377,10 @@ namespace Backend.Controllers
             }
 
             var chatUser = chat.Users.FirstOrDefault(cu => cu.UserId == userId);
-            //if (chatUser == null)
-            //{
-            //    return NotFound("User not found in group");
-            //}
+            if (chatUser == null)
+            {
+                return NotFound("User not found in group");
+            }
 
             chat.CreatorId = userId;
 
