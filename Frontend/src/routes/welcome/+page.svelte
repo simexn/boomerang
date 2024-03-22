@@ -108,7 +108,7 @@
             registerError = true;
             registerErrorMessage = 'Email already exists.';
         }
-        else if (response.accountRegistered) {
+        else if (response.accountRegistered ) {
             accountRegistered = true;
         }
         

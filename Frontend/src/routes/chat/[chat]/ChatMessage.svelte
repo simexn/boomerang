@@ -64,7 +64,6 @@
 .message {
     transition: background-color 100ms;
     position:relative;
-    flex-grow: 1;
     padding-left: 1rem;
 }
 

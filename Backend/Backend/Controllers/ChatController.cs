@@ -29,6 +29,11 @@ namespace Backend.Controllers
             _chat = chat;
         }
 
+        private async Task<bool> IsUserInChat(int userId, int chatId)
+        {
+            return await _context.ChatUsers.AnyAsync(cu => cu.UserId == userId && cu.ChatId == chatId);
+        }
+
         [HttpGet("getAllChats")]
         public async Task<IActionResult> GetAllChats()
         {
@@ -116,6 +121,12 @@ namespace Backend.Controllers
         [HttpGet("getMessages")]
         public async Task<IActionResult> GetMessages([FromQuery] int chatId)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || !(await IsUserInChat(user.Id, chatId)))
+            {
+                return Unauthorized();
+            }
+
             var messages = await _context.Messages
                 .Where(m => m.ChatId == chatId)
                 .Select(m => new ChatItem
