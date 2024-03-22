@@ -48,6 +48,18 @@ namespace Backend.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterInput model)
         {
+            var existingUser = await _userManager.FindByNameAsync(model.UserName); 
+            if (existingUser != null)
+            {
+                return new JsonResult ( new {userExists=true});
+            }
+
+            existingUser = await _userManager.FindByEmailAsync(model.Email);
+            if (existingUser != null)
+            {
+                return new JsonResult ( new {emailExists=true});
+            }
+
             _logger.LogInformation(model.Password);
             var user = new ApplicationUser
             {
@@ -71,7 +83,7 @@ namespace Backend.Controllers
             };
             Response.Cookies.Append("token", token, cookieOptions);
 
-            return new JsonResult(new { token });
+            return new JsonResult(new { accountRegistered = true });
         }
     }
 

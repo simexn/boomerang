@@ -36,10 +36,10 @@ namespace Backend.Controllers
                 return BadRequest(ModelState);
             }
 
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var user = await _userManager.FindByEmailAsync(model.UsernameEmail) ?? await _userManager.FindByNameAsync(model.UsernameEmail);
             if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
             {
-                return Unauthorized();
+                return new JsonResult (new {invalidCredentials = true});
             }
 
             var token = await _tokenService.GenerateToken(user);

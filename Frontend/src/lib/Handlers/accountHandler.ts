@@ -77,12 +77,12 @@ export async function handleAccountRegister(formData: { username: string, email:
         return response.text().then(text => { throw new Error(text) });
     }
 
-    const data = await response.text();
+    const data = await response.json();
     
-    return response;
+    return data;
 }
 
-export async function handleAccountLogin(formData:{email: string, password: string}) {
+export async function handleAccountLogin(formData:{usernameEmail: string, password: string}) {
     const requestBody = JSON.stringify(formData);
     const response = await fetch(`${backendUrl}/auth/login`, {
         method: 'POST',
@@ -100,9 +100,9 @@ export async function handleAccountLogin(formData:{email: string, password: stri
     }
 
     const data = await response.json();
-
-    document.cookie = `token=${data.token};path=/;Secure;SameSite=Strict;`;
-    window.location.href = '/chat/home'; // Redirect to home page
-
-    return response;
+    if (data.token){
+        document.cookie = `token=${data.token};path=/;Secure;SameSite=Strict;`;
+    }
+   
+    return data;
 }

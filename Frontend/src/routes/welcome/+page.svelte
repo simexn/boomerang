@@ -5,23 +5,28 @@
 
     let isLoginForm = false;
     let accountRegistered = false;
+    let registerError = false;
+    let registerErrorMessage: string;
+    let loginError = false;
+    let loginErrorMessage: string;
     let username = '';
     const usernameRegex = /^[a-zA-Z][a-zA-Z0-9]{0,3}$/;
     let email = '';
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    let usernameEmail: string;
     let password = '';
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
     let confirmPassword = '';
     let birthDate = '';
     let pronouns = '';
 
-    let usernameMessage = '';
-    let emailMessage = '';
-    let passwordMessage = '';
-    let confirmPasswordMessage = '';
+    let usernameMessage = ' ';
+    let emailMessage = ' ';
+    let passwordMessage = ' ';
+    let confirmPasswordMessage = ' ';
     $: {
         if (username.length === 0) {
-            usernameMessage = '';
+            usernameMessage = ' ';
         } else if (!/^[a-zA-Z]/.test(username)) {
             usernameMessage = 'Username must start with a letter.';
         } else if (!/^[a-zA-Z0-9]*$/.test(username)) {
@@ -31,40 +36,47 @@
         } else if(username.length < 4){
             usernameMessage = 'Username must be at least 4 characters long.';
         } else {
-            usernameMessage = '';
+            usernameMessage = ' ';
         }
     }
 
     $: {
         if (email.length === 0) {
-            emailMessage = '';
+            emailMessage = ' ';
         } else if (!emailRegex.test(email)) {
             emailMessage = 'Invalid email address.';
         } else {
-            emailMessage = '';
+            emailMessage = ' ';
         }
     }
     $: {
         if (password.length === 0) {
-            passwordMessage = '';
-        } else if (!passwordRegex.test(password)) {
-            passwordMessage = 'Password must contain at least 6 characters, one uppercase letter, one number and one special character.';
+            passwordMessage = ' ';
+        } else if (password.length < 6) {
+            passwordMessage = 'Password must contain at least 6 characters.';
+        } else if (password.length > 0 && !/[A-Z]/.test(password)){
+            passwordMessage = 'Password must contain at least one uppercase letter.';
+        } else if (password.length > 0 && !/[0-9]/.test(password)){
+            passwordMessage = 'Password must contain at least one number.';
+        } else if (password.length > 0 && !/[!@#$%^&*]/.test(password)){
+            passwordMessage = 'Password must contain at least one special character.';
+        
         } else {
-            passwordMessage = '';
+            passwordMessage = ' ';
         }
     }
     $: {
         if (confirmPassword.length === 0) {
-            confirmPasswordMessage = '';
+            confirmPasswordMessage = ' ';
         } else if (confirmPassword !== password) {
             confirmPasswordMessage = 'Passwords do not match.';
         } else {
-            confirmPasswordMessage = '';
+            confirmPasswordMessage = ' ';
         }
     }
     let submittable = false;
     $: {
-        if (usernameMessage === '' && emailMessage === '' && passwordMessage === '' && confirmPasswordMessage === '' && username !== '' && email !== '' && password !== '' && confirmPassword !== '') {
+        if (usernameMessage === ' ' && emailMessage === ' ' && passwordMessage === ' ' && confirmPasswordMessage === ' ' && username !== ' ' && email !== ' ' && password !== '' && confirmPassword !== '') {
             submittable = false;
         } else {
             submittable = true;
@@ -88,22 +100,34 @@
         const response = await handleAccountRegister(formData);
 
         // If the operation was successful, redirect the user to another page
-        if (response.ok) {
+        if(response.userExists) {
+            registerError = true;
+            registerErrorMessage = 'Username already exists.';
+        }
+        else if(response.emailExists) {
+            registerError = true;
+            registerErrorMessage = 'Email already exists.';
+        }
+        else if (response.accountRegistered) {
             accountRegistered = true;
         }
+        
     }
 
     async function userLogin(event: Event) {
         event.preventDefault();
         const formData = { 
-            email, 
+            usernameEmail, 
             password
         };
         const response = await handleAccountLogin(formData);
-
-        // If the operation was successful, redirect the user to another page
-        if (response.ok) {
-           
+     
+        if (response.invalidCredentials){
+            loginError = true;
+            loginErrorMessage = 'Invalid credentials.';
+        }
+        else if (response.token) {
+           window.location.href = '/chat/home';
         }
         
     }
@@ -133,20 +157,20 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
         
-                        <div class="form-outline">
-                            <input type="text" class:red-outline={usernameMessage != ""} id="firstName" bind:value={username} class="form-control form-control-lg" />
-                            <label class="form-label" for="firstName">Username</label>
-                            <p class="text-danger" style="font-size:.6rem"><i>{usernameMessage}</i></p>
-                        </div>
-        
-                        </div>
-                        <div class="col-md-6 mb-4">
-        
-                        <div class="form-outline">
-                            <input type="text" class:red-outline={emailMessage != ""} id="lastName" bind:value={email} class="form-control form-control-lg" />
-                            <label class="form-label" for="lastName">E-mail</label>
-                            <p class="text-danger" style="font-size:.6rem"><i>{emailMessage}</i></p>
-                        </div>
+                            <div class="form-outline input-wrapper">
+                                <input type="text" class:red-outline={usernameMessage != " "} id="firstName" bind:value={username} class="form-control form-control-lg" />
+                                <label class="form-label" for="firstName">Username</label>
+                                <p class="text-danger error-message"><i>{usernameMessage}</i></p>
+                            </div>
+                        
+                            </div>
+                            <div class="col-md-6 mb-4">
+                        
+                            <div class="form-outline input-wrapper">
+                                <input type="text" class:red-outline={emailMessage != " "} id="lastName" bind:value={email} class="form-control form-control-lg" />
+                                <label class="form-label" for="lastName">E-mail</label>
+                                <p class="text-danger error-message"><i>{emailMessage}</i></p>
+                            </div>
         
                         </div>
                     </div>
@@ -181,28 +205,33 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-4 pb-2">
-                        <div class="form-outline">
-                            <input type="password" class:red-outline={passwordMessage != ""} id="emailAddress" bind:value={password} class="form-control form-control-lg" />
+                        <div class="form-outline input-wrapper">
+                            <input type="password" class:red-outline={passwordMessage != " "} id="emailAddress" bind:value={password} class="form-control form-control-lg" />
                             <label class="form-label" for="emailAddress">Password</label>
-                            <p class="text-danger" style="font-size:.6rem"><i>{passwordMessage}</i></p>
+                            <p class="text-danger error-message" ><i>{passwordMessage}</i></p>
                         </div>
                         </div>
                         <div class="col-md-6 mb-4 pb-2">
-                        <div class="form-outline">
-                            <input type="password" class:red-outline={confirmPasswordMessage != ""} id="phoneNumber" bind:value={confirmPassword} class="form-control form-control-lg" />
+                        <div class="form-outline input-wrapper">
+                            <input type="password" class:red-outline={confirmPasswordMessage != " "} id="phoneNumber" bind:value={confirmPassword} class="form-control form-control-lg" />
                             <label class="form-label" for="phoneNumber">Confirm Password</label>
-                            <p class="text-danger" style="font-size:.6rem"><i>{confirmPasswordMessage}</i></p>
+                            <p class="text-danger error-message" ><i>{confirmPasswordMessage}</i></p>
                         </div>
                         </div>
                     </div>    
-                    {#if (accountRegistered)}
-                    <div class="alert alert-success" role="alert">
-                        Account registered successfully!
-                      </div>
-                    {/if}
-                    <div class="mt-2 pt-2">
-                        <input class="btn btn-primary btn-lg" type="submit" value="Submit" disabled={submittable}/>
-                    </div>     
+                        {#if (accountRegistered)}
+                        <div class="alert alert-success" role="alert">
+                            Account registered successfully!
+                        </div>
+                        
+                        {:else if (registerError)}
+                        <div class="alert alert-danger" role="alert">
+                            {registerErrorMessage}
+                        </div>
+                        {/if}    
+                        <div class="mt-2 pt-2">
+                            <input class="btn btn-primary btn-lg" type="submit" value="Submit" disabled={submittable}/>
+                        </div> 
                     </form>
                     {:else}
                     <form on:submit={userLogin}>        
@@ -210,14 +239,19 @@
                             <div class="mb-4">
             
                             <div class="form-outline">
-                                <input type="text" id="firstName" bind:value={username} class="form-control form-control-lg" />
-                                <label class="form-label" for="firstName">Username</label>
+                                <input type="text" id="firstName" bind:value={usernameEmail} class="form-control form-control-lg" />
+                                <label class="form-label" for="firstName">Username or e-mail</label>
                             </div>
                             <div class="form-outline">
                                 <input type="password" id="emailAddress" bind:value={password} class="form-control form-control-lg" />
                                 <label class="form-label" for="emailAddress">Password</label>
                             </div>
                         </div>
+                        {#if (loginError)}
+                        <div class="alert alert-danger" role="alert">
+                            {loginErrorMessage}
+                        </div>
+                        {/if}
                         <div class="mt-2 pt-2">
                             <input class="btn btn-primary btn-lg" type="submit" value="Submit" />
                         </div>
@@ -230,6 +264,17 @@
 </div>
 
 <style>
+    .input-wrapper {
+    position: relative;
+    }
+
+    .error-message {
+    position: absolute;
+    top:70px; /* Adjust as needed */
+    left: 0;
+    color: red;
+    font-size: .8rem;
+    }
     .red-outline{
         border-color: red !important;
         box-shadow: 0 0 0 0.25rem rgba(255,0,0,.25) !important;
