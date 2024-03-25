@@ -44,6 +44,17 @@ namespace Backend.Controllers
 
             return new JsonResult(new { userInfo });
         }
+        [HttpGet("getUserId")]
+        public async Task<IActionResult> GetUserId()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            return new JsonResult(new { userId = user.Id });
+        }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterInput model)

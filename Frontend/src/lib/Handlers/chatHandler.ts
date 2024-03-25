@@ -18,6 +18,7 @@ export interface ChatItem {
     time: string;
     date: string;
     userName: string;
+    userId: string;
     isEdited?:boolean;
     isDeleted?:boolean;
     isEvent?:boolean;
@@ -51,6 +52,7 @@ export async function fetchMessages(chatId: string){
                     date: date,
                     time: time,
                     userName: item.userName,
+                    userId: item.userId,
                     isEdited: item.isEdited,
                     isDeleted: item.isDeleted,
                     isEvent: item.isEvent

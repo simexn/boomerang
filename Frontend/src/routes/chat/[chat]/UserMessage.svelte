@@ -2,6 +2,11 @@
     import type {ChatItem} from "$lib/Handlers/chatHandler";
     import type { User } from "$lib/Handlers/accountHandler";
     import { writable } from "svelte/store";
+    import { isLoggedIn } from '$lib/Handlers/accountHandler';
+    import { userStatuses } from '$lib/stores/userStatusesStore';
+    import { onMount } from "svelte";
+    import { getToken } from "$lib/Handlers/authHandler";
+    import { HubConnectionBuilder } from "@microsoft/signalr";
     export let item: ChatItem;
     export let imageUrl: string;
     export let userInfo: User;
@@ -11,14 +16,50 @@
     export let cancelEdit = (id: number) => {};
     export let isEditing = writable();
 
-    
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+    onMount(async () => {
+        if(await isLoggedIn()){
+            
+            let token = await getToken();
+            const response = await fetch(`${backendUrl}/account/getUserId`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+        
+            if(response.ok){
+                let connection = new HubConnectionBuilder()
+                    .withUrl(`${backendUrl}/accountHub`)
+                    .build();
+
+                    connection.on("UpdateUserStatus", async (userId, status) => {
+                        console.log("userid" + userId + "status" + status)
+                        
+                        userStatuses.update(statuses => ({ ...statuses, [userId]: status }));
+                    });
+
+                    await connection.start();
+
+                    let userId = data.userId.toString();
+
+                    await connection.invoke("UpdateUserStatus", userId, "online");
+                    }
+            }
+    });
 </script>
+
+
 
 <div id="img">
     <button class="message-avatar-wrap">
         <span class="message-avatar">
             <img style="width:32px; height:32px;" alt="User" src={imageUrl}>
         </span>
+        <span class="status-dot" class:online={$userStatuses[item.userId.toString()] == 'online'}></span>
     </button>
 </div>
 <div>
@@ -55,6 +96,16 @@
 </div>
 
 <style>
+    .status-dot {
+    height: 10px;
+    width: 10px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+    }
+    .status-dot.online {
+    background-color: #4CAF50;
+    }
     .message-actions {
     position: absolute;
     top: -5px;

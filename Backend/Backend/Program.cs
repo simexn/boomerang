@@ -105,6 +105,7 @@ namespace Backend
             app.MapControllers();
 
             app.MapHub<ChatHub>("/chatHub");
+            app.MapHub<AccountHub>("/accountHub");
 
             app.MapControllerRoute(
                 name: "default",

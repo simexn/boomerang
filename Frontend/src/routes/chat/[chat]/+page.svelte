@@ -66,6 +66,10 @@
     async function loadMessages() {
         chatItems = await fetchMessages(chatId);
     }
+
+    async function chatItemToAdd(){
+
+    }
     async function setupConnection() {
         if (connection) {
             await connection.stop();
@@ -89,7 +93,8 @@
                     timestamp: Date.now().toLocaleString(),
                     date: date,
                     time: time,
-                    userName: data.fromUser.userName
+                    userName: data.fromUser.userName,
+                    userId: data.fromUser.id
                 };
 
                 chatItems = [...chatItems, chatItemToAdd];
@@ -113,7 +118,9 @@
                     timestamp: Date.now().toLocaleString(),
                     date: date,
                     time: time,
-                    userName: user.userName
+                    userName: user.userName,
+                    userId: user.id,
+                    isEvent: true
                 };
 
                 chatItems = [...chatItems, chatItemToAdd];
@@ -137,7 +144,8 @@
                 timestamp: Date.now().toLocaleString(),
                 date: date,
                 time: time,
-                userName: user.userName
+                userName: user.userName,
+                userId: user.id,
             };
 
                 chatItems = [...chatItems, chatItemToAdd];
@@ -163,7 +171,8 @@
                 timestamp: Date.now().toLocaleString(),
                 date: date,
                 time: time,
-                userName: user.userName
+                userName: user.userName,
+                userId: user.id
             };
 
                 chatItems = [...chatItems, chatItemToAdd];
@@ -191,7 +200,8 @@
                 timestamp: Date.now().toLocaleString(),
                 date: date,
                 time: time,
-                userName: user.userName
+                userName: user.userName,
+                userId: user.id
             };
 
             chatItems = [...chatItems, chatItemToAdd];
@@ -213,7 +223,8 @@
                 timestamp: Date.now().toLocaleString(),
                 date: date,
                 time: time,
-                userName: user.userName
+                userName: user.userName,
+                userId: user.id
             };
 
             chatItems = [...chatItems, chatItemToAdd];
@@ -236,7 +247,8 @@
                 timestamp: Date.now().toLocaleString(),
                 date: date,
                 time: time,
-                userName: user.userName
+                userName: user.userName,
+                userId: user.id
             };
 
             chatItems = [...chatItems, chatItemToAdd];

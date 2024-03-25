@@ -51,7 +51,7 @@ namespace Backend.Controllers
             };
             Response.Cookies.Append("token", token, cookieOptions);
 
-            return new JsonResult(new { token });
+            return new JsonResult(new { token, userId = user.Id });
         }
 
         [HttpPost("logout")]

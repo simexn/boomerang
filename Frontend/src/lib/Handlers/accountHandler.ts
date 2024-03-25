@@ -1,7 +1,13 @@
 import { browser } from "$app/environment";
 import { getToken } from "$lib/Handlers/authHandler";
+import { HubConnectionBuilder } from '@microsoft/signalr';
+import { tick } from "svelte";
+import { writable } from "svelte/store";
+
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+
 
 export interface User{
     id: number;
@@ -43,6 +49,22 @@ export async function fetchUserInfo() {
         }
         return user;
     }
+}
+
+export async function fetchUserId(){
+    let token = await getToken();
+        const response = await fetch(`${backendUrl}/account/getUserId`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+    
+        if(response.ok){
+            return data.userId;
+        }
 }
 
 export async function isLoggedIn() {
@@ -102,7 +124,9 @@ export async function handleAccountLogin(formData:{usernameEmail: string, passwo
     const data = await response.json();
     if (data.token){
         document.cookie = `token=${data.token};path=/;Secure;SameSite=Strict;`;
-    }
-   
+    } 
     return data;
 }
+
+
+

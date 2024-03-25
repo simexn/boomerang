@@ -135,6 +135,7 @@ namespace Backend.Controllers
                     Content = m.Text,
                     Timestamp = m.Timestamp,
                     UserName = m.FromUser.UserName,
+                    UserId = m.FromUser.Id,
                     IsEdited = m.IsEdited,
                     IsDeleted = m.IsDeleted
                     

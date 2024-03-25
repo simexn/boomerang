@@ -12,6 +12,8 @@ namespace Backend.Models
         public string? ProfilePictureUrl { get; set; }
         [Required]
         public DateTime AccountCreatedDate { get; set; }
+
+        public string Status { get; set; }
         
 
     }
