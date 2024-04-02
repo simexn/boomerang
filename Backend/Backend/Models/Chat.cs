@@ -19,9 +19,9 @@ namespace Backend.Models
         public string Name { get; set; }
         [Required]
         public bool IsGroup { get; set; } = true;
+        public bool IsArchieved { get; set; } = false;
 
-        [Required]
-        public string InviteCode { get; set; }
+        public string? InviteCode { get; set; }
 
         public int? CreatorId { get; set; }
         [ForeignKey("CreatorId")]

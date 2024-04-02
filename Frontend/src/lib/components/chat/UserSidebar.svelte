@@ -3,9 +3,11 @@
     import type { Group } from "$lib/Handlers/groupHandler";
     import { fly } from "svelte/transition";
     import { handleKickUser, handlePromoteUser, handleDemoteUser, handleTransferOwnership } from "$lib/Handlers/groupHandler";
+    import "$lib/css/sidebarstyles.css"
 
     export let groupInfo: Group;
     export let userSidebarDropdown: any;
+    export let isUsersSidebarOpen: boolean;
     export let userInfo: User;
     export let imageUrl: string;
     export let chatId: string;
@@ -30,8 +32,22 @@
         event.stopPropagation();
         userSidebarDropdown = userSidebarDropdown === userId ? null : userId;
     }
+    function closeDropdown() {
+    userSidebarDropdown = null;
+  }
 </script>
+<svelte:window on:click={closeDropdown} />
 <div class="users-sidebar d-flex flex-column" transition:fly="{{x: 1000, duration: 500}}">
+    <div class="sidebar-header">
+        <span class="sidebar-title">
+            <span style="line-height: 2.4rem;font-family: Metropolis, sans-serif !important;">
+                Members
+            </span>
+            <span class="sidebar-subtitle">{groupInfo.users.length} members</span>
+        </span><button class="sidebar-close-btn" aria-label="Close" on:click={() => isUsersSidebarOpen = false}>
+            <i class="fa-solid fa-x"></i>
+        </button>
+    </div>
     <h5>Group admins: </h5>
     {#each groupInfo.users as user (user.id)}
         {#if groupInfo.admins.some(admin => admin.id === user.id)}
@@ -46,7 +62,7 @@
                         <p class="pb-0 mb-0">{user.userName}</p>
                     </div>
                     <div class="d-flex flex-row">
-                        <a role="navigation" class="dots fa-solid fa-ellipsis-vertical" on:click|stopPropagation={(event) => openDropdown(user.id, event)}></a>
+                        <i role="navigation" class="dots fa-solid fa-ellipsis-vertical" on:click|stopPropagation={(event) => openDropdown(user.id, event)}></i>
                         {#if user.id === userSidebarDropdown}
                             <div role="navigation" class="dropdown-menu show">
                                 <a class="dropdown-item" href="#">View Info</a>
@@ -111,22 +127,6 @@
 </div>
 
 <style>
-    .users-sidebar {
-        position: fixed;
-        right: 0;
-        width: 300px; /* adjust as needed */
-        height: 100%;
-        background-color: #f1f1f1; /* adjust as needed */
-        overflow-y: auto;
-        padding: 20px;
-        box-sizing: border-box;
-        transition: transform 0.3s ease-in-out;
-        transform: translateX(0);
-        flex-shrink: 0;
-        border-left: solid 1px #e5e5e5;
-        z-index:500;
-}
-
     .user-section{
         margin-bottom: 10px;
     }

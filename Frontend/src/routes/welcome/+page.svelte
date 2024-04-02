@@ -1,6 +1,7 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
     import { handleAccountRegister, handleAccountLogin } from '$lib/Handlers/accountHandler';
+    import { updateUserInfo } from '$lib/stores/userInfoStore';
     import { fade } from 'svelte/transition';
 
     let isLoginForm = false;
@@ -129,6 +130,8 @@
         else if (response.token) {
            window.location.href = '/chat/home';
         }
+
+        updateUserInfo();
         
     }
     function switchForm() {

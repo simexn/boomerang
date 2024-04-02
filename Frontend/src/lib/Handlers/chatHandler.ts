@@ -14,14 +14,17 @@ export interface Message{
 export interface ChatItem {
     id: number;
     content: string;
-    timestamp: string;
+    timestamp: any;
     time: string;
     date: string;
     userName: string;
     userId: string;
+    userPfp?: string;
+    isActive: string;
     isEdited?:boolean;
     isDeleted?:boolean;
     isEvent?:boolean;
+    withoutDetails?:boolean;
 }
 
 export async function fetchMessages(chatId: string){
@@ -41,21 +44,34 @@ export async function fetchMessages(chatId: string){
     
     if (response.ok) {
         if (data.chatItems) {
-            const chatItems: ChatItem[] = await data.chatItems.map((item: any) => {
+            const chatItems: ChatItem[] = await data.chatItems.map((item: any, index: number, array: any[]) => {
                 const dateObject = new Date(item.timestamp);
                 const date = dateObject.toLocaleDateString();
                 const time = new Intl.DateTimeFormat('default', { hour: '2-digit', minute: '2-digit', hour12: false }).format(dateObject);
+                const timestamp = dateObject.getTime();
+            
+                let withoutDetails = false;
+                if (index > 0) {
+                    const previousItem = array[index - 1];
+                    const previousTimestamp = new Date(previousItem.timestamp);
+                    const diffInMinutes = (timestamp - previousTimestamp.getTime()) / (1000 * 60);
+                    withoutDetails = item.userId === previousItem.userId && diffInMinutes < 5;
+                }
+            
                 return {
                     id: item.id,
                     content: item.content,
-                    timestamp: item.timestamp,
+                    timestamp: timestamp,
                     date: date,
                     time: time,
                     userName: item.userName,
                     userId: item.userId,
+                    isActive: item.isActive,
                     isEdited: item.isEdited,
                     isDeleted: item.isDeleted,
-                    isEvent: item.isEvent
+                    isEvent: item.isEvent,
+                    userPfp: item.userPfp,
+                    withoutDetails: withoutDetails
                 };
             });
     
@@ -79,10 +95,10 @@ export async function fetchMessages(chatId: string){
 
 
 
-export async function handleMessageSubmit(messageToSubmit: string, chatId: string, roomId: string){
+export async function handleMessageSubmit(messageToSubmit: string, chatId: string){
     let token = await getToken();
 
-    const array = [messageToSubmit, chatId, roomId]
+    const array = [messageToSubmit, chatId]
     
 
     const requestBody = JSON.stringify(array);

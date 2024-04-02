@@ -54,7 +54,7 @@ namespace Backend.Controllers
             var userId = user.Id;
 
             var chat = _context.Chats.FirstOrDefault(c => c.InviteCode == inviteCode);
-            if (chat == null)
+            if (chat != null)
             {
                 return BadRequest("Chat not found");
             }
@@ -131,6 +131,7 @@ namespace Backend.Controllers
                 if (newAdmin != null)
                 {
                     group.CreatorId = newAdmin.UserId;
+                    await _chat.Clients.Group(chatId.ToString()).SendAsync("OwnershipTransferred", newAdmin);
                 }
                 else
                 {
@@ -139,6 +140,7 @@ namespace Backend.Controllers
                     if (newUser != null)
                     {
                         group.CreatorId = newUser.UserId;
+                        await _chat.Clients.Group(chatId.ToString()).SendAsync("OwnershipTransferred", newUser);
 
                         // Add the new creator to the group's admins
                         var newAdminUser = new ChatAdmin

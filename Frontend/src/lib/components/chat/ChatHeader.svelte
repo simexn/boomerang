@@ -1,9 +1,13 @@
 <script lang="ts">
+    import type { User } from "$lib/Handlers/accountHandler";
     import { handleLeaveGroup, type Group, handleDeleteGroup } from "$lib/Handlers/groupHandler";
+    import type { FriendInfo } from "$lib/Handlers/userHandler";
 
     export let groupInfo: Group;
+    export let friendInfo: FriendInfo = {} as FriendInfo;
     export let isUsersSidebarOpen: boolean;
-    export let isCreator: boolean;
+    export let isInfoSidebarOpen: boolean = false;
+    export let userInfo: User;
     export let chatId: string;
 
     function toggleSidebar() {
@@ -16,7 +20,7 @@
 
     }
     async function deleteGroup(){
-        if (isCreator) {
+        if (groupInfo.creatorId === userInfo.id) {
             await handleDeleteGroup(chatId);
             window.location.href = '/chat/home';
         }
@@ -24,14 +28,23 @@
 </script>
 
 <div class="chat-header d-flex justify-content-between align-items-center p-3 border-bottom">
+    {#if groupInfo?.isGroup}
     <div>
         <h3>{groupInfo?.name}</h3>
         <i class="fa fa-users" aria-hidden="true" on:click={toggleSidebar}></i>
     </div>
+    {:else}
+        <div class="header-content">
+            <h3>{friendInfo?.username}</h3>
+            <i class="fa fa-circle-info" aria-hidden="true" on:click={()=>isInfoSidebarOpen = !isInfoSidebarOpen}></i>
+         </div>
+    {/if}
     <div>
-        <button class="btn btn-danger" on:click={leaveGroup}>Leave</button>
-        {#if isCreator}
-        <button class="btn btn-danger" on:click={deleteGroup}>Delete</button>
+        {#if (groupInfo?.isGroup)}
+            <button class="btn btn-danger" on:click={leaveGroup}>Leave</button>
+            {#if groupInfo?.creatorId === userInfo?.id}
+            <button class="btn btn-danger" on:click={deleteGroup}>Delete</button>
+            {/if}
         {/if}
     </div>
 </div>
@@ -42,7 +55,7 @@
         z-index: 15;
         width: 100%;
         min-height: 7rem;
-        height: 7rem;
+        max-height: 7rem;
         border-bottom: 1px solid rgba(var(--center-channel-color-rgb), 0.12);
         background: var(--center-channel-bg);
         font-size: 14px;
@@ -64,5 +77,13 @@
     }
         .chat-header i:hover{
             background-color: #b4b4b4;
+        }
+        .header-content {
+            display: flex;
+            width:100%;
+            justify-content: space-between;
+        }
+        .fa-circle-info{
+            font-size: 1.5rem;
         }
 </style>

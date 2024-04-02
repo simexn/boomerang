@@ -17,6 +17,7 @@ namespace Backend.Data
         public DbSet<ChatUser> ChatUsers { get; set; }
         public DbSet<ChatAdmin> ChatAdmins { get; set; }
         public DbSet<ChatEvent> ChatEvents { get; set; }
+        public DbSet<Friendship> Friendships { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -27,6 +28,22 @@ namespace Backend.Data
 
             builder.Entity<ChatAdmin>()
                 .HasKey(ca => new { ca.ChatId, ca.UserId });
+            
+        
+            builder.Entity<Friendship>()
+                .HasKey(f => new { f.UserId, f.FriendId });
+
+            builder.Entity<Friendship>()
+             .HasOne(f => f.User)
+             .WithMany()
+             .HasForeignKey(f => f.UserId)
+             .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete
+
+            builder.Entity<Friendship>()
+                .HasOne(f => f.Friend)
+                .WithMany()
+                .HasForeignKey(f => f.FriendId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
     }

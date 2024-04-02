@@ -40,7 +40,7 @@ namespace Backend.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Unauthorized("User is either not logged in or an error is present with the user object");
 
-            var chats = await _context.Chats.Where(c => c.Users.Any(u => u.UserId == user.Id)).ToListAsync();
+            var chats = await _context.Chats.Where(c => c.Users.Any(u => u.UserId == user.Id) && c.IsGroup==true).ToListAsync();
             if (chats == null) return BadRequest("No chats found for this user");
 
             return new JsonResult(new { chats });
@@ -53,7 +53,15 @@ namespace Backend.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
 
-            var chat = new Chat
+            var chat = await _context.Chats.FirstOrDefaultAsync(c => c.InviteCode == createChatInput.InviteCode);
+            _logger.LogCritical("Checking if chat exists with invite code {0}", createChatInput.InviteCode);
+
+            if (chat != null)
+            {
+                return new JsonResult(new { groupExists = true }); 
+            }
+
+            var newChat = new Chat
             {
                 Name = createChatInput.NewGroupName,
                 InviteCode = createChatInput.InviteCode,
@@ -62,23 +70,23 @@ namespace Backend.Controllers
 
             };
 
-            await _context.Chats.AddAsync(chat);
+            await _context.Chats.AddAsync(newChat);
             await _context.SaveChangesAsync();
 
-            chat.Users.Add(new ChatUser
+            newChat.Users.Add(new ChatUser
             {
                 UserId = user.Id,
                 ChatId = chat.Id
             }
             );
-            chat.Admins.Add(new ChatAdmin
+            newChat.Admins.Add(new ChatAdmin
             {
                 UserId = user.Id,
                 ChatId = chat.Id
             }
             );
 
-            _context.Update(chat);
+            _context.Update(newChat);
             await _context.SaveChangesAsync();
 
             return Ok("Room Created");
@@ -136,6 +144,8 @@ namespace Backend.Controllers
                     Timestamp = m.Timestamp,
                     UserName = m.FromUser.UserName,
                     UserId = m.FromUser.Id,
+                    UserPfp = m.FromUser.ProfilePictureUrl,
+                    IsActive = m.FromUser.Status,
                     IsEdited = m.IsEdited,
                     IsDeleted = m.IsDeleted
                     
@@ -180,7 +190,11 @@ namespace Backend.Controllers
         public async Task<IActionResult> SendMessageToRoom([FromBody] string[] requestBody)
         {
             var user = await _userManager.GetUserAsync(User);
-
+            var chat = await _context.Chats.FirstOrDefaultAsync(c => c.Id == Int32.Parse(requestBody[1]));
+            if (chat == null || user == null || !(await IsUserInChat(user.Id, chat.Id)) || chat.IsArchieved)
+            {
+                return Unauthorized();
+            }
             var Message = new Message
             {
                 ChatId = Int32.Parse(requestBody[1]),
@@ -195,7 +209,7 @@ namespace Backend.Controllers
             _context.Messages.Add(Message);
             await _context.SaveChangesAsync();
 
-            await _chat.Clients.Group(requestBody[2]).SendAsync("ReceiveMessage", Message);
+            await _chat.Clients.Group(requestBody[1]).SendAsync("ReceiveMessage", Message);
             return Ok();
         }
 

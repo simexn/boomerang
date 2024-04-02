@@ -7,8 +7,8 @@ export async function getToken() {
         cookie = await document.cookie.split('; ').find(row => row.startsWith('token'));
     }
     if (!cookie) {
-        console.log('Token not found');
-        return;
+        console.log('Token not found getToken');
+        return '';
     }
 
     const token = cookie.split('=')[1];

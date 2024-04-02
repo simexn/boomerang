@@ -3,6 +3,8 @@ using Backend.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Services;
+using Backend.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers
 {
@@ -12,16 +14,18 @@ namespace Backend.Controllers
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _context;
         private readonly ILogger<AuthenticationController> _logger;
         private readonly ITokenService _tokenService;
 
         public AccountController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, ILogger<AuthenticationController> logger
-        , ITokenService tokenService)
+        , ITokenService tokenService, ApplicationDbContext context)
         {
             _tokenService = tokenService;
             _signInManager = signInManager;
             _userManager = userManager;
             _logger = logger;
+            _context = context;
         }
 
         [HttpGet("getUserInfo")]
@@ -38,7 +42,8 @@ namespace Backend.Controllers
                 user.Id,
                 user.UserName,
                 user.Email,
-                user.AccountCreatedDate
+                user.AccountCreatedDate,
+                user.ProfilePictureUrl
                 
             };
 
@@ -54,6 +59,15 @@ namespace Backend.Controllers
             }
 
             return new JsonResult(new { userId = user.Id });
+        }
+
+        [HttpGet("getActiveUsers")]
+        public async Task<IActionResult> GetActiveUsers()
+        {
+            var users = await _context.Users.ToListAsync();
+            var activeUsers = users.ToDictionary(u => u.Id.ToString(), u => u.Status);
+
+            return new JsonResult(new { activeUsers });
         }
 
         [HttpPost("register")]
@@ -95,6 +109,27 @@ namespace Backend.Controllers
             Response.Cookies.Append("token", token, cookieOptions);
 
             return new JsonResult(new { accountRegistered = true });
+        }
+
+        [HttpPost("uploadPfp")]
+        public async Task<IActionResult> UploadPfp([FromForm] IFormFile file)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            var filePath = Path.Combine("wwwroot", "images", "profile_pictures", user.Id + ".png");
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            user.ProfilePictureUrl = "/images/profile_pictures/" + user.Id + ".png";
+            await _userManager.UpdateAsync(user);
+
+            return new JsonResult(new { pfpUploaded = true });
         }
     }
 

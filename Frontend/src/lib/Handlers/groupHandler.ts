@@ -5,11 +5,17 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL;
 export interface Group {
     id: number;
     name: string;
-    isGroup: boolean
+    isGroup: boolean;
+    isArchieved: boolean;
     creatorId: number;
     inviteCode: string;
     users: User[];
     admins: User[];
+}
+export interface GroupPreview{
+    id: number;
+    name: string;
+
 }
 
 function generateInviteCode(length: number) {
@@ -34,12 +40,15 @@ export async function fetchGroupInfo(groupId: string){
     });
     
     const data = await response.json();
+    console.log(data.chat)
     
     if (response.ok && data.chat) {
+        console.log(data.chat.isGroup);
         const groupInfo: Group = {
             id: data.chat.id,
             name: data.chat.name,
             isGroup: data.chat.isGroup,
+            isArchieved: data.chat.isArchieved,
             creatorId: data.chat.creatorId,
             inviteCode: data.chat.inviteCode,
             users: data.users,
@@ -52,6 +61,7 @@ export async function fetchGroupInfo(groupId: string){
             id: 0,
             name: '',
             isGroup: false,
+            isArchieved: true,
             creatorId: 0,
             inviteCode: '',
             users: [],
@@ -129,14 +139,13 @@ export async function handleRoomSubmit(formData: {newGroupName: string, inviteCo
     });
 
     if (response.ok){
-        var chats = await fetchChats();
-        return chats;
+        const data = await response.json();
+        return { ok: response.ok, data };
     }
     if (!response.ok) {
-        return response.text().then(text => { throw new Error(text) });
+        const text = await response.text();
+        throw new Error(text);
     }
-
-    const data = await response.text();
 }
 
 export async function handleJoinRoom(inviteCode: string) {

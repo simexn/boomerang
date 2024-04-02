@@ -14,6 +14,7 @@ export interface User{
     userName: string;
     email: string;
     accountCreated: string;
+    profilePictureUrl?: string;
 
 }
 
@@ -35,7 +36,8 @@ export async function fetchUserInfo() {
             id: data.userInfo.id,
             userName: data.userInfo.userName,
             email: data.userInfo.email,
-            accountCreated: new Date(data.userInfo.accountCreated).toLocaleString()
+            accountCreated: new Date(data.userInfo.accountCreated).toLocaleString(),
+            profilePictureUrl: data.userInfo.profilePictureUrl
         }
         console.log(user);
         return user;   
@@ -67,13 +69,30 @@ export async function fetchUserId(){
         }
 }
 
+export async function fetchActiveUsers(){
+    let token = await getToken();
+    const response = await fetch(`${backendUrl}/account/getActiveUsers`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+    const data = await response.json();
+
+    if(response.ok){
+        return data.activeUsers;
+    }
+
+}
+
 export async function isLoggedIn() {
     let cookie;
     if (browser) {
         cookie = document.cookie.split('; ').find(row => row.startsWith('token'));
     }
     if (!cookie) {
-        console.log('Token not found');
+        console.log('Token not found isLogged');
         return false;
     }
 

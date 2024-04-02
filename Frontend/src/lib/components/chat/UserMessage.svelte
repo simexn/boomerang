@@ -7,6 +7,11 @@
     import { onMount } from "svelte";
     import { getToken } from "$lib/Handlers/authHandler";
     import { HubConnectionBuilder } from "@microsoft/signalr";
+    import { connectionStore } from '$lib/stores/connectionsStore';
+    import type { Group } from "$lib/Handlers/groupHandler";
+
+    let connection;
+    connectionStore.subscribe(value => { connection = value; });
     export let item: ChatItem;
     export let imageUrl: string;
     export let userInfo: User;
@@ -14,55 +19,60 @@
     export let deleteMessage = (id: number) => {};
     export let confirmEdit = (id: number, newContent: string) => {};
     export let cancelEdit = (id: number) => {};
+    export let groupInfo: Group;
     export let isEditing = writable();
+    export let withoutUserDetails: boolean = false;
 
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
     onMount(async () => {
-        if(await isLoggedIn()){
+        // if(await isLoggedIn()){
             
-            let token = await getToken();
-            const response = await fetch(`${backendUrl}/account/getUserId`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            const data = await response.json();
+        //     let token = await getToken();
+        //     const response = await fetch(`${backendUrl}/account/getUserId`, {
+        //         method: 'GET',
+        //         headers: {
+        //             'Authorization': `Bearer ${token}`,
+        //             'Content-Type': 'application/json'
+        //         }
+        //     });
+        //     const data = await response.json();
         
-            if(response.ok){
-                let connection = new HubConnectionBuilder()
-                    .withUrl(`${backendUrl}/accountHub`)
-                    .build();
+        //     if(response.ok){
+        //         let connection = new HubConnectionBuilder()
+        //             .withUrl(`${backendUrl}/accountHub`)
+        //             .build();
 
-                    connection.on("UpdateUserStatus", async (userId, status) => {
-                        console.log("userid" + userId + "status" + status)
+        //             connection.on("UpdateUserStatus", async (userId, status) => {
+        //                 console.log("userid" + userId + "status" + status)
                         
-                        userStatuses.update(statuses => ({ ...statuses, [userId]: status }));
-                    });
+        //                 userStatuses.update(statuses => ({ ...statuses, [userId]: status }));
+        //             });
 
-                    await connection.start();
+        //             await connection.start();
 
-                    let userId = data.userId.toString();
+        //             let userId = data.userId.toString();
 
-                    await connection.invoke("UpdateUserStatus", userId, "online");
-                    }
-            }
+        //             await connection.invoke("UpdateUserStatus", userId, "online");
+        //             }
+        //     }
     });
 </script>
 
+{#if !item.withoutDetails}
+<div style="display:flex; margin-top: 0.5rem;">
 
-
-<div id="img">
-    <button class="message-avatar-wrap">
+<div class="img">
+    <div class="message-avatar-wrap">
         <span class="message-avatar">
-            <img style="width:32px; height:32px;" alt="User" src={imageUrl}>
+            <img style="width:32px; height:32px;" alt="User" src={backendUrl + item.userPfp}>
         </span>
         <span class="status-dot" class:online={$userStatuses[item.userId.toString()] == 'online'}></span>
-    </button>
+    </div>
 </div>
+
 <div>
+    {#if !item.withoutDetails}
     <div class="message-header">
         <div class="message-sender">
             <button class="message-sender-button">{item.userName}</button>                            
@@ -71,6 +81,7 @@
             <a href="/" class="message-date-button" style="display: inline-block;color: inherit;">{item.time}</a>
         </div> 
     </div>   
+    {/if}
     <div class="message-body">                    
         {#if $isEditing === item.id}
             <p class="message-edit-info" style=""><i>currently editing message:</i></p>
@@ -87,21 +98,52 @@
         {/if}                                       
     </div>
     
-    {#if userInfo && item.userName === userInfo.userName && $isEditing !== item.id && !item.isDeleted}
+    {#if userInfo && item.userName === userInfo.userName && $isEditing !== item.id && !item.isDeleted && !groupInfo?.isArchieved}
         <div class="message-actions">
             <i class="icon-edit fa fa-pencil" on:click={() => isEditingMessage(item.id, item.content)}></i>
             <i class="icon-delete fa fa-trash" on:click={() => deleteMessage(item.id)}></i>
         </div>
     {/if}
 </div>
+</div>
+{/if}
+
+{#if item.withoutDetails}
+<div class="img">
+</div>
+<div>
+<div class="message-body">                    
+    {#if $isEditing === item.id}
+        <p class="message-edit-info" style=""><i>currently editing message:</i></p>
+        <input class="message-editing" bind:value={item.content}/><br>
+        <a class="message-edit-confirm" on:click={() => confirmEdit(item.id, item.content)} href="#"><b>save</b></a>
+        <a class="message-edit-confirm" on:click={() => cancelEdit(item.id)} href="#"><b>cancel</b></a>
+    {:else if item.isDeleted == true}
+        <p style="color: grey;"><i>This message has been deleted.</i></p>
+    {:else if item.isEdited == true}
+        <p style="display: inline-block;">{item.content}</p>
+        <p style="display: inline-block; font-size: 12px; color: #B8B8B8;"><i>(edited)</i></p>
+    {:else}
+        <p>{item.content}</p>
+    {/if}
+</div>
+</div>
+{/if}
 
 <style>
+    .img{
+        width: 53px;
+        padding-right: 10px;
+        text-align: right;
+    }
     .status-dot {
     height: 10px;
     width: 10px;
     background-color: #bbb;
     border-radius: 50%;
-    display: inline-block;
+    position:absolute;
+    bottom:0;
+    right: 0rem;
     }
     .status-dot.online {
     background-color: #4CAF50;
@@ -158,6 +200,7 @@
     display: flex;
     width: 100%;
     margin-bottom: 2px;
+    
     white-space: nowrap;
 }
     .message-avatar-wrap{
@@ -173,10 +216,6 @@
             overflow: hidden;
             align-items: center;
             justify-content: center;
-        }
-        #img {
-        min-width: 40px; /* adjust as needed */
-        flex-shrink: 0;
         }
     .message-sender{
         display: flex;
@@ -215,6 +254,9 @@
     margin-left:5px;
 
 
+}
+.message-body p{
+    margin:0;
 }
 .message-editing{
     border-style: solid;

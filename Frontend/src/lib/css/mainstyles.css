@@ -1,5 +1,6 @@
 :root {
     --bg: #fff;
+    --bg-sec: 63, 67, 80;
     --fg: #000;
     --prim: #14213E;
     --prim-tp: #3962b0c0;
@@ -7,10 +8,17 @@
     --sec: #1E325C;
     --sec-tp: #6a8ed0c0;
     --sec-fg: #fff;
+
+    --font-primary: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+    --hover-dark: #b4b4b4;
+    --hover-light:#ffffffa9;
+    
 }
 
 * {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: var(--font-primary);
     min-width: 0;
     box-sizing: border-box;
 }
+

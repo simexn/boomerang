@@ -6,14 +6,19 @@
     import EventMessage from "./EventMessage.svelte";
     import UserMessage from "./UserMessage.svelte";
     import '$lib/css/message.css';
+    import { onMount } from "svelte";
+    import type { Group } from "$lib/Handlers/groupHandler";
     export let imageUrl: string;
     export let userInfo: User;
     export let scrollContainer;
     export let chatItems:ChatItem[];
     export let chatId: string;
+    export let groupInfo: Group;
     const isEditing = writable();
 
     let originalMessage = '';
+
+    let previousTimestamp:any = null;
 
     
     function isEditingMessage(id: number, content:string) {
@@ -35,17 +40,24 @@
     async function deleteMessage(id: number) {
         await handleDeleteMessage(chatId, id);
     }
+
+    
+    onMount(() => {
+        console.log("rendering Chat Message component")
+    });
+    
 </script>
 
 <div class="messages-container" bind:this={scrollContainer}>
-    {#each chatItems as item}
-        <div class="message" style="display: flex; align-items: start;">
-            {#if item.isEvent}
-                <EventMessage {item} />
-            {:else}
-                <UserMessage {item} {imageUrl} {userInfo} {isEditingMessage} {deleteMessage} {confirmEdit} {cancelEdit} {isEditing} />
-            {/if}
-        </div>
+    
+    {#each chatItems as item (item.id)}
+    <div class="message" style="display: flex; align-items: start;">
+        {#if item.isEvent}
+            <EventMessage {item} />
+        {:else}
+            <UserMessage {groupInfo} {item} {imageUrl} {userInfo} {isEditingMessage} {deleteMessage} {confirmEdit} {cancelEdit} {isEditing} withoutUserDetails={false} />
+        {/if}
+    </div>
     {/each}
 </div>
 

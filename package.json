@@ -2,6 +2,7 @@
   "prepack": "svelte-kit sync",
   "dependencies": {
     "@microsoft/signalr": "^8.0.0",
-    "bootstrap": "^5.3.3"
+    "bootstrap": "^5.3.3",
+    "cropperjs": "^1.6.1"
   }
 }

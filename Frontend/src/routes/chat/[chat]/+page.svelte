@@ -14,12 +14,11 @@
     import type { Group } from "$lib/Handlers/groupHandler";
     import type { Message } from "$lib/Handlers/chatHandler";
     import type {ChatItem} from "$lib/Handlers/chatHandler";
-    import { fly, slide } from 'svelte/transition';
-    import { get } from 'svelte/store';
+    import { userStore, updateUserInfo } from '$lib/stores/userInfoStore';
     import { goto } from '$app/navigation';
-    import UserSidebar from './UserSidebar.svelte';
-    import ChatHeader from './ChatHeader.svelte';
-    import ChatMessage from './ChatMessage.svelte';
+    import UserSidebar from '$lib/components/chat/UserSidebar.svelte';
+    import ChatHeader from '$lib/components/chat/ChatHeader.svelte';
+    import ChatMessage from '$lib/components/chat/ChatMessage.svelte';
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
     let imageUrl = '/user-icon-placeholder.png'
@@ -27,7 +26,7 @@
     let userInfo: User;
     let scrollContainer: any;
     let groupInfo: Group;
-    let chatItems: ChatItem[];
+    let chatItems: ChatItem[] = [];
     let chatUsers: User[]= [];
     let isUsersSidebarOpen = false;
     let userSidebarDropdown : any = null;
@@ -44,8 +43,11 @@
     $: chatId = $page.params.chat;
     $: chatId && setupConnection();
 
+    userStore.subscribe(value => {
+        userInfo = value;
+    });
+
     onMount(async () => {
-        await getUserInfo();
         await getGroupInfo();
         await loadMessages();
 
@@ -59,23 +61,57 @@
     });
 
     
-    function closeDropdown() {
-    userSidebarDropdown = null;
-  }
+    
 
     async function loadMessages() {
         chatItems = await fetchMessages(chatId);
     }
 
-    async function chatItemToAdd(){
 
-    }
+    function createChatItem(data: any, eventType: string): ChatItem {
+    const dateObject = new Date();
+    const time = new Intl.DateTimeFormat('default', { hour: '2-digit', minute: '2-digit', hour12: false }).format(dateObject);
+
+    let chatItem: Partial<ChatItem> = {
+        id: data.id,
+        timestamp: Date.now().toLocaleString(),
+        date: dateObject.toLocaleDateString(),
+        time: time,
+        isEvent: eventType !== 'ReceiveMessage',
+        withoutDetails: false
+    };
+
+    if (eventType === 'ReceiveMessage') {
+    const lastMessage = chatItems[chatItems.length - 1];
+    const lastMessageTime = new Date(lastMessage.date + ' ' + lastMessage.time);
+    const newMessageTime = new Date();
+    const timeDifference = (newMessageTime.getTime() - lastMessageTime.getTime()) / 60000; // difference in minutes
+
+    chatItem = {
+        ...chatItem,
+        content: data.text,
+        userName: data.fromUser.userName,
+        userId: data.fromUser.id,
+        isActive: data.fromUser.isActive,
+        withoutDetails: (lastMessage.userId === data.fromUser.id && timeDifference < 5) || !lastMessage.isEvent
+    };
+} else {
+    chatItem = {
+        ...chatItem,
+        content: eventType,
+        userName: data.userName,
+        userId: data.id,
+        isActive: data.isActive
+    };
+}
+
+return chatItem as ChatItem;
+}
+
     async function setupConnection() {
         if (connection) {
             await connection.stop();
         }
-
-        
 
         connection = new HubConnectionBuilder()
             .withUrl(`${backendUrl}/chatHub`)
@@ -83,19 +119,7 @@
 
             connection.on("ReceiveMessage", async function(data: any){
     
-                const dateObject = new Date();
-                const date = dateObject.toLocaleDateString();
-                const time = new Intl.DateTimeFormat('default', { hour: '2-digit', minute: '2-digit', hour12: false }).format(dateObject);
-
-                let chatItemToAdd:ChatItem = {
-                    id: data.id,
-                    content: data.text,
-                    timestamp: Date.now().toLocaleString(),
-                    date: date,
-                    time: time,
-                    userName: data.fromUser.userName,
-                    userId: data.fromUser.id
-                };
+                let chatItemToAdd = createChatItem(data, 'ReceiveMessage');
 
                 chatItems = [...chatItems, chatItemToAdd];
 
@@ -108,20 +132,7 @@
 
                 groupInfo.admins = groupInfo.admins.filter(admin => admin.id !== user.id);
 
-                const dateObject = new Date();
-                const date = dateObject.toLocaleDateString();
-                const time = new Intl.DateTimeFormat('default', { hour: '2-digit', minute: '2-digit', hour12: false }).format(dateObject);
-
-                let chatItemToAdd:ChatItem = {
-                    id: Date.now(), // Use the current timestamp as a temporary ID
-                    content: 'UserJoined',
-                    timestamp: Date.now().toLocaleString(),
-                    date: date,
-                    time: time,
-                    userName: user.userName,
-                    userId: user.id,
-                    isEvent: true
-                };
+                let chatItemToAdd = createChatItem(user, 'UserJoined');
 
                 chatItems = [...chatItems, chatItemToAdd];
 
@@ -134,19 +145,7 @@
             groupInfo.users = groupInfo.users.filter(u => u.id !== user.id);
             groupInfo.admins = groupInfo.admins.filter(admin => admin.id !== user.id);
 
-            const dateObject = new Date();
-            const date = dateObject.toLocaleDateString();
-            const time = new Intl.DateTimeFormat('default', { hour: '2-digit', minute: '2-digit', hour12: false }).format(dateObject);
-
-            let chatItemToAdd:ChatItem = {
-                id: Date.now(), // Use the current timestamp as a temporary ID
-                content: 'UserLeft',
-                timestamp: Date.now().toLocaleString(),
-                date: date,
-                time: time,
-                userName: user.userName,
-                userId: user.id,
-            };
+            let chatItemToAdd = createChatItem(user, 'UserLeft');
 
                 chatItems = [...chatItems, chatItemToAdd];
 
@@ -161,19 +160,7 @@
             }
             groupInfo.users = groupInfo.users.filter(u => u.id !== user.id);
 
-            const dateObject = new Date();
-            const date = dateObject.toLocaleDateString();
-            const time = new Intl.DateTimeFormat('default', { hour: '2-digit', minute: '2-digit', hour12: false }).format(dateObject);
-
-            let chatItemToAdd:ChatItem = {
-                id: Date.now(), // Use the current timestamp as a temporary ID
-                content: 'UserKicked',
-                timestamp: Date.now().toLocaleString(),
-                date: date,
-                time: time,
-                userName: user.userName,
-                userId: user.id
-            };
+            let chatItemToAdd = createChatItem(user, 'UserKicked');
 
                 chatItems = [...chatItems, chatItemToAdd];
 
@@ -190,19 +177,7 @@
         connection.on("UserPromoted", async function(user: any){
             groupInfo.admins = [...groupInfo.admins, user];
 
-            const dateObject = new Date();
-            const date = dateObject.toLocaleDateString();
-            const time = new Intl.DateTimeFormat('default', { hour: '2-digit', minute: '2-digit', hour12: false }).format(dateObject);
-
-            let chatItemToAdd:ChatItem = {
-                id: Date.now(), // Use the current timestamp as a temporary ID
-                content: 'UserPromoted',
-                timestamp: Date.now().toLocaleString(),
-                date: date,
-                time: time,
-                userName: user.userName,
-                userId: user.id
-            };
+            let chatItemToAdd = createChatItem(user, 'UserPromoted');
 
             chatItems = [...chatItems, chatItemToAdd];
 
@@ -213,19 +188,7 @@
         connection.on("UserDemoted", async function(user: any){
             groupInfo.admins = groupInfo.admins.filter(admin => admin.id !== user.id);
 
-            const dateObject = new Date();
-            const date = dateObject.toLocaleDateString();
-            const time = new Intl.DateTimeFormat('default', { hour: '2-digit', minute: '2-digit', hour12: false }).format(dateObject);
-
-            let chatItemToAdd:ChatItem = {
-                id: Date.now(), // Use the current timestamp as a temporary ID
-                content: 'UserDemoted',
-                timestamp: Date.now().toLocaleString(),
-                date: date,
-                time: time,
-                userName: user.userName,
-                userId: user.id
-            };
+            let chatItemToAdd = createChatItem(user, 'UserDemoted');
 
             chatItems = [...chatItems, chatItemToAdd];
 
@@ -234,22 +197,10 @@
         });
 
         connection.on("OwnershipTransferred", async function(user: any){
-            groupInfo.creatorId = user.id;
-            groupInfo.admins = [...groupInfo.admins, user];
+            console.log("Ownership transferred to: ", user);
+            groupInfo = { ...groupInfo, creatorId: user.id, admins: [...groupInfo.admins, user] };
 
-            const dateObject = new Date();
-            const date = dateObject.toLocaleDateString();
-            const time = new Intl.DateTimeFormat('default', { hour: '2-digit', minute: '2-digit', hour12: false }).format(dateObject);
-
-            let chatItemToAdd:ChatItem = {
-                id: Date.now(), // Use the current timestamp as a temporary ID
-                content: 'OwnershipTransferred',
-                timestamp: Date.now().toLocaleString(),
-                date: date,
-                time: time,
-                userName: user.userName,
-                userId: user.id
-            };
+            let chatItemToAdd = createChatItem(user, 'OwnershipTransferred');
 
             chatItems = [...chatItems, chatItemToAdd];
 
@@ -309,7 +260,7 @@
             groupInfo = await fetchGroupInfo(chatId);        
     }
     async function sendMessage() {
-        message = await handleMessageSubmit(sendMessageText, chatId, chatId);
+        message = await handleMessageSubmit(sendMessageText, chatId);
         sendMessageText = "";
     }
     
@@ -317,15 +268,15 @@
 </script>
 
 
-<svelte:window on:click={closeDropdown} />
+
 
 {#if ready}
 <div class="chat-container d-flex flex-column container-fluid">   
-    <ChatHeader {groupInfo} bind:isUsersSidebarOpen {isCreator} {chatId} />       
+    <ChatHeader  bind:groupInfo bind:isUsersSidebarOpen {userInfo} {chatId} />       
     {#if isUsersSidebarOpen}
-        <UserSidebar {groupInfo} {userSidebarDropdown} {userInfo} {imageUrl} {chatId}/>
+        <UserSidebar bind:isUsersSidebarOpen {groupInfo} {userSidebarDropdown} {userInfo} {imageUrl} {chatId}/>
     {/if}           
-    <ChatMessage {chatId} {chatItems} {userInfo} {imageUrl} bind:scrollContainer/>  
+    <ChatMessage {groupInfo} {chatId} {chatItems} {userInfo} {imageUrl} bind:scrollContainer/>  
     <div class="chat-footer" style="min-height:6rem; height:6rem;" >
         <ul class="list-unstyled">
             <li class="bg-white mb-3">

@@ -77,7 +77,6 @@ namespace Backend.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")
@@ -113,8 +112,10 @@ namespace Backend.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("InviteCode")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsArchieved")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsGroup")
                         .HasColumnType("bit");
@@ -187,6 +188,36 @@ namespace Backend.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("ChatUsers");
+                });
+
+            modelBuilder.Entity("Backend.Models.Friendship", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FriendId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ChatId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("RequestRespondedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("RequestSentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "FriendId");
+
+                    b.HasIndex("ChatId");
+
+                    b.HasIndex("FriendId");
+
+                    b.ToTable("Friendships");
                 });
 
             modelBuilder.Entity("Backend.Models.Message", b =>
@@ -420,6 +451,31 @@ namespace Backend.Migrations
                         .IsRequired();
 
                     b.Navigation("Chat");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Backend.Models.Friendship", b =>
+                {
+                    b.HasOne("Backend.Models.Chat", "Chat")
+                        .WithMany()
+                        .HasForeignKey("ChatId");
+
+                    b.HasOne("Backend.Models.ApplicationUser", "Friend")
+                        .WithMany()
+                        .HasForeignKey("FriendId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Backend.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Chat");
+
+                    b.Navigation("Friend");
 
                     b.Navigation("User");
                 });
