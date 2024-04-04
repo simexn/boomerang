@@ -54,8 +54,10 @@ export async function startConnection() {
             });
 
             if(userId === data.user.id){
+                console.log("Friend added: " + data.friend.userPfp);
                 let friendToAdd: FriendPreview = {
                     id: data.friend.id,
+                    userPfp: `${backendUrl}${data.friend.profilePictureUrl}?${Date.now()}`,
                     username: data.friend.userName,
                 
                     chatId: data.chatId
@@ -65,6 +67,7 @@ export async function startConnection() {
             else{
                 let friendToAdd: FriendPreview = {
                     id: data.user.id,
+                    userPfp: `${backendUrl}${data.user.profilePictureUrl}?${Date.now()}`,
                     username: data.user.userName,
                    
                     chatId: data.chatId
@@ -83,7 +86,10 @@ export async function startConnection() {
 
         connection.on("FriendRemoved", function(data: any) {          
             console.log("Friend removed: " + data.friendId);
-            friendsStore.update(friends => friends.filter(friend => friend.id === data.friend.Id));
+            friendsStore.update(friends => friends.filter(friend => friend.id !== data.friend.id));
+            friendsStore.update(friends => friends.filter(friend => friend.id !== data.user.id));
+            
+            
 
             
         });

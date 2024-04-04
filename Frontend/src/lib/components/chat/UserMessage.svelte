@@ -65,7 +65,7 @@
 <div class="img">
     <div class="message-avatar-wrap">
         <span class="message-avatar">
-            <img style="width:32px; height:32px;" alt="User" src={backendUrl + item.userPfp}>
+            <img width="32px" height="32px" style="border-radius: 50%;" alt="User" src={item.userPfp}>
         </span>
         <span class="status-dot" class:online={$userStatuses[item.userId.toString()] == 'online'}></span>
     </div>

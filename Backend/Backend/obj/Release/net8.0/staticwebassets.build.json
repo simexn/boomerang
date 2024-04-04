@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "s0APa30oqJtLBcYeoE5UZ6jzoSXMbbxj66hlefJ9M+k=",
+  "Hash": "VsfSqtRFJf/EF2pF4XDPV1mTGuU+sTifnVf5m8qKmAQ=",
   "Source": "Backend",
   "BasePath": "_content/Backend",
   "Mode": "Default",
@@ -1250,6 +1250,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\images\\profile_pictures\\1.png"
+    },
+    {
+      "Identity": "C:\\Users\\sbuha\\Desktop\\Undertale.v1.08-SiMPLEX\\diplomna rabota\\Backend\\Backend\\wwwroot\\images\\profile_pictures\\placeholder.png",
+      "SourceId": "Backend",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\sbuha\\Desktop\\Undertale.v1.08-SiMPLEX\\diplomna rabota\\Backend\\Backend\\wwwroot\\",
+      "BasePath": "_content/Backend",
+      "RelativePath": "images/profile_pictures/placeholder.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\images\\profile_pictures\\placeholder.png"
     },
     {
       "Identity": "C:\\Users\\sbuha\\Desktop\\Undertale.v1.08-SiMPLEX\\diplomna rabota\\Backend\\Backend\\wwwroot\\js\\signalr.js",

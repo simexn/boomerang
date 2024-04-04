@@ -131,6 +131,40 @@ namespace Backend.Controllers
 
             return new JsonResult(new { pfpUploaded = true });
         }
+
+        [HttpPost("updateInformation")]
+        public async Task<IActionResult> UpdateInformation([FromBody] UpdateUserInput model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            // Validate the input model
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Update the user's information
+            user.UserName = model.Username;
+            user.Email = model.Email;
+            if (!string.IsNullOrEmpty(model.Password))
+            {
+                user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, model.Password);
+            }
+
+            // Add other fields as needed
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Errors);
+            }
+
+            return new JsonResult(new { accountUpdated = true });
+        }
     }
 
 

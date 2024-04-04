@@ -139,7 +139,7 @@
             <ul class="navbar-nav align-items-center">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded={dropdownOpen} on:click={toggleDropdown}>
-                    <img alt="avatar" src="{backendUrl + userInfo?.profilePictureUrl}" width="35px" height="35px" style="background-color:gray; border-radius:50%">{$userStore?.userName}
+                    <img alt="avatar" src="{userInfo?.profilePictureUrl}" width="35px" height="35px" style="background-color:gray; border-radius:50%">{$userStore?.userName}
                     </a>
                         <div class="dropdown-menu" class:show={dropdownOpen} aria-labelledby="navbarDropdownMenuLink">
                         <a class="dropdown-item" on:click={() => goto("/account")}>Account</a>

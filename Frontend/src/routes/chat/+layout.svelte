@@ -7,7 +7,7 @@
     import {fetchChats} from '$lib/Handlers/groupHandler'
     import JoinGroupModal from './JoinGroupModal.svelte'
     import AddFriendModal from './AddFriendModal.svelte';
-    import { fetchFriends, type FriendInfo } from '$lib/Handlers/userHandler';
+    import { fetchFriends, type FriendInfo, type FriendPreview } from '$lib/Handlers/userHandler';
     import { friendsStore } from '$lib/stores/friendsStore';
     import { userStatuses } from '$lib/stores/userStatusesStore';
 
@@ -26,7 +26,7 @@
     }
     
     
-    let friends:FriendInfo[] =[];
+    let friends:FriendPreview[] =[];
 
     friendsStore.subscribe(value => {
         friends = value;
@@ -66,7 +66,7 @@
                 {#each friends as friend}
                 <li class="nav-item" style="" transition:slide={{duration: 300}}>
                     <a class:active={activeChatId === friend?.id} class="nav-link sidebar-group" href={`/chat/me/${friend?.chatId}`} on:click={() => setActiveChat(friend?.id)}>
-                        <img width="40px" height="40px" src="{imgUrl}">
+                        <img width="40px" height="40px" style="border-radius: 50%" src="{friend.userPfp}">
                         <span class="status-dot" class:online={$userStatuses[friend?.id.toString()] == 'online'}></span>
                         <b>{friend?.username}</b>
                     </a>

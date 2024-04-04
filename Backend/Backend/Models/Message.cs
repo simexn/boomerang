@@ -11,6 +11,7 @@ namespace Backend.Models
         public int FromUserId { get; set; }
         [ForeignKey("FromUserId")]
         public virtual ApplicationUser FromUser { get; set; }
+
         [Required]
         public string Text { get; set; }
         [Required]

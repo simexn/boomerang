@@ -114,6 +114,7 @@ namespace Backend.Controllers
                 .Select(f => new {
                     id = f.UserId == user.Id ? f.Friend.Id : f.User.Id,
                     username = f.UserId == user.Id ? f.Friend.UserName : f.User.UserName,
+                    profilePictureUrl = f.UserId == user.Id ? f.Friend.ProfilePictureUrl : f.User.ProfilePictureUrl,
                     chatId = _context.ChatUsers
                         .Where(cu => cu.UserId == user.Id && _context.ChatUsers.Any(cu2 => cu2.ChatId == cu.ChatId && cu2.UserId == (f.UserId == user.Id ? f.Friend.Id : f.User.Id)))
                         .Select(cu => cu.ChatId)
@@ -166,6 +167,7 @@ namespace Backend.Controllers
             {
                 Id = u.Id,
                 Username = u.UserName,
+                userPfp = u.ProfilePictureUrl,
                 ChatId = u.Id == user.Id ? chatId : _context.Friendships
                     .Where(f => f.Status == "Accepted" && (f.UserId == user.Id || f.FriendId == user.Id) && (f.UserId == u.Id || f.FriendId == u.Id))
                     .Select(f => f.ChatId)
@@ -190,6 +192,7 @@ namespace Backend.Controllers
             {
                 id = cu.UserId,
                 username = cu.User.UserName,
+                userPfp = cu.User.ProfilePictureUrl,
                 memberSince = cu.User.AccountCreatedDate.ToString("MMM d, yyyy"),
                 friendsSince = _context.Friendships
                     .Where(f => (f.UserId == user.Id && f.FriendId == cu.UserId) || (f.UserId == cu.UserId && f.FriendId == user.Id))

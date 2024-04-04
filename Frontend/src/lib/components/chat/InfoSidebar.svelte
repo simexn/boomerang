@@ -7,6 +7,7 @@
     import { userStatuses } from "$lib/stores/userStatusesStore";
     import { handleRemoveFriend, type FriendInfo } from "$lib/Handlers/userHandler";
     import { goto } from "$app/navigation";
+    import { onMount } from "svelte";
 
     export let groupInfo: Group;
     export let userInfo: User;
@@ -19,6 +20,10 @@
             let userOptionsDropdown: boolean = false;
 
     let isUserHovered = false;
+
+    onMount(() => {
+        console.log("friend pfp" + friendInfo.userPfp)
+    });
 
     export async function kickUser(userId: number){
         await handleKickUser(chatId, userId);
@@ -69,7 +74,7 @@
         </div>
         <div class="user-info-image-container">
             <div class="user-info-image">
-                <img src={imageUrl} width="50px" height="50px" alt="user image" />
+                <img src={friendInfo.userPfp} style="border-radius:50%;" width="50px" height="50px" alt="user image" />
                 <span class="user-status-dot" class:online={$userStatuses[friendInfo?.id.toString()] == 'online'}></span>
             </div>
         </div>
@@ -151,7 +156,7 @@
                         <li class="nav-item" style="" transition:slide={{duration: 300}}>
                             <a class="nav-link sidebar-group" href={`/chat/me/${friend?.chatId}`} style="">
                                 <div style="display:inline-block; position:relative;">
-                                    <img width="40px" height="40px" src="{imageUrl}">
+                                    <img width="40px" height="40px" style="border-radius: 50%;" src="{friend.userPfp}">
                                     <span class="user-status-dot" class:online={$userStatuses[friend?.id.toString()] == 'online'}></span>
                                 </div>
                                 <b>{friend?.username}</b>

@@ -11,12 +11,10 @@
     let loginError = false;
     let loginErrorMessage: string;
     let username = '';
-    const usernameRegex = /^[a-zA-Z][a-zA-Z0-9]{0,3}$/;
     let email = '';
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     let usernameEmail: string;
     let password = '';
-    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
     let confirmPassword = '';
     let birthDate = '';
     let pronouns = '';
@@ -180,7 +178,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-4 d-flex align-items-center">
                         <div class="form-outline datepicker w-100">
-                            <input type="text" class="form-control form-control-lg" id="birthdayDate" />
+                            <input type="date" class="form-control form-control-lg" id="birthdayDate" />
                             <label for="birthdayDate" class="form-label">Birthday</label>
                         </div>
                         </div>

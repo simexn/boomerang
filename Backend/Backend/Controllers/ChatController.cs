@@ -209,7 +209,7 @@ namespace Backend.Controllers
             _context.Messages.Add(Message);
             await _context.SaveChangesAsync();
 
-            await _chat.Clients.Group(requestBody[1]).SendAsync("ReceiveMessage", Message);
+            await _chat.Clients.Group(requestBody[1]).SendAsync("ReceiveMessage", Message, user.ProfilePictureUrl );
             return Ok();
         }
 

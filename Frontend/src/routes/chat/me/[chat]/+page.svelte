@@ -59,7 +59,7 @@
         message = await handleMessageSubmit(sendMessageText, chatId);
         sendMessageText = "";
     }
-    function createChatItem(data: any, eventType: string): ChatItem {
+    function createChatItem(data: any, userPfp: string, eventType: string): ChatItem {
     const dateObject = new Date();
     const time = new Intl.DateTimeFormat('default', { hour: '2-digit', minute: '2-digit', hour12: false }).format(dateObject);
 
@@ -69,7 +69,8 @@
         date: dateObject.toLocaleDateString(),
         time: time,
         isEvent: eventType !== 'ReceiveMessage',
-        withoutDetails: false
+        withoutDetails: false,
+        userPfp: `${userPfp}?${Date.now()}`,
     };
 
     if (eventType === 'ReceiveMessage') {
@@ -108,9 +109,9 @@ return chatItem as ChatItem;
             .withUrl(`${backendUrl}/chatHub`)
             .build();
 
-            connection.on("ReceiveMessage", async function(data: any){
+            connection.on("ReceiveMessage", async function(data: any, userPfp: string){
     
-                let chatItemToAdd = createChatItem(data, 'ReceiveMessage');
+                let chatItemToAdd = createChatItem(data, userPfp, 'ReceiveMessage');
 
                 chatItems = [...chatItems, chatItemToAdd];
 

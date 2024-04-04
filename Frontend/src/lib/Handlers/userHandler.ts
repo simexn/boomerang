@@ -15,6 +15,7 @@ export interface FriendInfo{
     username: string;
     lastMessagePreview: string;
     chatId:string;
+    userPfp:string;
     memberSince?: string;
     friendsSince?: string;
     mutualFriends?: FriendPreview[];
@@ -23,6 +24,7 @@ export interface FriendInfo{
 export interface FriendPreview{
     id: string;
     username: string;
+    userPfp: string;
     chatId:string;
 
 }
@@ -84,12 +86,18 @@ export async function fetchFriends(){
 
     if(response.ok){
         const friends: FriendPreview[] = await data.friends.map((data: any) => {
+            console.log("friends fetched:" + data.profilePictureUrl);
             return {
                 id: data.id,
                 username: data.username,
+                userPfp: `${backendUrl}${data.profilePictureUrl}?${Date.now()}`,
                 chatId: data.chatId
+                
             }
+            
         });
+
+        
 
         friendsStore.set(friends);
 
@@ -113,19 +121,23 @@ export async function fetchFriendInfo(chatId:string){
 
     if(response.ok){
         const friend: FriendInfo =  
-        {            
-            id:data.friend.id,
+        {    
+            id: data.friend.id,
             username: data.friend.username,
             lastMessagePreview: "",
             chatId: data.friend.chatId,  
+            userPfp: `${backendUrl}${data.friend.userPfp}?${Date.now()}`,
             memberSince: data.friend.memberSince,
             friendsSince: data.friend.friendsSince,   
-            mutualFriends: data.friend.mutualFriends,
+            mutualFriends: data.friend.mutualFriends.map((friend: FriendPreview) => ({
+                ...friend,
+                userPfp: `${backendUrl}${friend.userPfp}?${Date.now()}`
+            })),
             mutualGroups: data.friend.mutualGroups       
         };
         return friend
     }
-    let friend: FriendInfo = { id: '', username: "", lastMessagePreview: '', chatId: "", mutualFriends: [], mutualGroups: []}
+    let friend: FriendInfo = { id: '', username: "", lastMessagePreview: '', chatId: "", userPfp:"",  mutualFriends: [], mutualGroups: []}
     return friend
 }
 
