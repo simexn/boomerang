@@ -726,3 +726,250 @@ GO
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240322143527_userStatuses'
+)
+BEGIN
+    ALTER TABLE [AspNetUsers] ADD [Status] nvarchar(max) NOT NULL DEFAULT N'';
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240322143527_userStatuses'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20240322143527_userStatuses', N'8.0.3');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240325221922_FriendshipsTable'
+)
+BEGIN
+    CREATE TABLE [Friendships] (
+        [UserId] int NOT NULL,
+        [FriendId] int NOT NULL,
+        [Status] nvarchar(max) NOT NULL,
+        [RequestSentDate] datetime2 NOT NULL,
+        [RequestRespondedDate] datetime2 NULL,
+        CONSTRAINT [PK_Friendships] PRIMARY KEY ([UserId], [FriendId]),
+        CONSTRAINT [FK_Friendships_AspNetUsers_FriendId] FOREIGN KEY ([FriendId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_Friendships_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE NO ACTION
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240325221922_FriendshipsTable'
+)
+BEGIN
+    CREATE INDEX [IX_Friendships_FriendId] ON [Friendships] ([FriendId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240325221922_FriendshipsTable'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20240325221922_FriendshipsTable', N'8.0.3');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240326121234_NulLStatus'
+)
+BEGIN
+    DECLARE @var2 sysname;
+    SELECT @var2 = [d].[name]
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[AspNetUsers]') AND [c].[name] = N'Status');
+    IF @var2 IS NOT NULL EXEC(N'ALTER TABLE [AspNetUsers] DROP CONSTRAINT [' + @var2 + '];');
+    ALTER TABLE [AspNetUsers] ALTER COLUMN [Status] nvarchar(max) NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240326121234_NulLStatus'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20240326121234_NulLStatus', N'8.0.3');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240326143725_fix'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20240326143725_fix', N'8.0.3');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240327144736_NullableInviteCode'
+)
+BEGIN
+    DECLARE @var3 sysname;
+    SELECT @var3 = [d].[name]
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Chats]') AND [c].[name] = N'InviteCode');
+    IF @var3 IS NOT NULL EXEC(N'ALTER TABLE [Chats] DROP CONSTRAINT [' + @var3 + '];');
+    ALTER TABLE [Chats] ALTER COLUMN [InviteCode] nvarchar(max) NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240327144736_NullableInviteCode'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20240327144736_NullableInviteCode', N'8.0.3');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240328164214_friendsSince'
+)
+BEGIN
+    DECLARE @var4 sysname;
+    SELECT @var4 = [d].[name]
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Friendships]') AND [c].[name] = N'RequestRespondedDate');
+    IF @var4 IS NOT NULL EXEC(N'ALTER TABLE [Friendships] DROP CONSTRAINT [' + @var4 + '];');
+    EXEC(N'UPDATE [Friendships] SET [RequestRespondedDate] = ''0001-01-01T00:00:00.0000000'' WHERE [RequestRespondedDate] IS NULL');
+    ALTER TABLE [Friendships] ALTER COLUMN [RequestRespondedDate] datetime2 NOT NULL;
+    ALTER TABLE [Friendships] ADD DEFAULT '0001-01-01T00:00:00.0000000' FOR [RequestRespondedDate];
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240328164214_friendsSince'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20240328164214_friendsSince', N'8.0.3');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240401141433_chatIdFriendships'
+)
+BEGIN
+    ALTER TABLE [Friendships] ADD [ChatId] int NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240401141433_chatIdFriendships'
+)
+BEGIN
+    CREATE INDEX [IX_Friendships_ChatId] ON [Friendships] ([ChatId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240401141433_chatIdFriendships'
+)
+BEGIN
+    ALTER TABLE [Friendships] ADD CONSTRAINT [FK_Friendships_Chats_ChatId] FOREIGN KEY ([ChatId]) REFERENCES [Chats] ([Id]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240401141433_chatIdFriendships'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20240401141433_chatIdFriendships', N'8.0.3');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240402164241_archievedchat'
+)
+BEGIN
+    ALTER TABLE [Chats] ADD [IsArchieved] bit NOT NULL DEFAULT CAST(0 AS bit);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240402164241_archievedchat'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20240402164241_archievedchat', N'8.0.3');
+END;
+GO
+
+COMMIT;
+GO
+

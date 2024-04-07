@@ -28,12 +28,13 @@ namespace Backend
                 options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddCors(options => {
+            builder.Services.AddCors(options => 
+            {
                 options.AddPolicy(name: SveltePolicy,
                     policy => {
                         policy.WithOrigins(
-                            "https://boomerangr.vercel.app",
-                            "http://localhost:5555"
+                            "https://boomerangr.vercel.app"
+
                         )
                         .AllowAnyHeader()
                         .AllowCredentials()
@@ -92,15 +93,15 @@ namespace Backend
                 app.UseHsts();
             }
 
-            app.UseAuthentication();
-            app.UseAuthorization();
-
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
 
             app.UseCors(SveltePolicy);
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.MapControllers();
 
@@ -111,7 +112,6 @@ namespace Backend
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
-            
             app.MapRazorPages();
 
             app.Run();

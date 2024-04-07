@@ -13,6 +13,14 @@
       "PackagePath": "staticwebassets\\favicon.ico"
     },
     {
+      "Id": "C:\\Users\\sbuha\\Desktop\\Undertale.v1.08-SiMPLEX\\diplomna rabota\\Backend\\Backend\\wwwroot\\images\\profile_pictures\\1.png",
+      "PackagePath": "staticwebassets\\images\\profile_pictures\\1.png"
+    },
+    {
+      "Id": "C:\\Users\\sbuha\\Desktop\\Undertale.v1.08-SiMPLEX\\diplomna rabota\\Backend\\Backend\\wwwroot\\images\\profile_pictures\\placeholder.png",
+      "PackagePath": "staticwebassets\\images\\profile_pictures\\placeholder.png"
+    },
+    {
       "Id": "C:\\Users\\sbuha\\Desktop\\Undertale.v1.08-SiMPLEX\\diplomna rabota\\Backend\\Backend\\wwwroot\\js\\signalr.js",
       "PackagePath": "staticwebassets\\js\\signalr.js"
     },

@@ -70,7 +70,7 @@ export async function fetchMessages(chatId: string){
                     isEdited: item.isEdited,
                     isDeleted: item.isDeleted,
                     isEvent: item.isEvent,
-                    userPfp: `${backendUrl}${item.userPfp}?${Date.now()}`,
+                    userPfp: `${backendUrl}${item.userPfp}`,
                     withoutDetails: withoutDetails
                 };
             });

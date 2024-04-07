@@ -76,13 +76,13 @@ namespace Backend.Controllers
             newChat.Users.Add(new ChatUser
             {
                 UserId = user.Id,
-                ChatId = chat.Id
+                ChatId = newChat.Id
             }
             );
             newChat.Admins.Add(new ChatAdmin
             {
                 UserId = user.Id,
-                ChatId = chat.Id
+                ChatId = newChat.Id
             }
             );
 

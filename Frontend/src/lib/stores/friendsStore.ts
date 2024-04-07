@@ -1,4 +1,4 @@
-import type { Friend } from '$lib/Handlers/userHandler';
+import type { FriendPreview } from '$lib/Handlers/userHandler';
 import { writable } from 'svelte/store';
 
 // friendsStore.ts
@@ -6,4 +6,4 @@ import { writable } from 'svelte/store';
 
 
 
-export const friendsStore = writable<Friend[]>([]);
+export const friendsStore = writable<FriendPreview[]>([]);

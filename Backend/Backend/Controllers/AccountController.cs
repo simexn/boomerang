@@ -126,7 +126,10 @@ namespace Backend.Controllers
                 await file.CopyToAsync(stream);
             }
 
-            user.ProfilePictureUrl = "/images/profile_pictures/" + user.Id + ".png";
+            // Add a version parameter to the URL based on the current timestamp
+            var version = DateTime.UtcNow.Ticks;
+            user.ProfilePictureUrl = $"/images/profile_pictures/{user.Id}.png?v={version}";
+
             await _userManager.UpdateAsync(user);
 
             return new JsonResult(new { pfpUploaded = true });

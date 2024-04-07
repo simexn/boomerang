@@ -126,12 +126,12 @@ export async function fetchFriendInfo(chatId:string){
             username: data.friend.username,
             lastMessagePreview: "",
             chatId: data.friend.chatId,  
-            userPfp: `${backendUrl}${data.friend.userPfp}?${Date.now()}`,
+            userPfp: `${backendUrl}${data.friend.userPfp}`,
             memberSince: data.friend.memberSince,
             friendsSince: data.friend.friendsSince,   
             mutualFriends: data.friend.mutualFriends.map((friend: FriendPreview) => ({
                 ...friend,
-                userPfp: `${backendUrl}${friend.userPfp}?${Date.now()}`
+                userPfp: `${backendUrl}${friend.userPfp}`
             })),
             mutualGroups: data.friend.mutualGroups       
         };
