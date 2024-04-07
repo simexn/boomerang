@@ -70,7 +70,7 @@
         time: time,
         isEvent: eventType !== 'ReceiveMessage',
         withoutDetails: false,
-        userPfp: `${userPfp}`,
+        userPfp: `${backendUrl}${userPfp}`,
     };
 
     if (eventType === 'ReceiveMessage') {
