@@ -11,7 +11,7 @@
     import { HubConnectionBuilder, type HubConnection } from "@microsoft/signalr";
     import { getToken } from "$lib/Handlers/authHandler";
     import { fetchFriendInfo, type FriendInfo } from "$lib/Handlers/userHandler";
-    import InfoSidebar from "$lib/components/chat/InfoSidebar.svelte";
+    import FriendInfoSidebar from "$lib/components/chat/FriendInfoSidebar.svelte";
     import { goto } from "$app/navigation";
 
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -186,7 +186,7 @@ return chatItem as ChatItem;
     </div>  
     {/if}
     {#if isInfoSidebarOpen}
-        <InfoSidebar bind:isInfoSidebarOpen {groupInfo} {friendInfo} {userInfo} {imageUrl} {chatId}/>
+        <FriendInfoSidebar bind:isInfoSidebarOpen {groupInfo} {friendInfo} {userInfo} {imageUrl} {chatId}/>
     {/if}
 </div>
 

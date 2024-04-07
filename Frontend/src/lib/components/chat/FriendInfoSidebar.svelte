@@ -15,8 +15,8 @@
     export let imageUrl: string = '/user-icon-placeholder.png';
     export let chatId: string;
     export let isInfoSidebarOpen: boolean;
-            let mutualServersDropdown: boolean = true;
-            let mutualFriendsDropdown: boolean = true;
+            let mutualServersDropdown: boolean = false;
+            let mutualFriendsDropdown: boolean = false;
             let userOptionsDropdown: boolean = false;
 
     let isUserHovered = false;
@@ -117,7 +117,6 @@
                         <li class="nav-item" style="" transition:slide={{duration: 300}}>
                             <a class="nav-link sidebar-group" href={`/chat/${group?.id}`} style="">
                                 <div style="display:inline-block; position:relative;">
-                                    <img width="40px" height="40px" src="{imageUrl}">
                                     <span class="user-status-dot" class:online={$userStatuses[group?.id.toString()] == 'online'}></span>
                                 </div>
                                 <b>{group?.name}</b>
