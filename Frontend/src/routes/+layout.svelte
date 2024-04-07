@@ -15,6 +15,7 @@
     import { friendRequestsStore } from '$lib/stores/friendRequestsStore';
     import { friendsStore } from '$lib/stores/friendsStore';
     import { goto } from '$app/navigation';
+    import {sidebarOpen} from '$lib/stores/sidebarToggleStore';
     
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -104,11 +105,19 @@
     await handleRejectRequest(request.username);
     friendRequestsArray = friendRequestsArray.filter(req => req.username !== request.username);
 }
+
+function toggleSidebar() {
+        sidebarOpen.update(value => !value);
+        console.log(sidebarOpen);
+    }
 </script>
     
 
 <div class="container-fluid">
     <nav class="navbar navbar-expand-lg navbar-light">
+        <button class="sidebar-toggle" on:click={toggleSidebar}>
+            <i class="fa-solid fa-bars"></i>
+        </button>
         <a class="navbar-brand" href="/">Boomerangr</a>
         <div class="dropdown-wrap">
             {#if isLogged}
@@ -232,10 +241,18 @@
             }
             a{
                 color: var(--prim-fg) !important;
-                margin-left: 2rem;
+                margin-left: 1rem;
             }
 
     
+    .sidebar-toggle{
+        border:none;
+        background:transparent;
+    }
+        .sidebar-toggle i{
+            color: var(--prim-fg);
+            font-size: 1.5rem;
+        }
 </style>
 
 

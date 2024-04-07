@@ -340,39 +340,12 @@
                 background-color: var(--prim-tp);
                 transition: background-color 0.5s;
             }
-                .form-group{
-                    position:relative;
-                    height:3.5rem;
-                    border:solid var(--sec);
-                    border-radius: 5px;
-                    margin:1rem;
-                }
-                    .form-group > label {
-                        position: absolute;
-                        top:5%;
-                        left:2%;
-                    }
-                    .form-group > input {
-                        width:100%;
-                        height: 100%;
-                        font-size: 1.2rem;
-                        padding: 0.5rem;
-                        padding-top: 1rem;
-                        border:none;
-                        border-radius: 6px;
-                    }
+                    
                 .account-form{
                     size-adjust: auto;
                     background-color: none;
                 } 
-                .account-form > button{
-                    position:absolute;
-                    width:8rem;
-                    height:4rem;
-                    bottom:-4rem;
-                    right: 0;
 
-                }
 
                 .card{
                     height:36rem;
@@ -406,6 +379,8 @@
                     .card{
                         height:36rem;
                         width: 100%;   
+                    }
+                    .card-body{
                         overflow: auto;
                     }
 

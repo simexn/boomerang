@@ -10,6 +10,7 @@
     import { fetchFriends, type FriendInfo, type FriendPreview } from '$lib/Handlers/userHandler';
     import { friendsStore } from '$lib/stores/friendsStore';
     import { userStatuses } from '$lib/stores/userStatusesStore';
+    import { sidebarOpen } from '$lib/stores/sidebarToggleStore';
 
     let imgUrl= '/user-icon-placeholder.png';
     
@@ -51,7 +52,7 @@
 </script>
 
 <div class="snd-layout-wrapper">
-    <div class="sidebar d-flex flex-column flex-shrink-0 p-3 text-white">
+    <div class="sidebar d-flex flex-column flex-shrink-0 p-3 text-white" class:open={$sidebarOpen}>
         <div class="d-flex flex-row">
             <button class="dropdown-button" on:click={() => friendsDropdownActive = !friendsDropdownActive}><span>Friends
             <i class="fa fa-caret-right" class:rotate={friendsDropdownActive}></i></span></button>
@@ -131,7 +132,20 @@
             background-color: var(--sec);
             padding-top:0 !important;
             width: 15rem;
+            transition: width 0.3s ease;
+            overflow: hidden;
             
+        }
+
+        @media (max-width: 768px) {
+            .sidebar.open{
+                width:100%;
+                
+            }
+            .sidebar:not(.open){
+                width:0;
+                padding: 0 !important;
+            }
         }
         .sidebar-group{
             color: var(--prim-fg);
