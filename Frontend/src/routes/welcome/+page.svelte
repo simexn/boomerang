@@ -377,7 +377,7 @@
                         text-align: unset;
                     }
                     .card{
-                        height:36rem;
+                        height:32rem;
                         width: 100%;   
                     }
                     .card-body{

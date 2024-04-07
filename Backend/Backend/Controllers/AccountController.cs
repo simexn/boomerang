@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Backend.Services;
 using Backend.Data;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace Backend.Controllers
 {
@@ -90,7 +91,7 @@ namespace Backend.Controllers
             {
                 UserName = model.UserName,
                 Email = model.Email,                
-                ProfilePictureUrl = null,
+                ProfilePictureUrl = $"/images/profile_pictures/placeholder.png",
                 AccountCreatedDate = DateTime.UtcNow,
             };
             var result = await _userManager.CreateAsync(user, model.Password);

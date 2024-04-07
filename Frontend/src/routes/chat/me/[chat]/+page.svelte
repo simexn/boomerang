@@ -30,6 +30,7 @@
     let _connectionId: string;
     let sendMessageText = '';
 
+    let ready = false;
 
     let imageUrl = '/user-icon-placeholder.png';
 
@@ -45,6 +46,9 @@
         await getGroupInfo();
         await getFriendInfo();
         await loadMessages();
+        await setupConnection();
+
+        ready = true;
     });
     async function getGroupInfo(){
         groupInfo = await fetchGroupInfo(chatId);
@@ -113,7 +117,7 @@ return chatItem as ChatItem;
     
                 console.log("userPfp", userPfp)
                 let chatItemToAdd = createChatItem(data, userPfp, 'ReceiveMessage');
-
+                
                 chatItems = [...chatItems, chatItemToAdd];
 
                 await tick();
@@ -169,7 +173,7 @@ return chatItem as ChatItem;
         } 
     }
 </script>
-
+{#if ready}
 <div class="chat-container d-flex flex-column container-fluid">   
      <ChatHeader bind:isInfoSidebarOpen {groupInfo} {friendInfo} {isUsersSidebarOpen} {userInfo} {chatId}  />
     <ChatMessage {groupInfo} {chatId} {chatItems} {userInfo} {imageUrl} bind:scrollContainer/>  
@@ -189,6 +193,7 @@ return chatItem as ChatItem;
         <FriendInfoSidebar bind:isInfoSidebarOpen {groupInfo} {friendInfo} {userInfo} {imageUrl} {chatId}/>
     {/if}
 </div>
+{/if}
 
 <style>
     .chat-container{
