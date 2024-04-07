@@ -33,7 +33,8 @@ namespace Backend
                 options.AddPolicy(name: SveltePolicy,
                     policy => {
                         policy.WithOrigins(
-                            "https://boomerangr.vercel.app"
+                            "https://boomerangr.vercel.app",
+                            "http://localhost:5555"
 
                         )
                         .AllowAnyHeader()

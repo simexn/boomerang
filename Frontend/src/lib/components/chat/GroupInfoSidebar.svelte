@@ -2,6 +2,7 @@
     import type { User } from "$lib/Handlers/accountHandler";
     import type { Group } from "$lib/Handlers/groupHandler";
     import { fly, slide } from "svelte/transition";
+    import { handleKickUser, handlePromoteUser, handleDemoteUser, handleTransferOwnership } from "$lib/Handlers/groupHandler";
     import "$lib/css/sidebarstyles.css"
     import { userStatuses } from "$lib/stores/userStatusesStore";
     import { handleRemoveFriend, type FriendInfo } from "$lib/Handlers/userHandler";
@@ -23,6 +24,21 @@
     onMount(() => {
         console.log("friend pfp" + friendInfo.userPfp)
     });
+
+    export async function kickUser(userId: number){
+        await handleKickUser(chatId, userId);
+        //groupInfo.users = groupInfo.users.filter(user => user.id !== userId);
+    }
+
+    export async function promoteUser(userId: number){
+        await handlePromoteUser(chatId, userId);
+    }
+    export async function demoteUser(userId: number){
+        await handleDemoteUser(chatId, userId);
+    }
+    export async function transferOwnership(userId: number){
+        await handleTransferOwnership(chatId, userId);
+    }
 
     async function removeFriend(){
         await handleRemoveFriend(friendInfo.id);

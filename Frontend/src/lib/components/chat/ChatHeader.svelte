@@ -30,8 +30,10 @@
 <div class="chat-header d-flex justify-content-between align-items-center p-3 border-bottom">
     {#if groupInfo?.isGroup}
     <div class="header-content">
-        <h3>{groupInfo?.name}</h3>
-        <i class="fa fa-users" aria-hidden="true" on:click={toggleSidebar}></i>
+        <div>
+            <h3>{groupInfo?.name}</h3>
+            <i class="fa fa-users" aria-hidden="true" on:click={toggleSidebar}></i>
+        </div>
         <i class="fa fa-circle-info" aria-hidden="true" on:click={()=>isInfoSidebarOpen = !isInfoSidebarOpen}></i>
     </div>
     {:else}

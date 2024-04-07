@@ -291,19 +291,11 @@
     }
     .body {
             display: flex;
-            flex-direction: column;
-        }
-    @media only screen and (min-width: 992px){
-        .body{
-            margin: auto;
-            
-            display: flex;
             flex-direction: row;
-            
-           
-            
+            margin:auto;
         }
-    }
+   
+    
         .card-body{
             padding-top:0 !important;
         }
@@ -386,6 +378,42 @@
                     height:36rem;
                     width: 40rem;   
                 }
-        
+                @media only screen and (max-width: 600px) {
+                   
+                    .wrap{
+                        padding: 1rem;
+                    }
+                    .body {
+                        display: flex;
+                        flex-direction: column;
+                        margin:auto;
+                    }
+
+                    .site-info h1{
+                        font-size: 3rem;
+                        color: var(--prim-tp);
+                    }
+                    .site-info p{
+                        font-family: "Open Sans",sans-serif;
+                        font-style: normal;
+                        font-weight: 400;
+                        font-size: 0.8rem;
+                        line-height: 28px;
+                        color: var(--portal-denim-72);
+                        margin-bottom: 2rem;
+                        text-align: unset;
+                    }
+                    .card{
+                        height:36rem;
+                        width: 100%;   
+                        overflow: auto;
+                    }
+
+                   
+
+                   
+
+                    
+                }
 
 </style>
