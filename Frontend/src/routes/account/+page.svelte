@@ -130,7 +130,7 @@
 
 </script>
 
-<div class="container-fluid" style="overflow:auto; padding: 0 5rem 1rem 5rem;">
+<div class="container-fluid" style="overflow:auto; ">
     <h1>Edit Profile</h1>
     <hr>
     <div class="row">
@@ -190,7 +190,7 @@
             
               <div class="form-group">
                 <label class="col-md-3 control-label"></label>
-                <div class="col-md-8">
+                <div class="col-md-8 center-inputs">
                     <input type="button" class="btn btn-primary" on:click={() => infoEditable ? updateInfo() : isEditing()} value={infoEditable ? 'Update information' : 'Edit information'}>
                     <span></span>
                     {#if infoEditable}
@@ -206,33 +206,9 @@
 <hr>
 
 <style>
-      .input-icon-container {
-        position: relative;
-    }
   .form-control{
     position: relative;
   }
-  .fa-edit {
-        position: absolute;
-        top: 0.4rem;
-        right: 0.5rem;
-        /* Adjust these values as needed */
-        padding: 0.25rem;
-        cursor: pointer;
-    }
-
-    .date-input-container {
-        position: relative;
-    }
-    .date-input-container::before {
-        content: "\f073"; /* This is the Unicode for the Font Awesome calendar icon */
-        font-family: "Font Awesome 5 Free"; /* Adjust according to the icon font you're using */
-        font-weight: 900; /* Adjust according to the icon font you're using */
-        position: absolute;
-        right: 2.5rem; /* Adjust as needed */
-        top: 0.4rem; /* Adjust as needed */
-        pointer-events: none;
-    }
     .date-input {
         -webkit-appearance: none;
         -moz-appearance: none;
@@ -249,5 +225,18 @@
     }
     .form-control{
       width: 100%;
+    }
+
+    .container-fluid{
+        padding: 0 5rem 1rem 5rem;
+    }
+    @media only screen and (max-width: 600px) {
+      .container-fluid{
+        padding: 0 2rem 1rem 2rem;
+      }
+      .center-inputs{
+        display: flex;
+        flex-direction: column;
+      }
     }
 </style>

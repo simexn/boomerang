@@ -319,4 +319,10 @@
 .fa-chevron-right{
             transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         }
+
+        @media only screen and (max-width: 600px) {
+            .sidebar-info {
+                width: 100%;
+            }
+        }
 </style>
