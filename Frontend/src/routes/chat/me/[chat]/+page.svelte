@@ -70,7 +70,7 @@
         time: time,
         isEvent: eventType !== 'ReceiveMessage',
         withoutDetails: false,
-        userPfp: `${userPfp}?${Date.now()}`,
+        userPfp: `${userPfp}`,
     };
 
     if (eventType === 'ReceiveMessage') {
@@ -111,6 +111,7 @@ return chatItem as ChatItem;
 
             connection.on("ReceiveMessage", async function(data: any, userPfp: string){
     
+                console.log("userPfp", userPfp)
                 let chatItemToAdd = createChatItem(data, userPfp, 'ReceiveMessage');
 
                 chatItems = [...chatItems, chatItemToAdd];
