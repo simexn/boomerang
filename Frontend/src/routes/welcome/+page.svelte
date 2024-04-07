@@ -384,7 +384,7 @@
                         text-align: unset;
                     }
                     .card{
-                        height:20rem;
+                        height:30rem;
                         width: 100%;   
                     }
                     .card-body{
