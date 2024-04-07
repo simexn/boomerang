@@ -2,6 +2,7 @@
     import { goto } from '$app/navigation';
     import { handleAccountRegister, handleAccountLogin } from '$lib/Handlers/accountHandler';
     import { updateUserInfo } from '$lib/stores/userInfoStore';
+    import { onMount } from 'svelte';
     import { fade } from 'svelte/transition';
 
     let isLoginForm = false;
@@ -23,6 +24,12 @@
     let emailMessage = ' ';
     let passwordMessage = ' ';
     let confirmPasswordMessage = ' ';
+
+    onMount( () => {
+        setTimeout(() => {
+            window.scrollTo(0, 1);
+        }, 0);
+    });
     $: {
         if (username.length === 0) {
             usernameMessage = ' ';
