@@ -71,13 +71,13 @@ namespace Backend.Controllers
             _logger.LogCritical($"Friend connection ID: {friendConnectionId}");
             if (!string.IsNullOrEmpty(friendConnectionId))
             {
-                await _user.Clients.Client(friendConnectionId).SendAsync("NewFriendRequest", new { username = user.UserName, requestSentDate = friendship.RequestSentDate.ToString("dd/MM/yyyy HH:mm") });
+                await _user.Clients.Client(friendConnectionId).SendAsync("NewFriendRequest", new { username = user.UserName, userPfp=user.ProfilePictureUrl, requestSentDate = friendship.RequestSentDate.ToString("dd/MM/yyyy HH:mm") });
             }
 
 
 
 
-            return new JsonResult(new { friendRequestSent = true });
+            return new JsonResult(new {id = friend.Id, username = friend.UserName, userPfp = friend.ProfilePictureUrl, requestSentDate = friendship.RequestSentDate.ToString("dd/MM/yyyy HH:mm") });
 
         }
 
@@ -90,16 +90,29 @@ namespace Backend.Controllers
                 return Unauthorized();
             }
 
-            var friendRequests = await _context.Friendships
-                .Where(f => f.FriendId == user.Id && f.Status == "Pending")
+            var sentRequests = await _context.Friendships
+                .Where(f => f.UserId == user.Id && f.Status == "Pending")
                 .Select(f => new
                 {
-                    username = f.User.UserName,
+                    userId = f.Friend.Id,
+                    username = f.Friend.UserName,
+                    profilePictureUrl = f.Friend.ProfilePictureUrl,
                     requestSentDate = f.RequestSentDate.ToString("dd/MM/yyyy HH:mm")
                 })
                 .ToListAsync();
 
-            return new JsonResult ( new {friendRequests });
+            var receivedRequests = await _context.Friendships
+                .Where(f => f.FriendId == user.Id && f.Status == "Pending")
+                .Select(f => new
+                {
+                    userId = f.User.Id,
+                    username = f.User.UserName,
+                    profilePictureUrl = f.User.ProfilePictureUrl,
+                    requestSentDate = f.RequestSentDate.ToString("dd/MM/yyyy HH:mm")
+                })
+                .ToListAsync();
+
+            return new JsonResult(new { sentRequests, receivedRequests });
         }
         [HttpGet("getFriends")]
         public async Task<IActionResult> GetFriends()
@@ -282,6 +295,11 @@ namespace Backend.Controllers
             _context.Friendships.Remove(friendship);
             await _context.SaveChangesAsync();
 
+            var friendConnectionId = AccountHub.GetConnectionIdForUser(friend.Id.ToString());
+            await _user.Clients.Client(friendConnectionId).SendAsync("FriendRequestRejected", new {user, friend});
+
+            var userConnectionId = AccountHub.GetConnectionIdForUser(user.Id.ToString());
+            await _user.Clients.Client(userConnectionId).SendAsync("FriendRequestRejected", new {user, friend});
 
             return new JsonResult(new { requestRejected = true });
         }

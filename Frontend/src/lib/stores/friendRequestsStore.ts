@@ -1,5 +1,6 @@
 import type { FriendRequest } from '$lib/Handlers/userHandler';
 import { writable } from 'svelte/store';
 
-// Initialize the store with an empty array
-export const friendRequestsStore = writable<FriendRequest[]>([]);
+// Initialize the stores with empty arrays
+export const sentRequestsStore = writable<FriendRequest[]>([]);
+export const receivedRequestsStore = writable<FriendRequest[]>([]);

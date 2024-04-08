@@ -71,62 +71,83 @@
     </div>
 </div>
 
-<div>
-    {#if !item.withoutDetails}
-    <div class="message-header">
-        <div class="message-sender">
-            <button class="message-sender-button">{item.userName}</button>                            
+    <div>
+        {#if !item.withoutDetails}
+        <div class="message-header">
+            <div class="message-sender">
+                <button class="message-sender-button">{item.userName}</button>                            
+            </div>
+            <div class="message-date">
+                <a href="/" class="message-date-button" style="display: inline-block;color: inherit;">{item.time}</a>
+            </div> 
+        </div>   
+        {/if}
+        <div class="message-body">                    
+            {#if $isEditing === item.id}
+                <p class="message-edit-info" style=""><i>currently editing message:</i></p>
+                <input class="message-editing" bind:value={item.content}/><br>
+                <a class="message-edit-confirm" on:click={() => confirmEdit(item.id, item.content)} href="#"><b>save</b></a>
+                <a class="message-edit-confirm" on:click={() => cancelEdit(item.id)} href="#"><b>cancel</b></a>
+            {:else if item.isDeleted == true}
+                <p style="color: grey;"><i>This message has been deleted.</i></p>
+            {:else if item.isEdited == true}
+                <p style="display: inline-block;">{item.content}</p>
+                <p style="display: inline-block; font-size: 12px; color: #B8B8B8;"><i>(edited)</i></p>
+            {:else}
+                <p>{item.content}</p>
+            {/if}                                       
         </div>
-        <div class="message-date">
-            <a href="/" class="message-date-button" style="display: inline-block;color: inherit;">{item.time}</a>
-        </div> 
-    </div>   
-    {/if}
-    <div class="message-body">                    
-        {#if $isEditing === item.id}
-            <p class="message-edit-info" style=""><i>currently editing message:</i></p>
-            <input class="message-editing" bind:value={item.content}/><br>
-            <a class="message-edit-confirm" on:click={() => confirmEdit(item.id, item.content)} href="#"><b>save</b></a>
-            <a class="message-edit-confirm" on:click={() => cancelEdit(item.id)} href="#"><b>cancel</b></a>
-        {:else if item.isDeleted == true}
-            <p style="color: grey;"><i>This message has been deleted.</i></p>
-        {:else if item.isEdited == true}
-            <p style="display: inline-block;">{item.content}</p>
-            <p style="display: inline-block; font-size: 12px; color: #B8B8B8;"><i>(edited)</i></p>
-        {:else}
-            <p>{item.content}</p>
-        {/if}                                       
+        
+        {#if userInfo && item.userName === userInfo.userName && $isEditing !== item.id && !item.isDeleted && !groupInfo?.isArchieved}
+            <div class="message-actions">
+                <i class="icon-edit fa fa-pencil" on:click={() => isEditingMessage(item.id, item.content)}></i>
+                <i class="icon-delete fa fa-trash" on:click={() => deleteMessage(item.id)}></i>
+            </div>
+        {/if}
     </div>
-    
-    {#if userInfo && item.userName === userInfo.userName && $isEditing !== item.id && !item.isDeleted && !groupInfo?.isArchieved}
-        <div class="message-actions">
-            <i class="icon-edit fa fa-pencil" on:click={() => isEditingMessage(item.id, item.content)}></i>
-            <i class="icon-delete fa fa-trash" on:click={() => deleteMessage(item.id)}></i>
-        </div>
-    {/if}
-</div>
 </div>
 {/if}
 
 {#if item.withoutDetails}
+<div style="display:flex;">
+
 <div class="img">
 </div>
-<div>
-<div class="message-body">                    
-    {#if $isEditing === item.id}
-        <p class="message-edit-info" style=""><i>currently editing message:</i></p>
-        <input class="message-editing" bind:value={item.content}/><br>
-        <a class="message-edit-confirm" on:click={() => confirmEdit(item.id, item.content)} href="#"><b>save</b></a>
-        <a class="message-edit-confirm" on:click={() => cancelEdit(item.id)} href="#"><b>cancel</b></a>
-    {:else if item.isDeleted == true}
-        <p style="color: grey;"><i>This message has been deleted.</i></p>
-    {:else if item.isEdited == true}
-        <p style="display: inline-block;">{item.content}</p>
-        <p style="display: inline-block; font-size: 12px; color: #B8B8B8;"><i>(edited)</i></p>
-    {:else}
-        <p>{item.content}</p>
-    {/if}
-</div>
+
+    <div>
+        {#if !item.withoutDetails}
+        <div class="message-header">
+            <div class="message-sender">
+                <button class="message-sender-button">{item.userName}</button>                            
+            </div>
+            <div class="message-date">
+                <a href="/" class="message-date-button" style="display: inline-block;color: inherit;">{item.time}</a>
+            </div> 
+        </div>   
+        {/if}
+        <div class="message-body">                    
+            {#if $isEditing === item.id}
+                <p class="message-edit-info" style=""><i>currently editing message:</i></p>
+                <input class="message-editing" bind:value={item.content}/><br>
+                <a class="message-edit-confirm" on:click={() => confirmEdit(item.id, item.content)} href="#"><b>save</b></a>
+                <a class="message-edit-confirm" on:click={() => cancelEdit(item.id)} href="#"><b>cancel</b></a>
+            {:else if item.isDeleted == true}
+                <p style="color: grey;"><i>This message has been deleted.</i></p>
+            {:else if item.isEdited == true}
+                <p style="display: inline-block;">{item.content}</p>
+                <p style="display: inline-block; font-size: 12px; color: #B8B8B8;"><i>(edited)</i></p>
+            {:else}
+                <p>{item.content}</p>
+            {/if}                                       
+        </div>
+        
+        {#if userInfo && item.userName === userInfo.userName && $isEditing !== item.id && !item.isDeleted && !groupInfo?.isArchieved}
+            <div class="message-actions">
+                <i class="icon-edit fa fa-pencil" on:click={() => isEditingMessage(item.id, item.content)}></i>
+                <i class="icon-delete fa fa-trash" on:click={() => deleteMessage(item.id)}></i>
+            </div>
+        {/if}
+    </div>
 </div>
 {/if}
 

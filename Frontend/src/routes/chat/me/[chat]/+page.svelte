@@ -13,6 +13,7 @@
     import { fetchFriendInfo, type FriendInfo } from "$lib/Handlers/userHandler";
     import FriendInfoSidebar from "$lib/components/chat/FriendInfoSidebar.svelte";
     import { goto } from "$app/navigation";
+    import { json } from "@sveltejs/kit";
 
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -63,20 +64,19 @@
         message = await handleMessageSubmit(sendMessageText, chatId);
         sendMessageText = "";
     }
-    function createChatItem(data: any, userPfp: string, eventType: string): ChatItem {
+    function createChatItem(data: any, eventType: string): ChatItem {
     const dateObject = new Date();
     const time = new Intl.DateTimeFormat('default', { hour: '2-digit', minute: '2-digit', hour12: false }).format(dateObject);
 
     let chatItem: Partial<ChatItem> = {
-        id: data.id,
+        id: data.message.id,
         timestamp: Date.now().toLocaleString(),
         date: dateObject.toLocaleDateString(),
         time: time,
         isEvent: eventType !== 'ReceiveMessage',
         withoutDetails: false,
-        userPfp: `${backendUrl}${userPfp}`,
+        userPfp: `${backendUrl}${data.userPfp}`,
     };
-
     if (eventType === 'ReceiveMessage') {
     const lastMessage = chatItems[chatItems.length - 1];
     const lastMessageTime = new Date(lastMessage.date + ' ' + lastMessage.time);
@@ -85,19 +85,20 @@
 
     chatItem = {
         ...chatItem,
-        content: data.text,
-        userName: data.fromUser.userName,
-        userId: data.fromUser.id,
-        isActive: data.fromUser.isActive,
-        withoutDetails: lastMessage.userId === data.fromUser.id && timeDifference < 5
+        content: data.message.text,
+        userName: data.message.fromUser.userName,
+        userId: data.message.fromUserId,
+        isActive: data.message.fromUser.isActive,
+        withoutDetails: lastMessage.userId === data.message.fromUser.id && timeDifference < 5
     };
+    console.log(chatItem)
 } else {
     chatItem = {
         ...chatItem,
         content: eventType,
-        userName: data.userName,
-        userId: data.id,
-        isActive: data.isActive
+        userName: data.message.userName,
+        userId: data.message.id,
+        isActive: data.message.isActive
     };
 }
 
@@ -113,11 +114,9 @@ return chatItem as ChatItem;
             .withUrl(`${backendUrl}/chatHub`)
             .build();
 
-            connection.on("ReceiveMessage", async function(data: any, userPfp: string){
+            connection.on("ReceiveMessage", async function(data: any){
     
-                console.log("userPfp", userPfp)
-                let chatItemToAdd = createChatItem(data, userPfp, 'ReceiveMessage');
-                
+                let chatItemToAdd = createChatItem(data, 'ReceiveMessage');
                 chatItems = [...chatItems, chatItemToAdd];
 
                 await tick();

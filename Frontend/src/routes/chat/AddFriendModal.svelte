@@ -33,7 +33,7 @@
                 <form on:submit|preventDefault={addFriend} in:fly={{x: 200, duration: 500}} on:introstart={() => modalBody.style.overflowY = 'hidden'} on:outroend={() => modalBody.style.overflowY = 'auto'}>
                     <div class="mb-3">
                         <label for="inviteCodeJoin" class="form-label">Username:</label>
-                        <input type="text" maxlength="8" bind:value={friendUsername} class="form-control" id="inviteCodeJoin" class:invalid-input={!isFriendUsernameValid}>
+                        <input type="text" maxlength="20" bind:value={friendUsername} class="form-control" id="inviteCodeJoin" class:invalid-input={!isFriendUsernameValid}>
                         {#if !isFriendUsernameValid}
                             <div class="invalid-feedback">
                                 Invalid user.

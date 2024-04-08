@@ -1,8 +1,6 @@
 <script lang="ts">
     import '$lib/css/mainstyles.css'
     import { onDestroy, onMount } from 'svelte';
-    import {fetchChats} from '$lib/Handlers/groupHandler'
-    import {getToken} from '$lib/Handlers/authHandler'
     import { userStatuses } from '$lib/stores/userStatusesStore';
     import { fetchUserId, isLoggedIn, type User } from '$lib/Handlers/accountHandler';
     import { browser } from '$app/environment';
@@ -10,10 +8,9 @@
     import { startConnection } from '$lib/hubs/UserStatusHub';
     import { connectionStore } from '$lib/stores/connectionsStore';
     import {userStore, updateUserInfo} from '$lib/stores/userInfoStore';
-    import { fetchFriendRequests, handleAcceptRequest, type FriendRequest, fetchFriends, type FriendInfo, handleRejectRequest } from '$lib/Handlers/userHandler';
+    import { fetchFriendRequests, handleAcceptRequest, type FriendRequest, handleRejectRequest } from '$lib/Handlers/userHandler';
     import { slide } from 'svelte/transition';
-    import { friendRequestsStore } from '$lib/stores/friendRequestsStore';
-    import { friendsStore } from '$lib/stores/friendsStore';
+    import { receivedRequestsStore } from '$lib/stores/friendRequestsStore';
     import { goto } from '$app/navigation';
     import {sidebarOpen} from '$lib/stores/sidebarToggleStore';
     
@@ -22,22 +19,10 @@
     let connection: HubConnection;
     let userId: string;
     let isLogged: boolean;
-    let userInfo: User;
-    let friendRequestsArray: FriendRequest[] = [];
     
     let imageUrl = '/user-icon-placeholder.png'
-    
-    userStore.subscribe(value => {
-        userInfo = value;
-    });
-
-    friendRequestsStore.subscribe(value => {
-        friendRequestsArray = value;
-    });
 
     let ready: boolean = false;
-
-   
 
     $: {
         (async () => {
@@ -56,7 +41,7 @@
             await updateUserInfo();
             userId = await fetchUserId();
 
-            friendRequestsArray = await fetchFriendRequests();
+            await fetchFriendRequests();
         
 
             const response = await fetch(`${backendUrl}/account/getActiveUsers`);
@@ -95,6 +80,11 @@
 
     function toggleDropdown() {
         dropdownOpen = !dropdownOpen;
+        notificationsOpen = false;
+    }
+    function toggleNotifications() {
+        notificationsOpen = !notificationsOpen;
+        dropdownOpen = false;
     }
 
     async function acceptRequest(request: FriendRequest){
@@ -103,7 +93,7 @@
     
     async function rejectRequest(request: FriendRequest){
     await handleRejectRequest(request.username);
-    friendRequestsArray = friendRequestsArray.filter(req => req.username !== request.username);
+    $receivedRequestsStore = $receivedRequestsStore.filter(req => req.username !== request.username);
 }
 
 function toggleSidebar() {
@@ -112,50 +102,61 @@ function toggleSidebar() {
     }
 </script>
     
+<svelte:window on:click={() => {notificationsOpen = false; dropdownOpen=false;} } />
 
 <div class="container-fluid">
     <nav class="navbar navbar-expand-lg navbar-light">
+        {#if isLogged}
         <button class="sidebar-toggle" on:click={toggleSidebar}>
             <i class="fa-solid fa-bars"></i>
         </button>
-        <a class="navbar-brand" href="/">Boomerangr</a>
+        {/if}
+        <a class="navbar-brand" on:click={() => isLogged ? goto('/chat/home') : goto('/welcome')}>Boomerangr</a>
         <div class="dropdown-wrap">
             {#if isLogged}
             
             <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div class="notifications" on:click={() => notificationsOpen = !notificationsOpen} role="button" tabindex=0>
+            <div class="notifications" on:click|stopPropagation={toggleNotifications} role="button" tabindex=0>
                 
                 <i class="fa fa-envelope fa-lg" aria-hidden="true" style="color: white;"></i>
+                
                 {#if notificationsOpen}
-                    
                 <div class="dropdown-menu" class:show={notificationsOpen} transition:slide={{duration: 500}}>
-                    {#each friendRequestsArray as request}
+                    {#if $receivedRequestsStore.length === 0}
+                        <span><i>No friend requests</i></span>
+                    {:else}
+                    {#each $receivedRequestsStore as request}
                         <div class="friend-request-wrap">
                             <div class="display-flex flex-column" style="line-height:2rem; max-width:12rem">
                                 <span style="width: 100%;">{request.username} sent you a friend request</span>
                                 <span style="font-size:1rem;"><i>{request.requestSentDate}</i></span>
                             </div>
                             <div class="mb-3">
-                                <button class="btn btn-success btn-sm w-100 mb-1" on:click={() => acceptRequest(request)}>Accept</button>
-                                <button class="btn btn-danger btn-sm w-100" on:click={() => rejectRequest(request)}>Decline</button>
+                                <button class="btn btn-success btn-sm w-100 mb-1" on:click|stopPropagation={() => acceptRequest(request)}>Accept</button>
+                                <button class="btn btn-danger btn-sm w-100" on:click|stopPropagation={() => rejectRequest(request)}>Decline</button>
                             </div>
                         </div>  
                         
-                    {/each}   
+                    {/each}
+                    {/if}   
                 </div>
                 {/if}
+            
             </div>
             <ul class="navbar-nav align-items-center">
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded={dropdownOpen} on:click={toggleDropdown}>
-                    <img alt="avatar" src="{userInfo?.profilePictureUrl}" width="35px" height="35px" style="background-color:gray; border-radius:50%">{$userStore?.userName}
-                    </a>
-                        <div class="dropdown-menu" class:show={dropdownOpen} aria-labelledby="navbarDropdownMenuLink">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded={dropdownOpen} on:click|stopPropagation={toggleDropdown}>
+                    <img alt="avatar" src="{$userStore?.profilePictureUrl}" width="35px" height="35px" style="background-color:gray; border-radius:50%">
+                    <span class="username">{$userStore?.userName}</span>                                    
+                    </a>    
+                    {#if dropdownOpen}
+                        <div class="dropdown-menu" style="padding:0 !important;" class:show={dropdownOpen} transition:slide={{duration:500}} >
                         <a class="dropdown-item" on:click={() => goto("/account")}>Account</a>
                         <a class="dropdown-item" href="#">Another action</a>
                         <div class="dropdown-divider mb-0"></div>
                         <a class="dropdown-item logout-item" href="#" on:click={logout}>Logout</a>
                         </div>
+                    {/if}
                 </li>
             </ul>
             {/if}
@@ -190,18 +191,18 @@ function toggleSidebar() {
         align-items: center;
     }
     .dropdown-menu{
-        min-width: 22rem;
-        padding-left: .75rem;
-        padding-right: .75rem;
+        min-width: 20rem;
         border-bottom-left-radius: 10px;
         border-bottom-right-radius: 10px;
         position: absolute;
         top: 115%;
-        left: -10rem;
+        left: -7rem;
         max-height: 8rem;
-        overflow-y: scroll;
-        
+        padding: 0;
     }
+        .show{
+            padding: 0;
+        }
     .dropdown-toggle{
         margin-left: 0.5rem;
     }
@@ -212,8 +213,9 @@ function toggleSidebar() {
     left:0;
     color: #777777 !important;
     margin-left:0.40rem;
-    margin-right: 0.40rem;
-    width:auto;
+   
+    
+    
     }
         .logout-item{
             background-color: #DA373C;
@@ -253,6 +255,23 @@ function toggleSidebar() {
             color: var(--prim-fg);
             font-size: 1.5rem;
         }
+
+        
+        @media only screen and (max-width: 600px) {
+        .username{
+            display: none;
+        }
+        .dropdown-wrap{
+            margin-right: 1rem;
+        }
+        .dropdown-menu {
+            top: 100%;
+            left: -6rem;
+             /* make the dropdown full width */
+            width: 10rem;
+            min-width: 0;
+        }
+    }
 </style>
 
 

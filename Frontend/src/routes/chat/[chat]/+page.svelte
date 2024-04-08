@@ -50,9 +50,6 @@
     onMount(async () => {
         await getGroupInfo();
         await loadMessages();
-
-
-        console.log("group info is:" + groupInfo)
         
         if(userInfo && groupInfo && userInfo.id == groupInfo.creatorId) {
             isCreator = true;
@@ -73,14 +70,14 @@
     const time = new Intl.DateTimeFormat('default', { hour: '2-digit', minute: '2-digit', hour12: false }).format(dateObject);
 
     let chatItem: Partial<ChatItem> = {
-        id: data.id,
+        id: data.message.id,
         timestamp: Date.now().toLocaleString(),
         date: dateObject.toLocaleDateString(),
         time: time,
         isEvent: eventType !== 'ReceiveMessage',
-        withoutDetails: false
+        withoutDetails: false,
+        userPfp: `${backendUrl}${data.userPfp}`,
     };
-
     if (eventType === 'ReceiveMessage') {
     const lastMessage = chatItems[chatItems.length - 1];
     const lastMessageTime = new Date(lastMessage.date + ' ' + lastMessage.time);
@@ -89,24 +86,26 @@
 
     chatItem = {
         ...chatItem,
-        content: data.text,
-        userName: data.fromUser.userName,
-        userId: data.fromUser.id,
-        isActive: data.fromUser.isActive,
-        withoutDetails: (lastMessage.userId === data.fromUser.id && timeDifference < 5) || !lastMessage.isEvent
+        content: data.message.text,
+        userName: data.message.fromUser.userName,
+        userId: data.message.fromUserId,
+        isActive: data.message.fromUser.isActive,
+        withoutDetails: lastMessage.userId === data.message.fromUser.id && timeDifference < 5
     };
+    console.log(chatItem)
 } else {
     chatItem = {
         ...chatItem,
         content: eventType,
-        userName: data.userName,
-        userId: data.id,
-        isActive: data.isActive
+        userName: data.message.userName,
+        userId: data.message.id,
+        isActive: data.message.isActive
     };
 }
 
 return chatItem as ChatItem;
 }
+
 
     async function setupConnection() {
         if (connection) {
@@ -120,7 +119,6 @@ return chatItem as ChatItem;
             connection.on("ReceiveMessage", async function(data: any){
     
                 let chatItemToAdd = createChatItem(data, 'ReceiveMessage');
-
                 chatItems = [...chatItems, chatItemToAdd];
 
                 await tick();

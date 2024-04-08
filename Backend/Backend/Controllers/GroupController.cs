@@ -47,16 +47,16 @@ namespace Backend.Controllers
             return new JsonResult(new { chat, users, admins });
         }
 
-        [HttpPost("joinGroup")]
-        public async Task<IActionResult> JoinGroup([FromBody] string inviteCode)
+        [HttpPost("joinGroup/{inviteCode}")]
+        public async Task<IActionResult> JoinGroup(string inviteCode)
         {
             var user = await _userManager.GetUserAsync(User);
             var userId = user.Id;
 
-            var chat = _context.Chats.FirstOrDefault(c => c.InviteCode == inviteCode);
-            if (chat != null)
+            var chat = await _context.Chats.FirstOrDefaultAsync(c => c.InviteCode == inviteCode);
+            if (chat == null)
             {
-                return BadRequest("Chat not found");
+                return BadRequest(inviteCode + "Chat not found");
             }
             var chatUser = new ChatUser
             {

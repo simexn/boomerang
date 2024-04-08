@@ -2,7 +2,7 @@ import { fetchUserId, isLoggedIn, type User } from "$lib/Handlers/accountHandler
 import { getToken } from "$lib/Handlers/authHandler";
 import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
 import { userStatuses } from "$lib/stores/userStatusesStore";
-import { friendRequestsStore } from "$lib/stores/friendRequestsStore";
+import { receivedRequestsStore, sentRequestsStore } from "$lib/stores/friendRequestsStore";
 import type { FriendPreview, FriendRequest } from "$lib/Handlers/userHandler";
 import { json } from "@sveltejs/kit";
 import { friendsStore } from "$lib/stores/friendsStore";
@@ -37,13 +37,15 @@ export async function startConnection() {
             console.log("New friend request: " + data);
             const friendRequestAdd : FriendRequest ={
                 username: data.username,
-                requestSentDate: data.requestSentDate
+                requestSentDate: data.requestSentDate,
+                id: data.id,
+                userPfp: `${backendUrl}${data.userPfp}`
             }
-            friendRequestsStore.update(requests => [...requests, friendRequestAdd]);
+            receivedRequestsStore.update(requests => [...requests, friendRequestAdd]);
         });
 
         connection.on("FriendRequestAccepted", function(data: any) {
-            friendRequestsStore.update(requests => requests.filter(request => request.username === data.username));
+            receivedRequestsStore.update(requests => requests.filter(request => request.username === data.username));
 
             let userId;
 
@@ -74,20 +76,24 @@ export async function startConnection() {
                 }
                 friendsStore.update(friends => [...friends, friendToAdd]);
             }
-
-            friendRequestsStore.subscribe(value => {
-                console.log("FriendRequestStore", value);
-            });
         });
 
         connection.on("FriendRequestRejected", function(data: any) {
-            friendRequestsStore.update(requests => requests.filter(request => request.username === data.username));
+
+                receivedRequestsStore.update(requests => requests.filter(request => request.username === data.friend.username));
+
+                sentRequestsStore.update(requests => requests.filter(request => request.username === data.user.username));
+
         });
 
         connection.on("FriendRemoved", function(data: any) {          
             console.log("Friend removed: " + data.friendId);
             friendsStore.update(friends => friends.filter(friend => friend.id !== data.friend.id));
+            receivedRequestsStore.update(requests => requests.filter(request => request.id !== data.friend.id));
+            sentRequestsStore.update(requests => requests.filter(request => request.id !== data.friend.id));
             friendsStore.update(friends => friends.filter(friend => friend.id !== data.user.id));
+            receivedRequestsStore.update(requests => requests.filter(request => request.id !== data.user.id));
+            sentRequestsStore.update(requests => requests.filter(request => request.id !== data.user.id));
             
             
 

@@ -1,3 +1,4 @@
+import { receivedRequestsStore, sentRequestsStore } from "$lib/stores/friendRequestsStore";
 import { friendsStore } from "$lib/stores/friendsStore";
 import { getToken } from "./authHandler";
 import type { Group, GroupPreview } from "./groupHandler";
@@ -6,7 +7,9 @@ import type { Group, GroupPreview } from "./groupHandler";
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 export interface FriendRequest {
+    id: string;
     username: string;
+    userPfp: string;
     requestSentDate: string;
 }
 
@@ -41,6 +44,12 @@ export async function handleAddFriend(username: string){
         credentials: 'include'
     });
 
+    if(response.ok){
+        const data = await response.json();
+        data.userPfp = `${backendUrl}${data.userPfp}`;
+        sentRequestsStore.update(requests => [...requests, data]);
+    }
+
 }
 
 export async function fetchFriendRequests() {
@@ -57,15 +66,31 @@ export async function fetchFriendRequests() {
     const data = await response.json();
 
     if(response.ok){
+        console.log(data);
 
-        const friendRequests: FriendRequest[] = await data.friendRequests.map((friendRequest: any) => {
+        const receivedFriendRequests: FriendRequest[] = data.receivedRequests.map((friendRequest: any) => {
             return {
+                id: friendRequest.userId,
                 username: friendRequest.username,
+                userPfp: `${backendUrl}${friendRequest.profilePictureUrl}`,
                 requestSentDate: friendRequest.requestSentDate
             }
         });
 
-        return friendRequests;
+        const sentFriendRequests: FriendRequest[] = data.sentRequests.map((friendRequest: any) => {
+            return {
+                id: friendRequest.userId,
+                username: friendRequest.username,
+                userPfp: `${backendUrl}${friendRequest.profilePictureUrl}`,
+                requestSentDate: friendRequest.requestSentDate
+            }
+        });
+
+        receivedRequestsStore.set(receivedFriendRequests);
+        sentRequestsStore.set(sentFriendRequests);
+        sentRequestsStore.subscribe((requests) => console.log(requests));
+
+        return receivedFriendRequests;
     }
 
     return [];

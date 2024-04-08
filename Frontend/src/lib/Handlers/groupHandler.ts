@@ -40,7 +40,6 @@ export async function fetchGroupInfo(groupId: string){
     });
     
     const data = await response.json();
-    console.log(data.chat)
     
     if (response.ok && data.chat) {
         console.log(data.chat.isGroup);
@@ -152,14 +151,14 @@ export async function handleJoinRoom(inviteCode: string) {
     let token = await getToken();
     
 
-    const response = await fetch(`${backendUrl}/group/joinGroup`, {
+    const response = await fetch(`${backendUrl}/group/joinGroup/${inviteCode}`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
         },
-        credentials: 'include',
-        body: JSON.stringify(inviteCode)
+        credentials: 'include'
+
     });
 
     if (response.ok){

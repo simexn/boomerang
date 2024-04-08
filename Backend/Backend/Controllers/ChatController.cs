@@ -202,14 +202,16 @@ namespace Backend.Controllers
                 FromUserId = user.Id,
                 Timestamp = DateTime.Now,
                 IsEdited = false,
+                FromUser = user,
                 IsDeleted = false
-                
+
             };
 
             _context.Messages.Add(Message);
             await _context.SaveChangesAsync();
 
-            await _chat.Clients.Group(requestBody[1]).SendAsync("ReceiveMessage", Message, user.ProfilePictureUrl );
+            await _chat.Clients.Group(requestBody[1]).SendAsync("ReceiveMessage", new { Message, UserPfp = user.ProfilePictureUrl } );
+
             return Ok();
         }
 
