@@ -118,23 +118,7 @@
                 </div>
             {/each}
         {:else if filter === 'Blocked'}
-            <div class="user-item">
-                <div class="user-wrap">
-                    <div class="user-icon">
-                        <img src="https://via.placeholder.com/150" alt="user icon" class="user-icon">
-                    </div>
-                    <div class="user-info">
-                        <span>Friend Request</span>
-                        <div class="user-note">
-                            <span>so real</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="user-actions">
-                    <i class="fa-solid fa-message"></i>
-                    <i class="fas fa-ellipsis-v"></i>
-                </div>
-            </div>
+            Not working rn
         {/if}
     </div>
     <!-- List of friends goes here -->

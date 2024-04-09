@@ -35,6 +35,7 @@ export interface FriendPreview{
 export async function handleAddFriend(username: string){
     let token = await getToken();
 
+    console.log("Adding friend: " + username)
     const response = await fetch(`${backendUrl}/user/addFriend/${username}`, {
         method: 'POST',
         headers: {
@@ -43,8 +44,10 @@ export async function handleAddFriend(username: string){
         },
         credentials: 'include'
     });
+    console.log("Fetch finished")
 
     if(response.ok){
+        console.log("If accessed")
         const data = await response.json();
         data.userPfp = `${backendUrl}${data.userPfp}`;
         sentRequestsStore.update(requests => [...requests, data]);
