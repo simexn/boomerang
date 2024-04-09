@@ -49,6 +49,9 @@ export async function handleAddFriend(username: string){
         data.userPfp = `${backendUrl}${data.userPfp}`;
         sentRequestsStore.update(requests => [...requests, data]);
     }
+    else{
+        return response.text();
+    }
 
 }
 

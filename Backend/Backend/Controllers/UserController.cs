@@ -34,7 +34,7 @@ namespace Backend.Controllers
             var friend = await _userManager.FindByNameAsync(username);
             if (friend == null)
             {
-                return new JsonResult(new { friendNotFound = true });
+                return NotFound("User with that username not found.");
             }
 
             var doesFriendshipExist = await _context.Friendships.FirstOrDefaultAsync(f => (f.UserId == user.Id && f.FriendId == friend.Id) || (f.FriendId == user.Id && f.UserId == friend.Id));

@@ -4,9 +4,10 @@
     let modalBody: any;
     let friendUsername: string;
     let isFriendUsernameValid = true;
+    let errorMessage = '';
 
     export let friendsModalActive: boolean;
-    export let directChats: any =[];
+
 
     async function addFriend(event: Event){
         event.preventDefault();
@@ -15,9 +16,13 @@
             return;
         }
         isFriendUsernameValid = true;
-        directChats = await handleAddFriend(friendUsername);
-        friendUsername = '';
-        friendsModalActive = false;
+        const result = await handleAddFriend(friendUsername);
+        if (typeof result === 'string') {
+            errorMessage = result;
+        } else {
+            friendUsername = '';
+            friendsModalActive = false;
+        }
     }
 </script>
 
@@ -37,6 +42,10 @@
                         {#if !isFriendUsernameValid}
                             <div class="invalid-feedback">
                                 Invalid user.
+                            </div>
+                        {:else if errorMessage}
+                            <div class="invalid-feedback" role="alert">
+                                {errorMessage}
                             </div>
                         {/if}
                     </div>
@@ -77,8 +86,4 @@
             .invalid-feedback{
                 display: block;
             }
-            .btn.active {
-                    background-color: blue; /* Change this to your preferred color */
-                    color: white; /* Change this to your preferred color */
-                }
 </style>

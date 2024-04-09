@@ -66,7 +66,7 @@
             <ul class="nav nav-pills flex-column mb-auto">
                 {#each friends as friend}
                 <li class="nav-item" style="" transition:slide={{duration: 300}}>
-                    <a class:active={activeChatId === friend?.id} class="nav-link sidebar-group" href={`/chat/me/${friend?.chatId}`} on:click={() => setActiveChat(friend?.id)}>
+                    <a class:active={activeChatId === friend?.id} class="nav-link sidebar-group" href={`/chat/me/${friend?.chatId}`} on:click={() => {setActiveChat(friend?.id); $sidebarOpen = false;}}>
                         <img width="40px" height="40px" style="border-radius: 50%" src="{friend.userPfp}">
                         <span class="status-dot" class:online={$userStatuses[friend?.id.toString()] == 'online'}></span>
                         <b>{friend?.username}</b>
@@ -92,7 +92,7 @@
             <ul class="nav nav-pills flex-column mb-auto">
                 {#each groupChats as chat, index (chat.id)}
                 <li class="nav-item" style="" transition:slide={{duration: 300}}>
-                    <a class:active={activeChatId === chat.id} class="nav-link sidebar-group" href={`/chat/${chat.id}`} on:click={() => setActiveChat(chat.id)}><b>{chat.name}</b></a>
+                    <a class:active={activeChatId === chat.id} class="nav-link sidebar-group" href={`/chat/${chat.id}`} on:click={() => {setActiveChat(chat.id); $sidebarOpen = false}}><b>{chat.name}</b></a>
                 </li>
                 {/each}
                 
@@ -108,7 +108,7 @@
 
           
 {#if (friendsModalActive)}
-    <AddFriendModal bind:friendsModalActive bind:directChats/>
+    <AddFriendModal bind:friendsModalActive/>
 {/if}
 
 {#if (groupModalActive)}
