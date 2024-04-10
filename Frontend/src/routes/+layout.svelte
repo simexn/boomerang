@@ -34,6 +34,7 @@
         await isLoggedIn();
         connection = await startConnection();
         connectionStore.set(connection);
+        console.log("isLogged:" + isLogged);
 
        
         

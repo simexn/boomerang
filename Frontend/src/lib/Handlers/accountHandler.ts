@@ -98,8 +98,23 @@ export async function isLoggedIn() {
         return false;
     }
 
-    
-    return true;
+    // Send a request to the IsUserLoggedIn endpoint
+    const response = await fetch(`${backendUrl}/auth/isUserLoggedIn`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${await getToken()}`,
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+    });
+
+    // Check the response
+    if (response.ok) {
+        return true;
+    } else {
+        console.error('Failed to check if user is logged in:', await response.text());
+        return false;
+    }
 }
 
 export async function handleAccountRegister(formData: { username: string, email: string, password: string, confirmPassword: string, birthDate: Date, pronouns: string }) {

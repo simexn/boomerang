@@ -63,5 +63,23 @@ namespace Backend.Controllers
 
             return Ok();
         }
+
+        [HttpGet("isUserLoggedIn")]
+        public async Task<IActionResult> IsUserLoggedIn()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+            else {
+                _logger.LogCritical(user.UserName);
+
+                var isUserLoggedIn = _signInManager.IsSignedIn(User);
+                return Ok();
+            }
+
+            
+        }
     }
 }
