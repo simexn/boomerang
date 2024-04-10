@@ -10,7 +10,7 @@
     import type { Group } from "$lib/Handlers/groupHandler";
     export let imageUrl: string;
     export let userInfo: User;
-    export let scrollContainer;
+    export let scrollContainer: HTMLElement;
     export let chatItems:ChatItem[];
     export let chatId: string;
     export let groupInfo: Group;
@@ -20,7 +20,11 @@
 
     let previousTimestamp:any = null;
 
-    
+    onMount(() => {
+        console.log("rendering Chat Message component");
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    });
+
     function isEditingMessage(id: number, content:string) {
         originalMessage = content;
         isEditing.set(id);
