@@ -65,7 +65,7 @@
             if (blob) {
                 let token = await getToken();
                 let formData = new FormData();
-                formData.append('file', blob, 'profile.jpg');
+                formData.append('file', blob, 'profile.png');
 
                 let response = await fetch(`${backendUrl}/account/uploadPfp`, {
                     headers: {
@@ -78,7 +78,10 @@
                 if (response.ok) {
                     console.log("File uploaded successfully");
                     await updateUserInfo();
-                    const errorData = await response.text();
+                    
+                }
+                else{
+                  const errorData = await response.text();
                     console.error("File upload failed:", errorData);
                 }
             }

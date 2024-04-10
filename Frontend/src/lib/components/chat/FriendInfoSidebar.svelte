@@ -19,9 +19,9 @@
             let userOptionsDropdown: boolean = false;
 
     let isUserHovered = false;
-
+    let ready = false;
     onMount(() => {
-        console.log("friend pfp" + friendInfo.userPfp)
+        ready = true;
     });
 
     async function removeFriend(){
@@ -38,6 +38,7 @@
         event.stopPropagation();
     }
 </script>
+{#if ready}
 <div class="sidebar-info" transition:fly="{{x: 1000, duration: 500}}">
     <div class="sidebar-header">
         <span class="sidebar-title">
@@ -160,6 +161,7 @@
         </div>
     </div>
 </div>
+{/if}
 
 <style>
     .dropdown-menu{

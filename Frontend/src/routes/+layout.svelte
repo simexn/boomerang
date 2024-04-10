@@ -20,7 +20,7 @@
     let userId: string;
     let isLogged: boolean;
     
-    let imageUrl = '/user-icon-placeholder.png'
+    let imageUrl = '/images/profile-pictures/placeholder.png'
 
     let ready: boolean = false;
 
@@ -31,7 +31,6 @@
     }
 
     onMount(async () => {
-        await isLoggedIn();
         connection = await startConnection();
         connectionStore.set(connection);
         console.log("isLogged:" + isLogged);
@@ -53,9 +52,9 @@
             window.onunload = async () => {
                 await connection.invoke("UpdateUserStatus", userId.toString(), "offline");
             };
+            
         }
         ready= true;
-        await isLoggedIn();
     });
 
     onDestroy(async () => {
@@ -147,7 +146,7 @@ function toggleSidebar() {
             <ul class="navbar-nav align-items-center">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded={dropdownOpen} on:click|stopPropagation={toggleDropdown}>
-                    <img alt="avatar" src="{$userStore?.profilePictureUrl}" width="35px" height="35px" style="background-color:gray; border-radius:50%">
+                    <img alt=" " src={$userStore?.profilePictureUrl} width="35px" height="35px" style="background-color:gray; border-radius:50%">
                     <span class="username">{$userStore?.userName}</span>                                    
                     </a>    
                     {#if dropdownOpen}

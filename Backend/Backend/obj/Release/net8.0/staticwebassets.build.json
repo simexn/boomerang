@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "VsfSqtRFJf/EF2pF4XDPV1mTGuU+sTifnVf5m8qKmAQ=",
+  "Hash": "ik+kybuW1bBMWtsDiUQiDujWf7yubx3x6jKXmu7zKnw=",
   "Source": "Backend",
   "BasePath": "_content/Backend",
   "Mode": "Default",
@@ -1231,6 +1231,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\favicon.ico"
+    },
+    {
+      "Identity": "C:\\Users\\sbuha\\Desktop\\Undertale.v1.08-SiMPLEX\\diplomna rabota\\Backend\\Backend\\wwwroot\\images\\profile_pictures\\1.gif",
+      "SourceId": "Backend",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\sbuha\\Desktop\\Undertale.v1.08-SiMPLEX\\diplomna rabota\\Backend\\Backend\\wwwroot\\",
+      "BasePath": "_content/Backend",
+      "RelativePath": "images/profile_pictures/1.gif",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\images\\profile_pictures\\1.gif"
     },
     {
       "Identity": "C:\\Users\\sbuha\\Desktop\\Undertale.v1.08-SiMPLEX\\diplomna rabota\\Backend\\Backend\\wwwroot\\images\\profile_pictures\\1.png",

@@ -58,6 +58,11 @@ namespace Backend.Controllers
             {
                 return BadRequest(inviteCode + "Chat not found");
             }
+            var isUserInChat = await _context.ChatUsers.AnyAsync(cu => cu.ChatId == chat.Id && cu.UserId == userId);
+            if (isUserInChat)
+            {
+                return BadRequest("User already in chat");
+            }
             var chatUser = new ChatUser
             {
                 UserId = userId,

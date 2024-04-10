@@ -61,11 +61,11 @@
             <button class="header-button" on:click={() => setFilter('Pending')}>Pending</button>
             <button class="header-button" on:click={() => setFilter('Requests')}>Requests</button>
             <button class="header-button" on:click={() => setFilter('Blocked')}>Blocked</button>
-            <button class="header-button add-friend">Add Friend</button>
+            <button class="header-button add-friend" on:click={() => setFilter('add')}>Add Friend</button>
         </div>
     </div>
     <div class="searchbar">
-        <input class="searchbar-input" placeholder="Search">
+        <input class="searchbar-input" placeholder="Search (WIP)">
     </div>
     <div class="section-title-container">
         <p class="section-title">{filter}</p>
@@ -157,6 +157,8 @@
                     </div>
                 </div>
             {/each}
+        {:else if filter === 'add'}
+            WIP
         {/if}
     </div>
     <!-- List of friends goes here -->

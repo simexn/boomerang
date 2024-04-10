@@ -117,8 +117,10 @@ return chatItem as ChatItem;
 
     async function setupConnection() {
         if (connection) {
+            ready=false;
             await connection.stop();
         }
+        
 
         connection = new HubConnectionBuilder()
             .withUrl(`${backendUrl}/chatHub`)
@@ -162,6 +164,7 @@ return chatItem as ChatItem;
                     await getFriendInfo();
                     await joinRoom();
                     await tick();
+                    ready=true;
                     
                 })
             })

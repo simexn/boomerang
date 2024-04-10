@@ -120,8 +120,10 @@
 
     async function setupConnection() {
         if (connection) {
+            ready=false;
             await connection.stop();
         }
+        
 
         connection = new HubConnectionBuilder()
             .withUrl(`${backendUrl}/chatHub`)
@@ -235,6 +237,7 @@
                     await joinRoom();
                     await tick();
                     scrollContainer.scrollTop = scrollContainer.scrollHeight;
+                    ready=true;
                 })
             })
             .catch(function(err: any){

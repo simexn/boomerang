@@ -305,6 +305,7 @@
     
         .card-body{
             padding-top:0 !important;
+            overflow: auto;
         }
         .site-info{
             word-wrap: break-word;
@@ -386,9 +387,6 @@
                     .card{
                         height:30rem;
                         width: 100%;   
-                    }
-                    .card-body{
-                        overflow: auto;
                     }
 
                    
