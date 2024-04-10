@@ -236,8 +236,9 @@
                     await getGroupInfo();
                     await joinRoom();
                     await tick();
-                    scrollContainer.scrollTop = scrollContainer.scrollHeight;
                     ready=true;
+                    scrollContainer.scrollTop = scrollContainer.scrollHeight;
+                    
                 })
             })
             .catch(function(err: any){
