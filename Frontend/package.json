@@ -21,6 +21,7 @@
 	"type": "module",
 	"dependencies": {
 		"@microsoft/signalr": "^8.0.0",
-		"dotenv": "^16.4.5"
+		"dotenv": "^16.4.5",
+		"emoji-picker-element": "^1.21.3"
 	}
 }

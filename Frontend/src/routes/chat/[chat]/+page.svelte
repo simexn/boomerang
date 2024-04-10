@@ -19,6 +19,9 @@
     import UserSidebar from '$lib/components/chat/UserSidebar.svelte';
     import ChatHeader from '$lib/components/chat/ChatHeader.svelte';
     import ChatMessage from '$lib/components/chat/ChatMessage.svelte';
+
+
+
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
     let imageUrl = '/user-icon-placeholder.png'
@@ -29,9 +32,12 @@
     let chatItems: ChatItem[] = [];
     let chatUsers: User[]= [];
     let isUsersSidebarOpen = false;
+    let isPickerOpen = false;
+    let EmojiPicker: any;
     let userSidebarDropdown : any = null;
+    
 
-    let sendMessageText: string;
+    let sendMessageText: string = "";
     let chatId: string;
     let isCreator: boolean;
     
@@ -53,6 +59,10 @@
         
         if(userInfo && groupInfo && userInfo.id == groupInfo.creatorId) {
             isCreator = true;
+        }
+        if (typeof window !== 'undefined') {
+            const module = await import('emoji-picker-element');
+            EmojiPicker = module.default;
         }
         ready = true;
     });
@@ -276,6 +286,15 @@
         message = await handleMessageSubmit(sendMessageText, chatId);
         sendMessageText = "";
     }
+
+    function addEmoji(event: any) {
+    sendMessageText += event?.detail?.unicode;
+    isPickerOpen = false;
+  }
+
+  function togglePicker() {
+    isPickerOpen = !isPickerOpen;
+  }
     
     
 </script>
@@ -291,15 +310,30 @@
     {/if}           
     <ChatMessage {groupInfo} {chatId} {chatItems} {userInfo} {imageUrl} bind:scrollContainer/>  
     <div class="chat-footer" style="min-height:6rem; height:6rem;" >
-        <ul class="list-unstyled">
-            <li class="bg-white mb-3">
-                <div class="d-flex">
-                    <input class="form-control" bind:value={sendMessageText} placeholder="Message" id="textAreaExample2"/>
-                    <button type="button" class="btn btn-info btn-rounded float-end" on:click={async () => await sendMessage()}>Send</button>
+        <div class="send-message-wrap">
+            <div class="textarea-container">
+                <textarea placeholder="Type a message..." bind:value={sendMessageText} on:keydown={e => e.key === 'Enter' && sendMessage()}></textarea>
+            </div>
+            <div class="message-options">
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                <div class="message-option emoji" on:click={togglePicker}>
+                    <i class="fa-regular fa-face-smile"></i>
+                    {#if isPickerOpen}
+                        <emoji-picker class="light" on:emoji-click={addEmoji}></emoji-picker>
+                    {/if}
                 </div>
-            </li> 
-        </ul>
+               
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                    <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <div class="send-message-button" class:disabled={sendMessageText == null || sendMessageText == ""} on:click={sendMessage}>
+                    
+                    <i class="material-icons" class:disabled={sendMessageText == null || sendMessageText == ""} >send</i>
+                </div>
+            </div>
+        </div>
     </div>  
+    
 </div>
 {/if}
 
@@ -312,7 +346,104 @@
         box-sizing: border-box;
     }
     .chat-footer{
-        margin-left: 5px;
-        margin-right:5px;
+        margin-left: 1rem;
+        margin-right:1rem;
+        margin-bottom: 1rem;
     } 
+    .send-message-wrap{
+        display: flex;
+        flex-direction: column;
+        border: 2px solid rgba(var(--bg-sec), 0.16);
+        border-radius: 0.25rem;
+    }
+    .textarea-container{
+        position: relative;
+       
+        
+        
+    }
+        .textarea-container textarea{
+            width: 100%;
+            resize:none;
+            display: block;
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #fff;
+            background-clip: padding-box;
+            /* border: 1px solid rgba(var(--bg-sec), 0.3); */
+            border:none;
+            height: 2.6rem;
+            /* border-radius: 0.25rem; */
+            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+        }
+    .message-options{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: rgba(var(--bg-sec), 0.10);
+        height:2.5rem;
+        padding-left: 0.4rem;
+        padding-right:0.4rem;
+    }
+        .message-option{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 2rem;
+            height: 2rem;
+            cursor: pointer;
+            border-radius: 0.25rem;
+        }
+            .message-option.emoji{
+                position: relative;
+            }
+                .message-option.emoji emoji-picker{
+                    position: absolute;
+                    bottom: 3rem;
+                    left: 0;
+                    z-index: 100;
+                }
+        .message-option:hover{
+            background-color: var(--hover-dark);
+        }
+        .message-option i{
+            color: rgba(var(--bg-sec), 0.65);
+        }
+        .send-message-button{
+            margin: 0.5rem 0.25rem 0.5rem 0.25rem;
+            display: flex;
+            
+            justify-content: center;
+            align-items: center;
+            background-color: var(--button-bg);
+            cursor: pointer;
+            width: 3.5rem;
+            height: 2rem;
+            border-radius: 0.25rem;
+        }
+            .send-message-button.disabled{
+                background: rgba(var(--bg-sec),0.1);
+                cursor:default;
+            }
+        .material-icons{
+            color: #fff;
+        }
+            .material-icons.disabled{
+                color: rgba(var(--bg-sec),0.32);
+            }
+
+    @media (max-width: 600px){
+        .chat-footer{
+            margin-left: 0;
+            margin-right:0;
+            margin-bottom: 0;
+        }
+        .send-message-wrap{
+            height: 100%;
+        }
+    }
 </style>
