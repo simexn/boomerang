@@ -100,6 +100,25 @@ namespace Backend.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Backend.Models.BlockedUser", b =>
+                {
+                    b.Property<int>("BlockedById")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BlockedId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("blockedOn")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("BlockedById", "BlockedId");
+
+                    b.HasIndex("BlockedId");
+
+                    b.ToTable("BlockedUsers");
+                });
+
             modelBuilder.Entity("Backend.Models.Chat", b =>
                 {
                     b.Property<int>("Id")
@@ -387,6 +406,25 @@ namespace Backend.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("Backend.Models.BlockedUser", b =>
+                {
+                    b.HasOne("Backend.Models.ApplicationUser", "BlockedBy")
+                        .WithMany()
+                        .HasForeignKey("BlockedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Backend.Models.ApplicationUser", "Blocked")
+                        .WithMany()
+                        .HasForeignKey("BlockedId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Blocked");
+
+                    b.Navigation("BlockedBy");
                 });
 
             modelBuilder.Entity("Backend.Models.Chat", b =>

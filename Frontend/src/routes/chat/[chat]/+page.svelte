@@ -78,32 +78,43 @@
         withoutDetails: false,
         userPfp: `${backendUrl}${data.userPfp}`,
     };
+
     if (eventType === 'ReceiveMessage') {
-    const lastMessage = chatItems[chatItems.length - 1];
-    const lastMessageTime = new Date(lastMessage.date + ' ' + lastMessage.time);
-    const newMessageTime = new Date();
-    const timeDifference = (newMessageTime.getTime() - lastMessageTime.getTime()) / 60000; // difference in minutes
+        if (chatItems.length > 0) {
+            const lastMessage = chatItems[chatItems.length - 1];
+            const lastMessageTime = new Date(lastMessage.date + ' ' + lastMessage.time);
+            const newMessageTime = new Date();
+            const timeDifference = (newMessageTime.getTime() - lastMessageTime.getTime()) / 60000; // difference in minutes
 
-    chatItem = {
-        ...chatItem,
-        content: data.message.text,
-        userName: data.message.fromUser.userName,
-        userId: data.message.fromUserId,
-        isActive: data.message.fromUser.isActive,
-        withoutDetails: lastMessage.userId === data.message.fromUser.id && timeDifference < 5
-    };
-    console.log(chatItem)
-} else {
-    chatItem = {
-        ...chatItem,
-        content: eventType,
-        userName: data.message.userName,
-        userId: data.message.id,
-        isActive: data.message.isActive
-    };
-}
+            chatItem = {
+                ...chatItem,
+                content: data.message.text,
+                userName: data.message.fromUser.userName,
+                userId: data.message.fromUserId,
+                isActive: data.message.fromUser.isActive,
+                withoutDetails: lastMessage.userId === data.message.fromUser.id && timeDifference < 5
+            };
+        } else {
+            chatItem = {
+                ...chatItem,
+                content: data.message.text,
+                userName: data.message.fromUser.userName,
+                userId: data.message.fromUserId,
+                isActive: data.message.fromUser.isActive,
+                withoutDetails: false
+            };
+        }
+    } else {
+        chatItem = {
+            ...chatItem,
+            content: eventType,
+            userName: data.message.userName,
+            userId: data.message.id,
+            isActive: data.message.isActive
+        };
+    }
 
-return chatItem as ChatItem;
+    return chatItem as ChatItem;
 }
 
 

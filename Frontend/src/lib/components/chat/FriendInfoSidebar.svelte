@@ -4,7 +4,7 @@
     import { fly, slide } from "svelte/transition";
     import "$lib/css/sidebarstyles.css"
     import { userStatuses } from "$lib/stores/userStatusesStore";
-    import { handleRemoveFriend, type FriendInfo } from "$lib/Handlers/userHandler";
+    import { handleRemoveFriend, type FriendInfo, handleBlockUser } from "$lib/Handlers/userHandler";
     import { goto } from "$app/navigation";
     import { onMount } from "svelte";
 
@@ -27,6 +27,12 @@
     async function removeFriend(){
         await handleRemoveFriend(friendInfo.id);
         await goto('/chat/home');
+    }
+
+    async function blockFriend() {
+        await handleBlockUser(friendInfo.id);
+        await goto('/chat/home');
+        
     }
     function openDropdown(userId : any, event: any) {
         event.stopPropagation();
@@ -52,7 +58,7 @@
             {#if userOptionsDropdown}
                 <div role="navigation" class="dropdown-menu show">
                     <button class="dropdown-item" on:click={() => removeFriend()}>Unfriend</button>
-                    <button class="dropdown-item" on:click|stopPropagation={null}>Block</button>
+                    <button class="dropdown-item" on:click={() => blockFriend()}>Block</button>
                 </div>
             {/if}
         </div>

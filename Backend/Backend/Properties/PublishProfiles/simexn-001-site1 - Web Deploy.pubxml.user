@@ -7,17 +7,17 @@ by editing this MSBuild file. In order to learn more about this please visit htt
   <PropertyGroup>
     <TimeStampOfAssociatedLegacyPublishXmlFile />
     <EncryptedPassword />
-    <History>True|2024-04-09T09:25:52.2451272Z;True|2024-04-07T16:44:10.8260053+03:00;True|2024-04-04T18:18:31.5462751+03:00;True|2024-04-04T17:57:39.8423245+03:00;</History>
+    <History>True|2024-04-09T11:41:49.9156922Z;False|2024-04-09T14:13:15.4408578+03:00;</History>
     <LastFailureDetails />
   </PropertyGroup>
   <ItemGroup>
     <DestinationConnectionStrings Include="DefaultConnection">
-      <Value>Data Source=SQL5110.site4now.net%3bInitial Catalog=db_aa6814_boomerang%3bUser Id=db_aa6814_boomerang_admin%3bPassword=boomerang1</Value>
+      <Value>Data Source=SQL6031.site4now.net%3bInitial Catalog=db_aa6814_boomerang1%3bUser Id=db_aa6814_boomerang1_admin%3bPassword=boomerang1</Value>
     </DestinationConnectionStrings>
   </ItemGroup>
   <ItemGroup>
     <EFMigrations Include="Backend.Data.ApplicationDbContext">
-      <Value>Data Source=SQL5110.site4now.net%3bInitial Catalog=db_aa6814_boomerang%3bUser Id=db_aa6814_boomerang_admin%3bPassword=boomerang1</Value>
+      <Value>Data Source=SQL6031.site4now.net%3bInitial Catalog=db_aa6814_boomerang1%3bUser Id=db_aa6814_boomerang1_admin%3bPassword=boomerang1</Value>
     </EFMigrations>
   </ItemGroup>
 </Project>

@@ -1,14 +1,29 @@
 <script lang="ts">
     import { friendsStore } from "$lib/stores/friendsStore";
-    import { sentRequestsStore, receivedRequestsStore } from "$lib/stores/friendRequestsStore";
+    import { sentRequestsStore, receivedRequestsStore, blockedUsersStore } from "$lib/stores/friendRequestsStore";
     import { userStatuses } from "$lib/stores/userStatusesStore";
-    import { handleAcceptRequest, handleRejectRequest, handleRemoveFriend } from "$lib/Handlers/userHandler";
+    import { handleAcceptRequest, handleRejectRequest, handleRemoveFriend, handleUnblockUser } from "$lib/Handlers/userHandler";
     import {goto} from "$app/navigation";
+    import { onMount } from "svelte";
     
     $: console.log(filter)
 
     let userOptionsDropdown:any;
+    let isGradientRemoved = false;
     let filter = "All";
+
+    onMount(() => {
+        const buttonContainer: any = document.getElementById('button-container');
+
+        buttonContainer.addEventListener('scroll', () => {
+            if (buttonContainer.scrollLeft + buttonContainer.offsetWidth >= buttonContainer.scrollWidth) {
+                isGradientRemoved = true;
+            } else {
+                isGradientRemoved = false;
+            }
+        });
+    });
+    
     function setFilter(value: string) {
         filter = value;
     }
@@ -24,17 +39,23 @@
     async function rejectRequest(username: string){
         await handleRejectRequest(username);
     }
+
+    async function unblockUser(userId: string){
+        await handleUnblockUser(userId);
+    }
+
+    
     $: filteredFriends = filter === 'All' 
         ? $friendsStore
         : $friendsStore.filter(friend => $userStatuses[friend.id] === filter);
 </script>
 <svelte:window on:click={() => userOptionsDropdown = null} />
 <div class="home-container">
-    <div class="header">
+    <div class="header" class:gradient-removed={isGradientRemoved}>
         <div class="friends-span">
             <span>Friends</span>
         </div>
-        <div class="button-container">
+        <div class="button-container" id="button-container">
             <button class="header-button" on:click={() => setFilter('online')}>Online</button>
             <button class="header-button" on:click={() => setFilter('All')}>All</button>
             <button class="header-button" on:click={() => setFilter('Pending')}>Pending</button>
@@ -118,7 +139,24 @@
                 </div>
             {/each}
         {:else if filter === 'Blocked'}
-            Not working rn
+            {#each $blockedUsersStore as blockedUser, index (index)}
+                <div class="user-item">
+                    <div class="user-wrap">
+                        <div class="user-icon">
+                            <img src={blockedUser.userPfp} alt="user icon" class="user-icon">
+                        </div>
+                        <div class="user-info">
+                            <span>{blockedUser.username}</span>
+                            <div class="user-note">
+                                <span>Blocked on: {blockedUser?.requestRespondedDate}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        <i class="fa-solid fa-x" on:click={() => unblockUser(blockedUser.id)}></i>
+                    </div>
+                </div>
+            {/each}
         {/if}
     </div>
     <!-- List of friends goes here -->
@@ -139,19 +177,44 @@
     overflow: hidden;
     align-items: center; 
     border-bottom: 1px solid rgba(var(--bg-sec), 0.08);
+    position: relative;
+    transition: opacity 0.3s ease-in-out;
 }
+    .header::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 50px;
+        background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 100%);
+        transition: opacity 0.3s ease-in-out;
+        pointer-events: none;
+    }  
+    .header.gradient-removed::after {
+        opacity: 0;
+    }
     .header span{
         font-size: 1.2rem;
         line-height: 1.25;
         font-weight: 600;
     }
+.button-container{
+    position: relative;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+     
 .header-button {
     padding-left: 1rem;
     margin-left: 0.5rem;
     padding-right: 1rem;
     margin-right: 0.5rem;
     cursor: pointer;
+    border:none;
+    background: none;
     border-radius: 5px;
+    display: inline-block;
 }
     .add-friend {
         background-color: #2dc770;
@@ -299,13 +362,12 @@
 @media (max-width: 600px) {
 
     .friends-span {
-        border-right: none;
-        border-bottom: 1px solid rgba(var(--bg-sec), 0.08);
-        padding: 0.5rem 0;
+        width:8rem;
+        padding-left:0.5rem;
+        padding-right: 0.5rem;
     }
 
     .button-container {
-        overflow-x: scroll;
         padding: 0.5rem 0;
     }
 

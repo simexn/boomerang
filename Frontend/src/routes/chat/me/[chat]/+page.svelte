@@ -47,7 +47,7 @@
         await getGroupInfo();
         await getFriendInfo();
         await loadMessages();
-        await setupConnection();
+        
 
         ready = true;
     });
@@ -78,20 +78,30 @@
         userPfp: `${backendUrl}${data.userPfp}`,
     };
     if (eventType === 'ReceiveMessage') {
-    const lastMessage = chatItems[chatItems.length - 1];
-    const lastMessageTime = new Date(lastMessage.date + ' ' + lastMessage.time);
-    const newMessageTime = new Date();
-    const timeDifference = (newMessageTime.getTime() - lastMessageTime.getTime()) / 60000; // difference in minutes
+        if (chatItems.length > 0) {
+        const lastMessage = chatItems[chatItems.length - 1];
+        const lastMessageTime = new Date(lastMessage.date + ' ' + lastMessage.time);
+        const newMessageTime = new Date();
+        const timeDifference = (newMessageTime.getTime() - lastMessageTime.getTime()) / 60000; // difference in minutes
 
-    chatItem = {
-        ...chatItem,
-        content: data.message.text,
-        userName: data.message.fromUser.userName,
-        userId: data.message.fromUserId,
-        isActive: data.message.fromUser.isActive,
-        withoutDetails: lastMessage.userId === data.message.fromUser.id && timeDifference < 5
-    };
-    console.log(chatItem)
+        chatItem = {
+            ...chatItem,
+            content: data.message.text,
+            userName: data.message.fromUser.userName,
+            userId: data.message.fromUser.id,
+            isActive: data.message.fromUser.isActive,
+            withoutDetails: lastMessage.userId === data.message.fromUser.id && timeDifference < 5
+        };
+    } else {
+        chatItem = {
+            ...chatItem,
+            content: data.message.text,
+            userName: data.message.fromUser.userName,
+            userId: data.message.fromUser.id,
+            isActive: data.message.fromUser.isActive,
+            withoutDetails: false
+        };
+    }
 } else {
     chatItem = {
         ...chatItem,
@@ -115,9 +125,17 @@ return chatItem as ChatItem;
             .build();
 
             connection.on("ReceiveMessage", async function(data: any){
-    
-                let chatItemToAdd = createChatItem(data, 'ReceiveMessage');
-                chatItems = [...chatItems, chatItemToAdd];
+                
+                console.log("message received")
+                console.log(data);
+
+               try {
+                    let chatItemToAdd = createChatItem(data, 'ReceiveMessage');
+                    console.log(chatItemToAdd);
+                    chatItems = [...chatItems, chatItemToAdd];
+                } catch (error) {
+                    console.error('Error creating chat item:', error);
+                }
 
                 await tick();
                 scrollContainer.scrollTop = scrollContainer.scrollHeight;

@@ -27,17 +27,11 @@
     }
     
     
-    let friends:FriendPreview[] =[];
-
-    friendsStore.subscribe(value => {
-        friends = value;
-    });
     export let groupChats: any =[];
     export let directChats: any =[];
     
     onMount(async() => {
         await fetchFriends();
-        console.log(friends)
         groupChats = await fetchChats();
         activeChatId = Number(sessionStorage.getItem('activeChatId'));
     });
@@ -64,7 +58,7 @@
        {#if friendsDropdownActive}
        <div class="dropdown-container" class:active={friendsDropdownActive} transition:slide={{duration: 500}}> 
             <ul class="nav nav-pills flex-column mb-auto">
-                {#each friends as friend}
+                {#each $friendsStore as friend}
                 <li class="nav-item" style="" transition:slide={{duration: 300}}>
                     <a class:active={activeChatId === friend?.id} class="nav-link sidebar-group" href={`/chat/me/${friend?.chatId}`} on:click={() => {setActiveChat(friend?.id); $sidebarOpen = false;}}>
                         <img width="40px" height="40px" style="border-radius: 50%" src="{friend.userPfp}">

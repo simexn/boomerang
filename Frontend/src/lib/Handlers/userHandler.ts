@@ -1,4 +1,4 @@
-import { receivedRequestsStore, sentRequestsStore } from "$lib/stores/friendRequestsStore";
+import { blockedUsersStore, receivedRequestsStore, sentRequestsStore } from "$lib/stores/friendRequestsStore";
 import { friendsStore } from "$lib/stores/friendsStore";
 import { getToken } from "./authHandler";
 import type { Group, GroupPreview } from "./groupHandler";
@@ -11,6 +11,7 @@ export interface FriendRequest {
     username: string;
     userPfp: string;
     requestSentDate: string;
+    requestRespondedDate?:string;
 }
 
 export interface FriendInfo{
@@ -35,7 +36,6 @@ export interface FriendPreview{
 export async function handleAddFriend(username: string){
     let token = await getToken();
 
-    console.log("Adding friend: " + username)
     const response = await fetch(`${backendUrl}/user/addFriend/${username}`, {
         method: 'POST',
         headers: {
@@ -44,10 +44,8 @@ export async function handleAddFriend(username: string){
         },
         credentials: 'include'
     });
-    console.log("Fetch finished")
 
     if(response.ok){
-        console.log("If accessed")
         const data = await response.json();
         data.userPfp = `${backendUrl}${data.userPfp}`;
         sentRequestsStore.update(requests => [...requests, data]);
@@ -61,7 +59,7 @@ export async function handleAddFriend(username: string){
 export async function fetchFriendRequests() {
     let token = await getToken();
 
-    const response = await fetch(`${backendUrl}/user/getFriendRequests`, {
+    const response = await fetch(`${backendUrl}/user/getFriendships`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -92,9 +90,20 @@ export async function fetchFriendRequests() {
             }
         });
 
+        const blockedUsers: FriendRequest[] = data.blockedUsers.map((friendRequest: any) => {
+            return {
+                id: friendRequest.userId,
+                username: friendRequest.username,
+                userPfp: `${backendUrl}${friendRequest.profilePictureUrl}`,
+                requestSentDate: friendRequest.requestSentDate,
+                requestRespondedDate: friendRequest.blockedOn
+            }
+        });
+
         receivedRequestsStore.set(receivedFriendRequests);
         sentRequestsStore.set(sentFriendRequests);
-        sentRequestsStore.subscribe((requests) => console.log(requests));
+        blockedUsersStore.set(blockedUsers);
+        console.log("BlockedUsers" + blockedUsers)
 
         return receivedFriendRequests;
     }
@@ -210,5 +219,44 @@ export async function handleRemoveFriend(friendId: string){
         },
         credentials: 'include'
     });
+}
+export async function handleBlockUser(friendId: string){
+    let token = await getToken();
+
+    const response = await fetch(`${backendUrl}/user/blockUser/${friendId}`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+    });
+
+    if(response.ok){
+        const data = await response.json();
+        data.userPfp = `${backendUrl}${data.userPfp}`;
+        blockedUsersStore.update(users => [...users, data]);
+        
+    }
+    else{
+        return response.text();
+    }
+}
+
+export async function handleUnblockUser(userId: string){
+    let token = await getToken();
+
+    const response = await fetch(`${backendUrl}/user/unblockUser/${userId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+    });
+
+    if(response.ok){
+        blockedUsersStore.update(users => users.filter(user => user.id !== userId));
+    }
 }
 

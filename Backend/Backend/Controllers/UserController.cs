@@ -43,16 +43,24 @@ namespace Backend.Controllers
             {
                 if (doesFriendshipExist.Status == "pending")
                 {
-                    return new JsonResult(new { friendRequestPending = true });
+                    return BadRequest("Request already sent.");
                 }
                 else if (doesFriendshipExist.Status == "accepted")
                 {
-                    return new JsonResult(new { alreadyFriends = true });
+                    return BadRequest("Already friends with user");
                 }
                 else if (doesFriendshipExist.Status == "blocked")
                 {
-                    return new JsonResult(new { userBlocked = true });
+                    return Unauthorized(new { userBlocked = true });
                 }
+            }
+
+            var isUserBlocked = await _context.BlockedUsers
+                .AnyAsync(b => b.BlockedById == friend.Id && b.BlockedId == user.Id);
+
+            if (isUserBlocked)
+            {
+                return Unauthorized(new { userBlocked = true });
             }
 
             var friendship = new Friendship
@@ -60,8 +68,8 @@ namespace Backend.Controllers
                 UserId = user.Id,
                 FriendId = friend.Id,
                 Status = "pending",
-                RequestSentDate = DateTime.UtcNow,
-                RequestRespondedDate = DateTime.UtcNow
+                RequestSentDate = DateTime.Now,
+                RequestRespondedDate = DateTime.Now
             };
 
             _context.Friendships.Add(friendship);
@@ -81,8 +89,8 @@ namespace Backend.Controllers
 
         }
 
-        [HttpGet("getFriendRequests")]
-        public async Task<ActionResult> GetFriendRequests()
+        [HttpGet("getFriendships")]
+        public async Task<ActionResult> GetFriendships()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -112,7 +120,18 @@ namespace Backend.Controllers
                 })
                 .ToListAsync();
 
-            return new JsonResult(new { sentRequests, receivedRequests });
+            var blockedUsers = await _context.BlockedUsers
+                .Where(b => b.BlockedById == user.Id)
+                .Select(b => new
+                {
+                    userId = b.BlockedId,
+                    username = b.Blocked.UserName,
+                    profilePictureUrl = b.Blocked.ProfilePictureUrl,
+                    blockedOn = b.blockedOn
+                })
+                .ToListAsync();
+
+            return new JsonResult(new { sentRequests, receivedRequests, blockedUsers });
         }
         [HttpGet("getFriends")]
         public async Task<IActionResult> GetFriends()
@@ -123,7 +142,7 @@ namespace Backend.Controllers
                 return Unauthorized();
             }
             var friends = await _context.Friendships
-                .Where(f => (f.UserId == user.Id || f.FriendId == user.Id) && f.Status == "Accepted")
+                .Where(f => (f.UserId == user.Id || f.FriendId == user.Id) && f.Status == "accepted")
                 .Select(f => new {
                     id = f.UserId == user.Id ? f.Friend.Id : f.User.Id,
                     username = f.UserId == user.Id ? f.Friend.UserName : f.User.UserName,
@@ -166,11 +185,11 @@ namespace Backend.Controllers
             var friendUserId = friendship.UserId == user.Id ? friendship.FriendId : friendship.UserId;
 
             var mutualFriendsData = await _context.Friendships
-            .Where(f => f.Status == "Accepted" && (f.UserId == user.Id || f.FriendId == user.Id)) // friendships involving the user
+            .Where(f => f.Status == "accepted" && (f.UserId == user.Id || f.FriendId == user.Id)) // friendships involving the user
             .Select(f => f.UserId == user.Id ? f.FriendId : f.UserId) // get the friend's id
             .Intersect( // find common friends
                 _context.Friendships
-            .Where(f => f.Status == "Accepted" && (f.UserId == friendUserId || f.FriendId == friendUserId)) // friendships involving the friend
+            .Where(f => f.Status == "accepted" && (f.UserId == friendUserId || f.FriendId == friendUserId)) // friendships involving the friend
             .Select(f => f.UserId == friendUserId ? f.FriendId : f.UserId) // get the friend's friend id
             ).ToListAsync();
 
@@ -182,7 +201,7 @@ namespace Backend.Controllers
                 Username = u.UserName,
                 userPfp = u.ProfilePictureUrl,
                 ChatId = u.Id == user.Id ? chatId : _context.Friendships
-                    .Where(f => f.Status == "Accepted" && (f.UserId == user.Id || f.FriendId == user.Id) && (f.UserId == u.Id || f.FriendId == u.Id))
+                    .Where(f => f.Status == "accepted" && (f.UserId == user.Id || f.FriendId == user.Id) && (f.UserId == u.Id || f.FriendId == u.Id))
                     .Select(f => f.ChatId)
                     .FirstOrDefault()
             })
@@ -241,8 +260,8 @@ namespace Backend.Controllers
                 return new JsonResult(new { requestNotFound = true });
             }
 
-            friendship.Status = "Accepted";
-            friendship.RequestRespondedDate = DateTime.UtcNow;
+            friendship.Status = "accepted";
+            friendship.RequestRespondedDate = DateTime.Now;
 
             var chat = new Chat
             {
@@ -348,5 +367,91 @@ namespace Backend.Controllers
 
             return Ok(new { message = "Friend removed successfully" });
         }
+
+        [HttpPost("blockUser/{friendId}")]
+        public async Task<IActionResult> BlockUser(string friendId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var friend = await _userManager.FindByIdAsync(friendId);
+
+            if (friend == null)
+            {
+                return NotFound("User with that ID not found.");
+            }
+
+            var friendship = await _context.Friendships.FirstOrDefaultAsync(f =>
+                (f.UserId == user.Id && f.FriendId == friend.Id) ||
+                (f.FriendId == user.Id && f.UserId == friend.Id));
+
+            if (friendship != null)
+            {
+                _context.Friendships.Remove(friendship);
+
+                var chatId = friendship.ChatId;
+
+                var chat = await _context.Chats.FirstOrDefaultAsync(c => c.Id == friendship.ChatId);
+                
+                if(chat != null)
+                {
+                    _context.Chats.Remove(chat);
+                }
+                await _chat.Clients.Groups(chatId.ToString()).SendAsync("FriendRemoved");
+
+                var friendConnectionId = AccountHub.GetConnectionIdForUser(friend.Id.ToString());
+                await _user.Clients.Client(friendConnectionId).SendAsync("FriendRemoved", new { user, friend, chatId = friendship.ChatId });
+
+                var userConnectionId = AccountHub.GetConnectionIdForUser(user.Id.ToString());
+                await _user.Clients.Client(userConnectionId).SendAsync("FriendRemoved", new { user, friend, chatId = friendship.ChatId });
+
+            }
+
+            // Block the user
+            var blockedUser = new BlockedUser
+            {
+                BlockedById = user.Id,
+                BlockedId = friend.Id,
+                blockedOn = DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+            };
+
+            _context.BlockedUsers.Add(blockedUser);
+            await _context.SaveChangesAsync();
+
+            return new JsonResult(new
+            {
+                id = blockedUser.BlockedId,
+                username = friend.UserName,
+                userPfp = friend.ProfilePictureUrl,
+                requestRespondedDate = blockedUser.blockedOn
+            });
+        }
+
+        [HttpDelete("unblockUser/{userId}")]
+        public async Task<IActionResult> UnblockUser(string userId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+            var friend = await _userManager.FindByIdAsync(userId);
+
+            if (friend == null)
+            {
+                return NotFound("User with that ID not found.");
+            }
+
+            var blockedUser = await _context.BlockedUsers.FirstOrDefaultAsync(b => b.BlockedById == user.Id && b.BlockedId == friend.Id);
+
+            if (blockedUser == null)
+            {
+                return NotFound("User not blocked.");
+            }
+
+            _context.BlockedUsers.Remove(blockedUser);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
     }
 }

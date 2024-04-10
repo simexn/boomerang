@@ -8,18 +8,19 @@ import { json } from "@sveltejs/kit";
 import { friendsStore } from "$lib/stores/friendsStore";
 import { userStore } from "$lib/stores/userInfoStore";
 import { goto } from "$app/navigation";
+import { get } from "svelte/store";
 
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 let connection: HubConnection;
 let userId: string;
+let user = get(userStore);
 
 export async function startConnection() {
 
     if(await isLoggedIn()){
         userId = await fetchUserId();
         let token = await getToken();
-        console.log("Token: " + token); 
         connection = new HubConnectionBuilder()
         .withUrl(`${backendUrl}/accountHub?userId=${userId}`, { 
         accessTokenFactory: () => token
@@ -45,7 +46,7 @@ export async function startConnection() {
         });
 
         connection.on("FriendRequestAccepted", function(data: any) {
-            receivedRequestsStore.update(requests => requests.filter(request => request.username === data.username));
+            
 
             let userId;
 
@@ -56,7 +57,7 @@ export async function startConnection() {
             });
 
             if(userId === data.user.id){
-                console.log("Friend added: " + data.friend.userPfp);
+                receivedRequestsStore.update(requests => requests.filter(request => request.username === data.username));
                 let friendToAdd: FriendPreview = {
                     id: data.friend.id,
                     userPfp: `${backendUrl}${data.friend.profilePictureUrl}?${Date.now()}`,
@@ -67,6 +68,7 @@ export async function startConnection() {
                 friendsStore.update(friends => [...friends, friendToAdd]);
             }
             else{
+                sentRequestsStore.update(requests => requests.filter(request => request.username === data.username));
                 let friendToAdd: FriendPreview = {
                     id: data.user.id,
                     userPfp: `${backendUrl}${data.user.profilePictureUrl}?${Date.now()}`,
@@ -98,6 +100,19 @@ export async function startConnection() {
             
 
             
+        });
+
+        connection.on("UserBlocked", function(data: any) {
+
+            receivedRequestsStore.update(requests => requests.filter(request => request.id !== data.friend.id));
+            sentRequestsStore.update(requests => requests.filter(request => request.id !== data.friend.id));
+
+            if (userId.toString() === data.friend.id.toString()) {
+                friendsStore.update(friends => friends.filter(friend => friend.id.toString() !== data.user.id.toString()));
+                goto('/chat/home');
+            } else if (userId.toString() === data.user.id.toString()) {
+                friendsStore.update(friends => friends.filter(friend => friend.id !== data.friend.id));
+            }
         });
 
 

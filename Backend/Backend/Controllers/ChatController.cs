@@ -89,7 +89,7 @@ namespace Backend.Controllers
             _context.Update(newChat);
             await _context.SaveChangesAsync();
 
-            return Ok("Room Created");
+            return new JsonResult(new { groupCreated = true });
         }
 
         public IActionResult CreateMessage(int id)
@@ -175,7 +175,7 @@ namespace Backend.Controllers
         [HttpPost("joinRoom")]
         public async Task<IActionResult> JoinRoom([FromBody] JoinRoomInput request)
         {
-            _logger.LogInformation("Joining room with id {0} with connection ID {1}", request.RoomName, request.ConnectionId);
+            _logger.LogCritical("Joining room with id {0} with connection ID {1}", request.RoomName, request.ConnectionId);
             await _chat.Groups.AddToGroupAsync(request.ConnectionId, request.RoomName);
             return Ok();
         }

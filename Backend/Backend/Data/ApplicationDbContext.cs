@@ -18,6 +18,8 @@ namespace Backend.Data
         public DbSet<ChatAdmin> ChatAdmins { get; set; }
         public DbSet<ChatEvent> ChatEvents { get; set; }
         public DbSet<Friendship> Friendships { get; set; }
+        public DbSet<BlockedUser> BlockedUsers { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -32,6 +34,7 @@ namespace Backend.Data
         
             builder.Entity<Friendship>()
                 .HasKey(f => new { f.UserId, f.FriendId });
+           
 
             builder.Entity<Friendship>()
              .HasOne(f => f.User)
@@ -44,7 +47,24 @@ namespace Backend.Data
                 .WithMany()
                 .HasForeignKey(f => f.FriendId)
                 .OnDelete(DeleteBehavior.Restrict);
-        }
+
+            builder.Entity<BlockedUser>()
+                .HasKey(b => new { b.BlockedById, b.BlockedId
+                });
+
+            builder.Entity<BlockedUser>()
+               .HasOne(b => b.BlockedBy)
+               .WithMany()
+               .HasForeignKey(b => b.BlockedById)
+               .OnDelete(DeleteBehavior.Restrict); // Specify ON DELETE NO ACTION for BlockedBy
+
+            builder.Entity<BlockedUser>()
+                .HasOne(b => b.Blocked)
+                .WithMany()
+                .HasForeignKey(b => b.BlockedId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+}
 
     }
 }

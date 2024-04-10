@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240328164214_friendsSince")]
-    partial class friendsSince
+    [Migration("20240410121629_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -103,6 +103,25 @@ namespace Backend.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Backend.Models.BlockedUser", b =>
+                {
+                    b.Property<int>("BlockedById")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BlockedId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("blockedOn")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("BlockedById", "BlockedId");
+
+                    b.HasIndex("BlockedId");
+
+                    b.ToTable("BlockedUsers");
+                });
+
             modelBuilder.Entity("Backend.Models.Chat", b =>
                 {
                     b.Property<int>("Id")
@@ -116,6 +135,9 @@ namespace Backend.Migrations
 
                     b.Property<string>("InviteCode")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsArchieved")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsGroup")
                         .HasColumnType("bit");
@@ -198,6 +220,9 @@ namespace Backend.Migrations
                     b.Property<int>("FriendId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ChatId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("RequestRespondedDate")
                         .HasColumnType("datetime2");
 
@@ -209,6 +234,8 @@ namespace Backend.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId", "FriendId");
+
+                    b.HasIndex("ChatId");
 
                     b.HasIndex("FriendId");
 
@@ -384,6 +411,25 @@ namespace Backend.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Backend.Models.BlockedUser", b =>
+                {
+                    b.HasOne("Backend.Models.ApplicationUser", "BlockedBy")
+                        .WithMany()
+                        .HasForeignKey("BlockedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Backend.Models.ApplicationUser", "Blocked")
+                        .WithMany()
+                        .HasForeignKey("BlockedId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Blocked");
+
+                    b.Navigation("BlockedBy");
+                });
+
             modelBuilder.Entity("Backend.Models.Chat", b =>
                 {
                     b.HasOne("Backend.Models.ApplicationUser", "Creator")
@@ -452,6 +498,10 @@ namespace Backend.Migrations
 
             modelBuilder.Entity("Backend.Models.Friendship", b =>
                 {
+                    b.HasOne("Backend.Models.Chat", "Chat")
+                        .WithMany()
+                        .HasForeignKey("ChatId");
+
                     b.HasOne("Backend.Models.ApplicationUser", "Friend")
                         .WithMany()
                         .HasForeignKey("FriendId")
@@ -463,6 +513,8 @@ namespace Backend.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Chat");
 
                     b.Navigation("Friend");
 
