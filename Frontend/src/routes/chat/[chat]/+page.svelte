@@ -237,7 +237,7 @@
                     await joinRoom();
                     await tick();
                     ready=true;
-                    scrollContainer.scrollTop = scrollContainer.scrollHeight;
+
                     
                 })
             })
