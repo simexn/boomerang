@@ -13,7 +13,7 @@
     import { fetchFriendInfo, type FriendInfo } from "$lib/Handlers/userHandler";
     import FriendInfoSidebar from "$lib/components/chat/FriendInfoSidebar.svelte";
     import { goto } from "$app/navigation";
-    import { json } from "@sveltejs/kit";
+    import "$lib/css/chatstyles.css"
 
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -216,7 +216,13 @@ return chatItem as ChatItem;
     <div class="chat-footer" style="min-height:6rem; height:6rem;" >
         <div class="send-message-wrap">
             <div class="textarea-container">
-                <textarea placeholder="Type a message..." bind:value={sendMessageText} on:keydown={e => e.key === 'Enter' && sendMessage()}></textarea>
+                <textarea placeholder="Type a message..." bind:value={sendMessageText} 
+                    on:keydown={e => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            sendMessage();
+                        }
+                    }}></textarea>
             </div>
             <div class="message-options">
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -245,111 +251,3 @@ return chatItem as ChatItem;
 
 
 
-<style>
-    .chat-container{
-        padding: 0;
-        height:100%;
-        box-sizing: border-box;
-    }
-    .chat-footer{
-        margin-left: 1rem;
-        margin-right:1rem;
-        margin-bottom: 1rem;
-    } 
-    .send-message-wrap{
-        display: flex;
-        flex-direction: column;
-        border: 2px solid rgba(var(--bg-sec), 0.16);
-        border-radius: 0.25rem;
-    }
-    .textarea-container{
-        position: relative;
-       
-        
-        
-    }
-        .textarea-container textarea{
-            width: 100%;
-            resize:none;
-            display: block;
-            width: 100%;
-            padding: 0.375rem 0.75rem;
-            font-size: 1rem;
-            font-weight: 400;
-            line-height: 1.5;
-            color: #212529;
-            background-color: #fff;
-            background-clip: padding-box;
-            /* border: 1px solid rgba(var(--bg-sec), 0.3); */
-            border:none;
-            height: 2.6rem;
-            /* border-radius: 0.25rem; */
-            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-        }
-    .message-options{
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background-color: rgba(var(--bg-sec), 0.10);
-        height:2.5rem;
-        padding-left: 0.4rem;
-        padding-right:0.4rem;
-    }
-        .message-option{
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 2rem;
-            height: 2rem;
-            cursor: pointer;
-            border-radius: 0.25rem;
-        }
-            .message-option.emoji{
-                position: relative;
-            }
-                .message-option.emoji emoji-picker{
-                    position: absolute;
-                    bottom: 3rem;
-                    left: 0;
-                    z-index: 100;
-                }
-        .message-option:hover{
-            background-color: var(--hover-dark);
-        }
-        .message-option i{
-            color: rgba(var(--bg-sec), 0.65);
-        }
-        .send-message-button{
-            margin: 0.5rem 0.25rem 0.5rem 0.25rem;
-            display: flex;
-            
-            justify-content: center;
-            align-items: center;
-            background-color: var(--button-bg);
-            cursor: pointer;
-            width: 3.5rem;
-            height: 2rem;
-            border-radius: 0.25rem;
-        }
-            .send-message-button.disabled{
-                background: rgba(var(--bg-sec),0.1);
-                cursor:default;
-            }
-        .material-icons{
-            color: #fff;
-        }
-            .material-icons.disabled{
-                color: rgba(var(--bg-sec),0.32);
-            }
-
-    @media (max-width: 600px){
-        .chat-footer{
-            margin-left: 0;
-            margin-right:0;
-            margin-bottom: 0;
-        }
-        .send-message-wrap{
-            height: 100%;
-        }
-    }
-</style>

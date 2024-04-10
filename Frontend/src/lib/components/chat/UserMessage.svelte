@@ -77,8 +77,11 @@
             <div class="message-sender">
                 <button class="message-sender-button">{item.userName}</button>                            
             </div>
-            <div class="message-date">
-                <a href="/" class="message-date-button" style="display: inline-block;color: inherit;">{item.time}</a>
+            <div class="message-date tooltips">
+                <a href="/" class="message-date-button" style="display: inline-block;color: inherit;" title={item.date}>{item.time}</a>
+
+                    <span class="tooltiptext">{item.date}</span>
+             
             </div> 
         </div>   
         {/if}
@@ -109,22 +112,10 @@
 {/if}
 
 {#if item.withoutDetails}
-<div style="display:flex;">
+<div class="message-container">
 
-<div class="img">
-</div>
-
+<div class="img"></div>
     <div>
-        {#if !item.withoutDetails}
-        <div class="message-header">
-            <div class="message-sender">
-                <button class="message-sender-button">{item.userName}</button>                            
-            </div>
-            <div class="message-date">
-                <a href="/" class="message-date-button" style="display: inline-block;color: inherit;">{item.time}</a>
-            </div> 
-        </div>   
-        {/if}
         <div class="message-body">                    
             {#if $isEditing === item.id}
                 <p class="message-edit-info" style=""><i>currently editing message:</i></p>
@@ -156,7 +147,18 @@
         width: 53px;
         padding-right: 10px;
         text-align: right;
+        position: relative;
     }
+    .message-container {
+        display: flex;
+    }
+.message-time {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 5px;
+}
+
     .status-dot {
     height: 10px;
     width: 10px;
@@ -298,5 +300,44 @@
     margin-left:2.5px;
     margin-right:2.5px;
     cursor:pointer;
+}
+.tooltips {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+  }
+
+  .tooltips .tooltiptext {
+    visibility: hidden;
+    width: 6rem;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    padding: 0.3rem 0;
+    border-radius: 6px;
+
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; /* Position the tooltip above the text */
+    left: 73%;
+    margin-left: -3.5rem; /* Use half of the width to center the tooltip */
+
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .tooltips:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+  }
+  .tooltips .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%; /* Position the arrow at the bottom of the tooltip */
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
 }
 </style>
