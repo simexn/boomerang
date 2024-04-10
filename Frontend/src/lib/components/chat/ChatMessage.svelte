@@ -22,7 +22,7 @@
 
     onMount(() => {
         console.log("rendering Chat Message component");
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        //scrollContainer.scrollTop = scrollContainer.scrollHeight;
     });
 
     function isEditingMessage(id: number, content:string) {
