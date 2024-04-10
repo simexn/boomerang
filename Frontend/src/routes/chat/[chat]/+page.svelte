@@ -81,7 +81,7 @@
 
     let chatItem: Partial<ChatItem> = {
         id: data.message.id,
-        timestamp: Date.now().toLocaleString(),
+        timestamp: Date.now(),
         date: dateObject.toLocaleDateString(),
         time: time,
         isEvent: eventType !== 'ReceiveMessage',
@@ -92,9 +92,11 @@
     if (eventType === 'ReceiveMessage') {
         if (chatItems.length > 0) {
             const lastMessage = chatItems[chatItems.length - 1];
-            const lastMessageTime = new Date(lastMessage.date + ' ' + lastMessage.time);
+            console.log('Last message: ', lastMessage.timestamp)
+            const lastMessageTime = new Date(lastMessage.timestamp);
             const newMessageTime = new Date();
             const timeDifference = (newMessageTime.getTime() - lastMessageTime.getTime()) / 60000; // difference in minutes
+            console.log('New message: ', newMessageTime);
 
             chatItem = {
                 ...chatItem,
@@ -102,7 +104,7 @@
                 userName: data.message.fromUser.userName,
                 userId: data.message.fromUserId,
                 isActive: data.message.fromUser.isActive,
-                withoutDetails: lastMessage.userId === data.message.fromUser.id && timeDifference < 5
+                withoutDetails: lastMessage.userId.toString() === data.message.fromUser.id.toString() && timeDifference < 5
             };
         } else {
             chatItem = {
@@ -143,6 +145,7 @@
     
                 let chatItemToAdd = createChatItem(data, 'ReceiveMessage');
                 chatItems = [...chatItems, chatItemToAdd];
+                console.log("chatItem: ", chatItemToAdd.withoutDetails);
 
                 await tick();
                 scrollContainer.scrollTop = scrollContainer.scrollHeight;

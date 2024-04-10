@@ -73,16 +73,17 @@
     function createChatItem(data: any, eventType: string): ChatItem {
     const dateObject = new Date();
     const time = new Intl.DateTimeFormat('default', { hour: '2-digit', minute: '2-digit', hour12: false }).format(dateObject);
-
+    
     let chatItem: Partial<ChatItem> = {
         id: data.message.id,
-        timestamp: Date.now().toLocaleString(),
+        timestamp: Date.now(),
         date: dateObject.toLocaleDateString(),
         time: time,
         isEvent: eventType !== 'ReceiveMessage',
         withoutDetails: false,
         userPfp: `${backendUrl}${data.userPfp}`,
     };
+    
     if (eventType === 'ReceiveMessage') {
         if (chatItems.length > 0) {
         const lastMessage = chatItems[chatItems.length - 1];
@@ -98,6 +99,7 @@
             isActive: data.message.fromUser.isActive,
             withoutDetails: lastMessage.userId === data.message.fromUser.id && timeDifference < 5
         };
+        
     } else {
         chatItem = {
             ...chatItem,
