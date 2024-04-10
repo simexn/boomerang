@@ -87,7 +87,7 @@
     if (eventType === 'ReceiveMessage') {
         if (chatItems.length > 0) {
         const lastMessage = chatItems[chatItems.length - 1];
-        const lastMessageTime = new Date(lastMessage.date + ' ' + lastMessage.time);
+        const lastMessageTime = new Date(lastMessage.timestamp);
         const newMessageTime = new Date();
         const timeDifference = (newMessageTime.getTime() - lastMessageTime.getTime()) / 60000; // difference in minutes
 
