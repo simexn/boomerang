@@ -79,6 +79,7 @@
 
     async function loadMessages() {
         chatItems = await fetchMessages(chatId, pageCurrent, pageSize);
+        console.log("Chatitems: " + chatItems.length)
         pageCurrent++;
     }
 
