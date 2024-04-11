@@ -41,6 +41,10 @@
     let sendMessageText: string = "";
     let chatId: string;
     let isCreator: boolean;
+
+    let isLoading = false;
+    let pageCurrent = 1;
+    const pageSize = 20;
     
     let message: any;
     let _connectionId: string;
@@ -71,8 +75,26 @@
     
     
 
+    async function loadMoreMessages() {
+        if (isLoading) return;
+        isLoading = true;
+        const newMessages = await fetchMessages(chatId, pageCurrent, pageSize);
+        chatItems = [...newMessages, ...chatItems];
+        pageCurrent++;
+        isLoading = false;
+    }
+
     async function loadMessages() {
-        chatItems = await fetchMessages(chatId);
+        chatItems = await fetchMessages(chatId, pageCurrent, pageSize);
+        pageCurrent++;
+    }
+
+    function handleScroll(event: any) {
+        const { scrollTop, clientHeight, scrollHeight } = event.target;
+        const atTop = scrollTop === 0;
+        if (atTop && !isLoading) {
+            loadMoreMessages();
+        }
     }
 
 
@@ -312,11 +334,17 @@
     {#if isUsersSidebarOpen}
         <UserSidebar bind:isUsersSidebarOpen {groupInfo} {userSidebarDropdown} {userInfo} {imageUrl} {chatId}/>
     {/if}           
-    <ChatMessage {groupInfo} {chatId} {chatItems} {userInfo} {imageUrl} bind:scrollContainer/>  
+    <ChatMessage {groupInfo} {chatId} {chatItems} {userInfo} {imageUrl} bind:scrollContainer {handleScroll}/>  
     <div class="chat-footer" style="min-height:6rem; height:6rem;" >
         <div class="send-message-wrap">
             <div class="textarea-container">
-                <textarea placeholder="Type a message..." bind:value={sendMessageText} on:keydown={e => e.key === 'Enter' && sendMessage()}></textarea>
+                <textarea placeholder="Type a message..." bind:value={sendMessageText} 
+                    on:keydown={e => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            sendMessage();
+                        }
+                    }}></textarea>
             </div>
             <div class="message-options">
                 <!-- svelte-ignore a11y-click-events-have-key-events -->

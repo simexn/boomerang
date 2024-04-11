@@ -31,6 +31,10 @@
     let _connectionId: string;
     let sendMessageText = '';
 
+    let isLoading = false;
+    let pageCurrent = 1;
+    const pageSize = 20;
+
     let isPickerOpen = false;
     let EmojiPicker: any;
 
@@ -63,8 +67,26 @@
     async function getFriendInfo(){
         friendInfo = await fetchFriendInfo(chatId);
     }
-    async function loadMessages(){
-        chatItems = await fetchMessages(chatId); 
+    async function loadMoreMessages() {
+        if (isLoading) return;
+        isLoading = true;
+        const newMessages = await fetchMessages(chatId, pageCurrent, pageSize);
+        chatItems = [...newMessages, ...chatItems];
+        pageCurrent++;
+        isLoading = false;
+    }
+
+    async function loadMessages() {
+        chatItems = await fetchMessages(chatId, pageCurrent, pageSize);
+        pageCurrent++;
+    }
+
+    function handleScroll(event: any) {
+        const { scrollTop, clientHeight, scrollHeight } = event.target;
+        const atTop = scrollTop === 0;
+        if (atTop && !isLoading) {
+            loadMoreMessages();
+        }
     }
     async function sendMessage() {
         message = await handleMessageSubmit(sendMessageText, chatId);
@@ -212,7 +234,7 @@ return chatItem as ChatItem;
 {#if ready}
 <div class="chat-container d-flex flex-column container-fluid">   
     <ChatHeader bind:isInfoSidebarOpen {groupInfo} {friendInfo} {isUsersSidebarOpen} {userInfo} {chatId}  />
-    <ChatMessage {groupInfo} {chatId} {chatItems} {userInfo} {imageUrl} bind:scrollContainer/>  
+    <ChatMessage {groupInfo} {chatId} {chatItems} {userInfo} {imageUrl} bind:scrollContainer {handleScroll}/>  
     <div class="chat-footer" style="min-height:6rem; height:6rem;" >
         <div class="send-message-wrap">
             <div class="textarea-container">

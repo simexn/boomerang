@@ -127,7 +127,7 @@ namespace Backend.Controllers
 
 
         [HttpGet("getMessages")]
-        public async Task<IActionResult> GetMessages([FromQuery] int chatId)
+        public async Task<IActionResult> GetMessages([FromQuery] int chatId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null || !(await IsUserInChat(user.Id, chatId)))
@@ -150,6 +150,9 @@ namespace Backend.Controllers
                     IsDeleted = m.IsDeleted
                     
                 })
+                .OrderByDescending(m => m.Timestamp) // Order by timestamp descending to get the latest messages first
+                .Skip((page - 1) * pageSize) // Skip the messages that are before the current page
+                .Take(pageSize) // Take only the messages for the current page
                 .ToListAsync();
 
             var events = await _context.ChatEvents
@@ -163,6 +166,9 @@ namespace Backend.Controllers
                     EventType = e.Event.ToString(),
                     IsEvent = true
                 })
+                .OrderByDescending(e => e.Timestamp) // Order by timestamp descending to get the latest events first
+                .Skip((page - 1) * pageSize) // Skip the events that are before the current page
+                .Take(pageSize) // Take only the events for the current page
                 .ToListAsync();
 
             var chatItems = messages.Concat(events).OrderBy(i => i.Timestamp).ToList();

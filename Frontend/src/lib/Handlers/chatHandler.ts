@@ -27,10 +27,10 @@ export interface ChatItem {
     withoutDetails?:boolean;
 }
 
-export async function fetchMessages(chatId: string){
+export async function fetchMessages(chatId: string, page: number, pageSize: number){
     let token = await getToken();
     
-    const response = await fetch(`${backendUrl}/chat/getMessages?chatId=${chatId}`, {
+    const response = await fetch(`${backendUrl}/chat/getMessages?chatId=${chatId}&page=${page}&pageSize=${pageSize}`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`,

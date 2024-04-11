@@ -14,6 +14,7 @@
     export let chatItems:ChatItem[];
     export let chatId: string;
     export let groupInfo: Group;
+    export let handleScroll: any;
     const isEditing = writable();
 
     let originalMessage = '';
@@ -52,7 +53,7 @@
     
 </script>
 
-<div class="messages-container" bind:this={scrollContainer}>
+<div class="messages-container" bind:this={scrollContainer} on:scroll={handleScroll}>
     
     {#each chatItems as item (item.id)}
     <div class="message" style="display: flex; align-items: start;">
