@@ -53,6 +53,7 @@
         console.log(chatId);
         await getGroupInfo();
         await getFriendInfo();
+        await loadMessages();
 
         
         if (typeof window !== 'undefined') {
