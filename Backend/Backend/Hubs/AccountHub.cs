@@ -64,26 +64,7 @@ namespace Backend.Hubs
             _users.TryGetValue(userId, out string connectionId);
             return connectionId;
         }
-        public async Task UpdateUserStatus(string userId, string status)
-        {
-            if (userId == null || status == null)
-            {
-                return;
-            }
-
-            var user = await _userManager.FindByIdAsync(userId);
-
-            if (user == null)
-            {
-                _logger.LogWarning("User not found with id: " + userId);
-                return;
-            }
-
-            user.Status = status;
-            await _context.SaveChangesAsync();
-
-            await Clients.All.SendAsync("UpdateUserStatus", userId, status);
-        }
+        
 
     }
 }

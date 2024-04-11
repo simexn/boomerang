@@ -57,13 +57,17 @@
         ready= true;
     });
 
-    onDestroy(async () => {
-        if (connection) {
-            userId = await fetchUserId();
-            await connection.invoke("UpdateUserStatus", userId.toString(), "offline");
-            connection.stop();
-        }
-    });
+    onDestroy(() => {
+    if (connection) {
+        const data = new FormData();
+        data.append("userId", userId);
+        data.append("status", "offline");
+
+        navigator.sendBeacon(`${backendUrl}/account/updateUserStatus/${userId}/${'offline'}`, data);
+
+        connection.stop();
+    }
+});
     
     async function logout() {
         console.log("Test function called");

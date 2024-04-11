@@ -453,5 +453,35 @@ namespace Backend.Controllers
             return Ok();
         }
 
+        [HttpPost("updateUserStatus/{userId}/{status]")]
+        public async Task<IActionResult> UpdateUserStatus(string userId, string status)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            // Validate the input model
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Update the user's status
+            user.Status = status;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Errors);
+            }
+
+            await _user.Clients.All.SendAsync("UpdateUserStatus", user.Id, status);
+
+            return new JsonResult(new { statusUpdated = true });
+        }
+
+
     }
 }
