@@ -53,7 +53,7 @@
         console.log(chatId);
         await getGroupInfo();
         await getFriendInfo();
-        await loadMessages();
+        
 
         
         if (typeof window !== 'undefined') {
@@ -185,15 +185,15 @@ return chatItem as ChatItem;
             await goto('/chat/home');
         });
         
-        await loadMessages();
-        await getGroupInfo();
-        await getFriendInfo();
+        
         await connection.start()
             .then(function(){
                 connection.invoke('getConnectionId')
                 .then(async function(connectionId: string){
                     _connectionId = connectionId;
-                    
+                    await loadMessages();
+                    await getGroupInfo();
+                    await getFriendInfo();
                     await joinRoom();
                     await tick();
                     ready=true;

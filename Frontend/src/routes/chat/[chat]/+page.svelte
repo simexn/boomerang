@@ -60,7 +60,6 @@
 
     onMount(async () => {
         await getGroupInfo();
-        await loadMessages();
         
         if(userInfo && groupInfo && userInfo.id == groupInfo.creatorId) {
             isCreator = true;
