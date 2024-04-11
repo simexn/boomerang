@@ -69,7 +69,6 @@
         friendInfo = await fetchFriendInfo(chatId);
     }
     async function loadMoreMessages() {
-        console.log('Loading more messages');
         if (isLoading) return;
         isLoading = true;
         const newMessages = await fetchMessages(chatId, pageCurrent, pageSize);
@@ -79,9 +78,8 @@
     }
 
     async function loadMessages() {
-    console.log(`Loading messages for chatId: ${chatId}`);
+    pageCurrent = 1;
     chatItems = await fetchMessages(chatId, pageCurrent, pageSize);
-    console.log(`Loaded ${chatItems.length} messages`);
     pageCurrent++;
 }
 
@@ -153,9 +151,6 @@ return chatItem as ChatItem;
         if (connection) {
             ready=false;
             await connection.stop();
-            while (connection.state === "Disconnecting") {
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
         }
         
 
@@ -197,6 +192,7 @@ return chatItem as ChatItem;
                 connection.invoke('getConnectionId')
                 .then(async function(connectionId: string){
                     _connectionId = connectionId;
+                    
                     await loadMessages();
                     await getGroupInfo();
                     await getFriendInfo();

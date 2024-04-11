@@ -85,7 +85,7 @@ export async function fetchMessages(chatId: string, page: number, pageSize: numb
                 userName: "",
                 isEdited: ""
             }));
-            return [];
+            throw new Error("Empty array error!");
         }
         
     } else {

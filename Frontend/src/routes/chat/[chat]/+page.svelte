@@ -84,6 +84,7 @@
     }
 
     async function loadMessages() {
+        pageCurrent = 1;
         chatItems = await fetchMessages(chatId, pageCurrent, pageSize);
         pageCurrent++;
     }

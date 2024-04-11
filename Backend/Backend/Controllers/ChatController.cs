@@ -9,6 +9,7 @@ using Backend.Models.InputModels;
 using System.Diagnostics;
 using System.Text.Json;
 using Backend.Models.ViewModels;
+using Microsoft.Extensions.Logging;
 
 namespace Backend.Controllers
 {
