@@ -67,7 +67,7 @@
         <span class="message-avatar">
             <img width="32px" height="32px" style="border-radius: 50%;" alt="User" src={item.userPfp}>
         </span>
-        <span class="status-dot" class:online={$userStatuses[item.userId.toString()] == 'online'}></span>
+        <span class="status-dot" class:online={$userStatuses[item.userId.toString()] == 'online'} class:away={$userStatuses[item.userId.toString()] == 'away'}></span>
     </div>
 </div>
 
@@ -168,6 +168,9 @@
     }
     .status-dot.online {
     background-color: #4CAF50;
+    }
+    .status-dot.away{
+    background-color: #FFC107;
     }
     .message-actions {
     position: absolute;

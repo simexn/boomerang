@@ -49,9 +49,17 @@
             userStatuses.set(data.activeUsers);
             await connection.invoke("UpdateUserStatus", userId.toString(), "online");
             
-            // window.onunload = async () => {
-            //     await connection.invoke("UpdateUserStatus", userId.toString(), "offline");
-            // };
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') {
+                    connection.invoke("UpdateUserStatus", userId.toString(), "away");
+                } else {
+                    connection.invoke("UpdateUserStatus", userId.toString(), "online");
+                }
+            });
+
+            window.onunload = () => {
+                connection.invoke("UpdateUserStatus", userId.toString(), "offline");
+            };
             
         }
         ready= true;
@@ -59,11 +67,7 @@
 
     onDestroy(() => {
     if (connection) {
-        const data = new FormData();
-        data.append("userId", userId);
-        data.append("status", "offline");
-
-        navigator.sendBeacon(`${backendUrl}/account/updateUserStatus/${userId}/${'offline'}`, data);
+        connection.invoke("UpdateUserStatus", userId.toString(), "offline");
 
         connection.stop();
     }
@@ -75,8 +79,8 @@
             connection.invoke("UpdateUserStatus", userId.toString(), "offline");
             document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
             
-            location.href = '/';
-            location.reload();
+             location.href = '/welcome';
+             location.reload();
         }
     }
     let dropdownOpen = false;

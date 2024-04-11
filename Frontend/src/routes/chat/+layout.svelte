@@ -62,7 +62,7 @@
                 <li class="nav-item" style="" transition:slide={{duration: 300}}>
                     <a class:active={activeChatId === friend?.id} class="nav-link sidebar-group" href={`/chat/me/${friend?.chatId}`} on:click={() => {setActiveChat(friend?.id); $sidebarOpen = false;}}>
                         <img width="40px" height="40px" style="border-radius: 50%" src="{friend.userPfp}">
-                        <span class="status-dot" class:online={$userStatuses[friend?.id.toString()] == 'online'}></span>
+                        <span class="status-dot" class:online={$userStatuses[friend?.id.toString()] == 'online'} class:away={$userStatuses[friend?.id.toString()] == 'away'}></span>
                         <b>{friend?.username}</b>
                     </a>
                 </li>
@@ -219,6 +219,9 @@
     }
     .status-dot.online {
     background-color: #4CAF50;
+    }
+    .status-dot.away{
+        background-color: #FFC107;
     }
     
         

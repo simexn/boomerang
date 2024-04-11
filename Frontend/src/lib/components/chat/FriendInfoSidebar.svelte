@@ -66,7 +66,7 @@
         <div class="user-info-image-container">
             <div class="user-info-image">
                 <img src={friendInfo.userPfp} style="border-radius:50%;" width="50px" height="50px" alt="user image" />
-                <span class="user-status-dot" class:online={$userStatuses[friendInfo?.id.toString()] == 'online'}></span>
+                <span class="user-status-dot" class:online={$userStatuses[friendInfo?.id.toString()] == 'online'} class:away={$userStatuses[friendInfo?.id.toString()] == 'away'}></span>
             </div>
         </div>
         <div class="user-info-details">
@@ -240,6 +240,10 @@
     }
     .user-status-dot.online {
     background-color: #4CAF50;
+    }
+    .user-status-dot.away{
+        background-color: #FFC107;
+    
     }
     
     

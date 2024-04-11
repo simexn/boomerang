@@ -156,7 +156,7 @@
                             <a class="nav-link sidebar-group" href={`/chat/me/${friend?.chatId}`} style="">
                                 <div style="display:inline-block; position:relative;">
                                     <img width="40px" height="40px" style="border-radius: 50%;" src="{friend.userPfp}">
-                                    <span class="user-status-dot" class:online={$userStatuses[friend?.id.toString()] == 'online'}></span>
+                                    <span class="user-status-dot" class:online={$userStatuses[friend?.id.toString()] == 'online'} class:away={$userStatuses[friend?.id.toString()] == 'away'}></span>
                                 </div>
                                 <b>{friend?.username}</b>
                             </a>
@@ -248,6 +248,9 @@
     }
     .user-status-dot.online {
     background-color: #4CAF50;
+    }
+    .user-status-dot.away{
+        background-color: #FFC107;
     }
     
     

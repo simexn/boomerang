@@ -2,8 +2,8 @@
 using Backend.Data;
 using Backend.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -64,7 +64,27 @@ namespace Backend.Hubs
             _users.TryGetValue(userId, out string connectionId);
             return connectionId;
         }
-        
+
+        public async Task UpdateUserStatus(string userId, string status)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                throw new HubException("User not found");
+            }
+
+            // Update the user's status
+            user.Status = status;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                throw new HubException("Error updating user status");
+            }
+
+            await Clients.All.SendAsync("UpdateUserStatus", user.Id, status);
+        }
+
 
     }
 }
