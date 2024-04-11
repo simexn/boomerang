@@ -453,7 +453,7 @@ namespace Backend.Controllers
             return Ok();
         }
 
-        [HttpPost("updateUserStatus/{userId}/{status]")]
+        [HttpPost("updateUserStatus/{userId}/{status}")]
         public async Task<IActionResult> UpdateUserStatus(string userId, string status)
         {
             var user = await _userManager.FindByIdAsync(userId);
