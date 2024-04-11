@@ -72,7 +72,6 @@
 </div>
 
     <div>
-        {#if !item.withoutDetails}
         <div class="message-header">
             <div class="message-sender">
                 <button class="message-sender-button">{item.userName}</button>                            
@@ -84,7 +83,6 @@
              
             </div> 
         </div>   
-        {/if}
         <div class="message-body">                    
             {#if $isEditing === item.id}
                 <p class="message-edit-info" style=""><i>currently editing message:</i></p>

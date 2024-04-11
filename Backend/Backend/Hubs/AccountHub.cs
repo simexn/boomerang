@@ -49,6 +49,11 @@ namespace Backend.Hubs
             {
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, user.Id.ToString());
                 _users.TryRemove(user.Id.ToString(), out _); // Remove the user's ID
+
+                user.Status = "Offline";
+                await _userManager.UpdateAsync(user);
+
+                await Clients.All.SendAsync("UpdateUserStatus", user.Id, "offline");
             }
 
             await base.OnDisconnectedAsync(exception);

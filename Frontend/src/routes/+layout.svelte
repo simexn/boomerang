@@ -49,9 +49,9 @@
             userStatuses.set(data.activeUsers);
             await connection.invoke("UpdateUserStatus", userId.toString(), "online");
             
-            window.onunload = async () => {
-                await connection.invoke("UpdateUserStatus", userId.toString(), "offline");
-            };
+            // window.onunload = async () => {
+            //     await connection.invoke("UpdateUserStatus", userId.toString(), "offline");
+            // };
             
         }
         ready= true;
