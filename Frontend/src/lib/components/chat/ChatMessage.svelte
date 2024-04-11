@@ -22,7 +22,6 @@
     let previousTimestamp:any = null;
 
     onMount(() => {
-        console.log("rendering Chat Message component");
         scrollContainer.scrollTop = scrollContainer.scrollHeight;
     });
 
@@ -47,9 +46,6 @@
     }
 
     
-    onMount(() => {
-        console.log("rendering Chat Message component")
-    });
     
 </script>
 

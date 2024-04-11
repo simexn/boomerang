@@ -40,7 +40,6 @@ export async function fetchUserInfo() {
             accountCreated: new Date(data.userInfo.accountCreated).toLocaleString(),
             profilePictureUrl: `${backendUrl}${data.userInfo.profilePictureUrl}?${Date.now()}`
         }
-        console.log(user);
         return user;   
     }
     else{
@@ -119,7 +118,7 @@ export async function isLoggedIn() {
 
 export async function handleAccountRegister(formData: { username: string, email: string, password: string, confirmPassword: string, birthDate: Date, pronouns: string }) {
 
-    console.log(formData);
+
     const requestBody = JSON.stringify(formData);
   
     const response = await fetch(`${backendUrl}/account/register`, {
@@ -218,7 +217,6 @@ export function validateEmail(email: string) {
 
 export function validatePassword(password: string) {
 
-    console.log("password" + password)
     if (password.length === 0) {
         return ' ';
     } else if (password.length < 6) {

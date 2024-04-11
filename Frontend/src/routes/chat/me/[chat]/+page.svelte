@@ -69,6 +69,7 @@
         friendInfo = await fetchFriendInfo(chatId);
     }
     async function loadMoreMessages() {
+        console.log('Loading more messages');
         if (isLoading) return;
         isLoading = true;
         const newMessages = await fetchMessages(chatId, pageCurrent, pageSize);

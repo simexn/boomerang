@@ -29,7 +29,6 @@ export async function startConnection() {
         
 
         connection.on("UpdateUserStatus", async (userId, status) => {
-            console.log("User status updated: " + userId + " " + status);
             userStatuses.update(statuses => ({ ...statuses, [userId]: status }));
         });
 
