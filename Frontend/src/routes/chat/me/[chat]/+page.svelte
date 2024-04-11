@@ -78,10 +78,11 @@
     }
 
     async function loadMessages() {
-        chatItems = await fetchMessages(chatId, pageCurrent, pageSize);
-        console.log("Chatitems: " + chatItems.length)
-        pageCurrent++;
-    }
+    console.log(`Loading messages for chatId: ${chatId}`);
+    chatItems = await fetchMessages(chatId, pageCurrent, pageSize);
+    console.log(`Loaded ${chatItems.length} messages`);
+    pageCurrent++;
+}
 
     function handleScroll(event: any) {
         const { scrollTop, clientHeight, scrollHeight } = event.target;
