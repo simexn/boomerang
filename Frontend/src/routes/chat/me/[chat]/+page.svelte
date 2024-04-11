@@ -33,7 +33,7 @@
 
     let isLoading = false;
     let pageCurrent = 1;
-    const pageSize = 20;
+    const pageSize = 40;
 
     let isPickerOpen = false;
     let EmojiPicker: any;
