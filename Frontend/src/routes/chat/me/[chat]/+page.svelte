@@ -153,6 +153,9 @@ return chatItem as ChatItem;
         if (connection) {
             ready=false;
             await connection.stop();
+            while (connection.state === "Disconnecting") {
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
         }
         
 
