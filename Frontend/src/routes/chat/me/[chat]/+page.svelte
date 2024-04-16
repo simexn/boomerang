@@ -1,16 +1,16 @@
 <script lang="ts">
     import { page } from "$app/stores";
-    import { fetchGroupInfo, type Group } from "$lib/Handlers/groupHandler";
+    import { fetchGroupInfo, type Group } from "$lib/handlers/groupHandler";
     import ChatHeader from "$lib/components/chat/ChatHeader.svelte";
     import { onMount, tick } from "svelte";
     import AddFriendModal from "../../AddFriendModal.svelte";
-    import { fetchMessages, type ChatItem, handleMessageSubmit } from "$lib/Handlers/chatHandler";
-    import type { User } from "$lib/Handlers/accountHandler";
+    import { fetchMessages, type ChatItem, handleMessageSubmit } from "$lib/handlers/chatHandler";
+    import type { User } from "$lib/handlers/accountHandler";
     import { userStore } from "$lib/stores/userInfoStore";
     import ChatMessage from "$lib/components/chat/ChatMessage.svelte";
     import { HubConnectionBuilder, type HubConnection } from "@microsoft/signalr";
-    import { getToken } from "$lib/Handlers/authHandler";
-    import { fetchFriendInfo, type FriendInfo } from "$lib/Handlers/userHandler";
+    import { getToken } from "$lib/handlers/authHandler";
+    import { fetchFriendInfo, type FriendInfo } from "$lib/handlers/userHandler";
     import FriendInfoSidebar from "$lib/components/chat/FriendInfoSidebar.svelte";
     import { goto } from "$app/navigation";
     import "$lib/css/chatstyles.css"

@@ -1,9 +1,9 @@
-import { fetchUserId, isLoggedIn, type User } from "$lib/Handlers/accountHandler";
-import { getToken } from "$lib/Handlers/authHandler";
+import { fetchUserId, isLoggedIn, type User } from "$lib/handlers/accountHandler";
+import { getToken } from "$lib/handlers/authHandler";
 import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
 import { userStatuses } from "$lib/stores/userStatusesStore";
 import { receivedRequestsStore, sentRequestsStore } from "$lib/stores/friendRequestsStore";
-import type { FriendPreview, FriendRequest } from "$lib/Handlers/userHandler";
+import type { FriendPreview, FriendRequest } from "$lib/handlers/userHandler";
 import { json } from "@sveltejs/kit";
 import { friendsStore } from "$lib/stores/friendsStore";
 import { userStore } from "$lib/stores/userInfoStore";

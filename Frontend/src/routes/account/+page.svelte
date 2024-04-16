@@ -2,9 +2,9 @@
     import { onMount } from 'svelte';
     import Cropper from 'cropperjs';
     import 'cropperjs/dist/cropper.css';
-    import { getToken } from "$lib/Handlers/authHandler";
+    import { getToken } from "$lib/handlers/authHandler";
     import { updateUserInfo, userStore } from '$lib/stores/userInfoStore';
-    import { handleUpdateInformation, validateConfirmPassword, validateEmail, validatePassword, validateUsername } from '$lib/Handlers/accountHandler';
+    import { handleUpdateInformation, validateConfirmPassword, validateEmail, validatePassword, validateUsername } from '$lib/handlers/accountHandler';
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
     let selectedFile: any;
     let cropper: Cropper;

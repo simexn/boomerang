@@ -1,4 +1,4 @@
-import type { FriendPreview } from '$lib/Handlers/userHandler';
+import type { FriendPreview } from '$lib/handlers/userHandler';
 import { writable } from 'svelte/store';
 
 // friendsStore.ts

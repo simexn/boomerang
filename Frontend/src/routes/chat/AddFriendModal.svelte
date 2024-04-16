@@ -1,6 +1,6 @@
 <script lang="ts">
     import { fade, fly } from "svelte/transition";
-    import {handleAddFriend} from "$lib/Handlers/userHandler";
+    import {handleAddFriend} from "$lib/handlers/userHandler";
     let modalBody: any;
     let friendUsername: string;
     let isFriendUsernameValid = true;

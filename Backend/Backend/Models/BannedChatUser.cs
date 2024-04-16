@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 
 namespace Backend.Models
 {
-    public class ChatAdmin
+    public class BannedChatUser
     {
         [Required]
         public int UserId { get; set; }
@@ -13,7 +12,8 @@ namespace Backend.Models
         [Required]
         public int ChatId { get; set; }
         [ForeignKey("ChatId")]
-        [JsonIgnore]
         public Chat Chat { get; set; }
+        [Required]
+        public string BannedOn { get; set; }
     }
 }

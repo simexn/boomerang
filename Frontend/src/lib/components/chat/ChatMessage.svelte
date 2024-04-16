@@ -1,13 +1,13 @@
 <script lang="ts">
-    import type { User } from "$lib/Handlers/accountHandler";
-    import type {ChatItem} from "$lib/Handlers/chatHandler";
+    import type { User } from "$lib/handlers/accountHandler";
+    import type {ChatItem} from "$lib/handlers/chatHandler";
     import { writable, type Stores } from "svelte/store";
-    import { handleEditMessage, handleDeleteMessage } from "$lib/Handlers/chatHandler";
+    import { handleEditMessage, handleDeleteMessage } from "$lib/handlers/chatHandler";
     import EventMessage from "./EventMessage.svelte";
     import UserMessage from "./UserMessage.svelte";
     import '$lib/css/message.css';
     import { onMount } from "svelte";
-    import type { Group } from "$lib/Handlers/groupHandler";
+    import type { Group } from "$lib/handlers/groupHandler";
     export let imageUrl: string;
     export let userInfo: User;
     export let scrollContainer: HTMLElement;

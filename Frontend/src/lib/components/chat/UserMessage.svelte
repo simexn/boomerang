@@ -1,14 +1,14 @@
 <script lang="ts">
-    import type {ChatItem} from "$lib/Handlers/chatHandler";
-    import type { User } from "$lib/Handlers/accountHandler";
+    import type {ChatItem} from "$lib/handlers/chatHandler";
+    import type { User } from "$lib/handlers/accountHandler";
     import { writable } from "svelte/store";
-    import { isLoggedIn } from '$lib/Handlers/accountHandler';
+    import { isLoggedIn } from '$lib/handlers/accountHandler';
     import { userStatuses } from '$lib/stores/userStatusesStore';
     import { onMount } from "svelte";
-    import { getToken } from "$lib/Handlers/authHandler";
+    import { getToken } from "$lib/handlers/authHandler";
     import { HubConnectionBuilder } from "@microsoft/signalr";
     import { connectionStore } from '$lib/stores/connectionsStore';
-    import type { Group } from "$lib/Handlers/groupHandler";
+    import type { Group } from "$lib/handlers/groupHandler";
 
     let connection;
     connectionStore.subscribe(value => { connection = value; });
@@ -99,7 +99,7 @@
             {/if}                                       
         </div>
         
-        {#if userInfo && item.userName === userInfo.userName && $isEditing !== item.id && !item.isDeleted && !groupInfo?.isArchieved}
+        {#if userInfo && item.userName === userInfo.userName && $isEditing !== item.id && !item.isDeleted}
             <div class="message-actions">
                 <i class="icon-edit fa fa-pencil" on:click={() => isEditingMessage(item.id, item.content)}></i>
                 <i class="icon-delete fa fa-trash" on:click={() => deleteMessage(item.id)}></i>
@@ -130,7 +130,7 @@
             {/if}                                       
         </div>
         
-        {#if userInfo && item.userName === userInfo.userName && $isEditing !== item.id && !item.isDeleted && !groupInfo?.isArchieved}
+        {#if userInfo && item.userName === userInfo.userName && $isEditing !== item.id && !item.isDeleted}
             <div class="message-actions">
                 <i class="icon-edit fa fa-pencil" on:click={() => isEditingMessage(item.id, item.content)}></i>
                 <i class="icon-delete fa fa-trash" on:click={() => deleteMessage(item.id)}></i>

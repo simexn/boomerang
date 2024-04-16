@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240410121629_init")]
+    [Migration("20240416120735_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -39,6 +39,9 @@ namespace Backend.Migrations
                     b.Property<DateTime>("AccountCreatedDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Bio")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -48,6 +51,9 @@ namespace Backend.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsAdmin")
                         .HasColumnType("bit");
 
                     b.Property<bool>("LockoutEnabled")
@@ -80,6 +86,7 @@ namespace Backend.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")
@@ -111,7 +118,7 @@ namespace Backend.Migrations
                     b.Property<int>("BlockedId")
                         .HasColumnType("int");
 
-                    b.Property<string>("blockedOn")
+                    b.Property<string>("BlockedOn")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -135,9 +142,6 @@ namespace Backend.Migrations
 
                     b.Property<string>("InviteCode")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsArchieved")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("IsGroup")
                         .HasColumnType("bit");

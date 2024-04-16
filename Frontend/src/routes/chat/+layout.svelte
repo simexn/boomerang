@@ -3,11 +3,11 @@
     import { page } from '$app/stores'
     import { onMount } from 'svelte';
     import { fade, slide, fly } from 'svelte/transition';
-    import {handleJoinRoom, handleRoomSubmit} from '$lib/Handlers/groupHandler'
-    import {fetchChats} from '$lib/Handlers/groupHandler'
+    import {handleJoinRoom, handleRoomSubmit} from '$lib/handlers/groupHandler'
+    import {fetchChats} from '$lib/handlers/groupHandler'
     import JoinGroupModal from './JoinGroupModal.svelte'
     import AddFriendModal from './AddFriendModal.svelte';
-    import { fetchFriends, type FriendInfo, type FriendPreview } from '$lib/Handlers/userHandler';
+    import { fetchFriends, type FriendInfo, type FriendPreview } from '$lib/handlers/userHandler';
     import { friendsStore } from '$lib/stores/friendsStore';
     import { userStatuses } from '$lib/stores/userStatusesStore';
     import { sidebarOpen } from '$lib/stores/sidebarToggleStore';

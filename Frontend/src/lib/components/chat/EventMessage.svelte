@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { ChatItem } from "$lib/Handlers/chatHandler";
+    import type { ChatItem } from "$lib/handlers/chatHandler";
     export let item: ChatItem;
 </script>
 

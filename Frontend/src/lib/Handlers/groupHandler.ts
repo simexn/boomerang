@@ -6,7 +6,6 @@ export interface Group {
     id: number;
     name: string;
     isGroup: boolean;
-    isArchieved: boolean;
     creatorId: number;
     inviteCode: string;
     users: User[];
@@ -47,7 +46,6 @@ export async function fetchGroupInfo(groupId: string){
             id: data.chat.id,
             name: data.chat.name,
             isGroup: data.chat.isGroup,
-            isArchieved: data.chat.isArchieved,
             creatorId: data.chat.creatorId,
             inviteCode: data.chat.inviteCode,
             users: data.users,
@@ -60,7 +58,6 @@ export async function fetchGroupInfo(groupId: string){
             id: 0,
             name: '',
             isGroup: false,
-            isArchieved: true,
             creatorId: 0,
             inviteCode: '',
             users: [],

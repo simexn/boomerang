@@ -1,7 +1,7 @@
 <script lang="ts">
-    import type { User } from "$lib/Handlers/accountHandler";
-    import { handleLeaveGroup, type Group, handleDeleteGroup } from "$lib/Handlers/groupHandler";
-    import type { FriendInfo } from "$lib/Handlers/userHandler";
+    import type { User } from "$lib/handlers/accountHandler";
+    import { handleLeaveGroup, type Group, handleDeleteGroup } from "$lib/handlers/groupHandler";
+    import type { FriendInfo } from "$lib/handlers/userHandler";
 
     export let groupInfo: Group;
     export let friendInfo: FriendInfo = {} as FriendInfo;

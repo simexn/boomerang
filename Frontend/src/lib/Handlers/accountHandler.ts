@@ -1,5 +1,5 @@
 import { browser } from "$app/environment";
-import { getToken } from "$lib/Handlers/authHandler";
+import { getToken } from "$lib/handlers/authHandler";
 import { updateUserInfo } from "$lib/stores/userInfoStore";
 import { HubConnectionBuilder } from '@microsoft/signalr';
 import { tick } from "svelte";

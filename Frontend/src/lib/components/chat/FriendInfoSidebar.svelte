@@ -1,10 +1,10 @@
 <script lang="ts">
-    import type { User } from "$lib/Handlers/accountHandler";
-    import type { Group } from "$lib/Handlers/groupHandler";
+    import type { User } from "$lib/handlers/accountHandler";
+    import type { Group } from "$lib/handlers/groupHandler";
     import { fly, slide } from "svelte/transition";
     import "$lib/css/sidebarstyles.css"
     import { userStatuses } from "$lib/stores/userStatusesStore";
-    import { handleRemoveFriend, type FriendInfo, handleBlockUser } from "$lib/Handlers/userHandler";
+    import { handleRemoveFriend, type FriendInfo, handleBlockUser } from "$lib/handlers/userHandler";
     import { goto } from "$app/navigation";
     import { onMount } from "svelte";
 

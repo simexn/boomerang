@@ -198,7 +198,7 @@ namespace Backend.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             var chat = await _context.Chats.FirstOrDefaultAsync(c => c.Id == Int32.Parse(requestBody[1]));
-            if (chat == null || user == null || !(await IsUserInChat(user.Id, chat.Id)) || chat.IsArchieved)
+            if (chat == null || user == null || !(await IsUserInChat(user.Id, chat.Id)))
             {
                 return Unauthorized();
             }

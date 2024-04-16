@@ -2,13 +2,13 @@
     import '$lib/css/mainstyles.css'
     import { onDestroy, onMount } from 'svelte';
     import { userStatuses } from '$lib/stores/userStatusesStore';
-    import { fetchUserId, isLoggedIn, type User } from '$lib/Handlers/accountHandler';
+    import { fetchUserId, isLoggedIn, type User } from '$lib/handlers/accountHandler';
     import { browser } from '$app/environment';
     import type { HubConnection } from '@microsoft/signalr';
     import { startConnection } from '$lib/hubs/UserStatusHub';
     import { connectionStore } from '$lib/stores/connectionsStore';
     import {userStore, updateUserInfo} from '$lib/stores/userInfoStore';
-    import { fetchFriendRequests, handleAcceptRequest, type FriendRequest, handleRejectRequest } from '$lib/Handlers/userHandler';
+    import { fetchFriendRequests, handleAcceptRequest, type FriendRequest, handleRejectRequest } from '$lib/handlers/userHandler';
     import { slide } from 'svelte/transition';
     import { receivedRequestsStore } from '$lib/stores/friendRequestsStore';
     import { goto } from '$app/navigation';

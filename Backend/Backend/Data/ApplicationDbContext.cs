@@ -15,6 +15,7 @@ namespace Backend.Data
         public DbSet<Message> Messages { get; set; }
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<ChatUser> ChatUsers { get; set; }
+        public DbSet<BannedChatUser> BannedChatUsers { get; set; }
         public DbSet<ChatAdmin> ChatAdmins { get; set; }
         public DbSet<ChatEvent> ChatEvents { get; set; }
         public DbSet<Friendship> Friendships { get; set; }
@@ -24,7 +25,9 @@ namespace Backend.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
 
+
             base.OnModelCreating(builder);
+
             builder.Entity<ChatUser>()
                 .HasKey(x => new { x.ChatId, x.UserId });
 
@@ -64,6 +67,8 @@ namespace Backend.Data
                 .HasForeignKey(b => b.BlockedId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<BannedChatUser>()
+                .HasKey(bc => new { bc.ChatId, bc.UserId });
 }
 
     }

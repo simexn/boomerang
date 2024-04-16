@@ -19,11 +19,10 @@ namespace Backend.Models
         public string Name { get; set; }
         [Required]
         public bool IsGroup { get; set; } = true;
-        public bool IsArchieved { get; set; } = false;
 
         public string? InviteCode { get; set; }
-
-        public int? CreatorId { get; set; }
+        [Required]
+        public int CreatorId { get; set; }
         [ForeignKey("CreatorId")]
         [JsonIgnore]
         public virtual ApplicationUser Creator { get; set; }

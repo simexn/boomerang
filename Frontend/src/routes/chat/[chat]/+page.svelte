@@ -1,19 +1,19 @@
 <script lang="ts">
     import { page } from '$app/stores';
     import { tick } from 'svelte';
-    import { handleMessageSubmit, fetchMessages } from "$lib/Handlers/chatHandler";
-    import { handleLeaveGroup, handleDeleteGroup, handleKickUser, handlePromoteUser, handleDemoteUser, handleTransferOwnership } from "$lib/Handlers/groupHandler";
-    import {getToken} from "$lib/Handlers/authHandler"; 
+    import { handleMessageSubmit, fetchMessages } from "$lib/handlers/chatHandler";
+    import { handleLeaveGroup, handleDeleteGroup, handleKickUser, handlePromoteUser, handleDemoteUser, handleTransferOwnership } from "$lib/handlers/groupHandler";
+    import {getToken} from "$lib/handlers/authHandler"; 
     import { onMount } from 'svelte';
     import { HubConnectionBuilder } from '@microsoft/signalr';
-    import { fetchGroupInfo} from '$lib/Handlers/groupHandler';
-    import { fetchUserInfo } from '$lib/Handlers/accountHandler';
+    import { fetchGroupInfo} from '$lib/handlers/groupHandler';
+    import { fetchUserInfo } from '$lib/handlers/accountHandler';
     
 
-    import type { User } from "$lib/Handlers/accountHandler";
-    import type { Group } from "$lib/Handlers/groupHandler";
-    import type { Message } from "$lib/Handlers/chatHandler";
-    import type {ChatItem} from "$lib/Handlers/chatHandler";
+    import type { User } from "$lib/handlers/accountHandler";
+    import type { Group } from "$lib/handlers/groupHandler";
+    import type { Message } from "$lib/handlers/chatHandler";
+    import type {ChatItem} from "$lib/handlers/chatHandler";
     import { userStore, updateUserInfo } from '$lib/stores/userInfoStore';
     import { goto } from '$app/navigation';
     import UserSidebar from '$lib/components/chat/UserSidebar.svelte';

@@ -1,8 +1,8 @@
 <script lang="ts">
-    import type { User } from "$lib/Handlers/accountHandler";
-    import type { Group } from "$lib/Handlers/groupHandler";
+    import type { User } from "$lib/handlers/accountHandler";
+    import type { Group } from "$lib/handlers/groupHandler";
     import { fly } from "svelte/transition";
-    import { handleKickUser, handlePromoteUser, handleDemoteUser, handleTransferOwnership } from "$lib/Handlers/groupHandler";
+    import { handleKickUser, handlePromoteUser, handleDemoteUser, handleTransferOwnership } from "$lib/handlers/groupHandler";
     import "$lib/css/sidebarstyles.css"
 
     export let groupInfo: Group;

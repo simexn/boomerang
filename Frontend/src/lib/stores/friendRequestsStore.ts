@@ -1,4 +1,4 @@
-import type { FriendRequest } from '$lib/Handlers/userHandler';
+import type { FriendRequest } from '$lib/handlers/userHandler';
 import { writable } from 'svelte/store';
 
 // Initialize the stores with empty arrays

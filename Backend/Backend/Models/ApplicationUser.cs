@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Backend.Models
 {
@@ -12,9 +13,13 @@ namespace Backend.Models
         public string? ProfilePictureUrl { get; set; }
         [Required]
         public DateTime AccountCreatedDate { get; set; }
+        [Required]
+        public string Status { get; set; }
+        public string? Bio { get; set; }
+        [Required]
+        public bool IsAdmin { get; set; }
 
-        public string? Status { get; set; }
-        
+
 
     }
 }

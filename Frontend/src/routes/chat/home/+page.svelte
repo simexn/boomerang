@@ -2,7 +2,7 @@
     import { friendsStore } from "$lib/stores/friendsStore";
     import { sentRequestsStore, receivedRequestsStore, blockedUsersStore } from "$lib/stores/friendRequestsStore";
     import { userStatuses } from "$lib/stores/userStatusesStore";
-    import { handleAcceptRequest, handleRejectRequest, handleRemoveFriend, handleUnblockUser } from "$lib/Handlers/userHandler";
+    import { handleAcceptRequest, handleRejectRequest, handleRemoveFriend, handleUnblockUser } from "$lib/handlers/userHandler";
     import {goto} from "$app/navigation";
     import { onMount } from "svelte";
     

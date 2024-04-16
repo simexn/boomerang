@@ -20,7 +20,9 @@ namespace Backend.Models
         public bool IsEdited { get; set; }
         public bool IsDeleted { get; set; }
 
+        [Required]
         public int ChatId { get; set; }
+        [ForeignKey("ChatId")]
         public Chat Chat { get; set; }
     }
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { fetchChats, handleJoinRoom, handleRoomSubmit } from '$lib/Handlers/groupHandler';
+    import { fetchChats, handleJoinRoom, handleRoomSubmit } from '$lib/handlers/groupHandler';
     import {fade, fly} from 'svelte/transition';
     let activeTab = 'create';
     let modalBody: any;

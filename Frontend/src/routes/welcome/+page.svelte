@@ -1,6 +1,6 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
-    import { handleAccountRegister, handleAccountLogin } from '$lib/Handlers/accountHandler';
+    import { handleAccountRegister, handleAccountLogin } from '$lib/handlers/accountHandler';
     import { updateUserInfo } from '$lib/stores/userInfoStore';
     import { onMount } from 'svelte';
     import { fade } from 'svelte/transition';

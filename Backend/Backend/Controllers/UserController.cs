@@ -127,7 +127,7 @@ namespace Backend.Controllers
                     userId = b.BlockedId,
                     username = b.Blocked.UserName,
                     profilePictureUrl = b.Blocked.ProfilePictureUrl,
-                    blockedOn = b.blockedOn
+                    blockedOn = b.BlockedOn
                 })
                 .ToListAsync();
 
@@ -410,7 +410,7 @@ namespace Backend.Controllers
             {
                 BlockedById = user.Id,
                 BlockedId = friend.Id,
-                blockedOn = DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+                BlockedOn = DateTime.Now.ToString("dd/MM/yyyy HH:mm")
             };
 
             _context.BlockedUsers.Add(blockedUser);
@@ -421,7 +421,7 @@ namespace Backend.Controllers
                 id = blockedUser.BlockedId,
                 username = friend.UserName,
                 userPfp = friend.ProfilePictureUrl,
-                requestRespondedDate = blockedUser.blockedOn
+                requestRespondedDate = blockedUser.BlockedOn
             });
         }
 

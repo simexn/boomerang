@@ -1,4 +1,4 @@
-import { fetchUserInfo, type User } from '$lib/Handlers/accountHandler';
+import { fetchUserInfo, type User } from '$lib/handlers/accountHandler';
 import { writable } from 'svelte/store';
 
 // Create a writable store with initial value of null
