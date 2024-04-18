@@ -1,10 +1,6 @@
 {
   "Files": [
     {
-      "Id": "C:\\Users\\sbuha\\Desktop\\Undertale.v1.08-SiMPLEX\\diplomna rabota\\Backend\\Backend\\obj\\Release\\net8.0\\scopedcss\\projectbundle\\Backend.bundle.scp.css",
-      "PackagePath": "staticwebassets\\Backend.bundle.scp.css"
-    },
-    {
       "Id": "C:\\Users\\sbuha\\Desktop\\Undertale.v1.08-SiMPLEX\\diplomna rabota\\Backend\\Backend\\wwwroot\\css\\site.css",
       "PackagePath": "staticwebassets\\css\\site.css"
     },

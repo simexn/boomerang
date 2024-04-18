@@ -2,15 +2,28 @@
     import { friendsStore } from "$lib/stores/friendsStore";
     import { sentRequestsStore, receivedRequestsStore, blockedUsersStore } from "$lib/stores/friendRequestsStore";
     import { userStatuses } from "$lib/stores/userStatusesStore";
-    import { handleAcceptRequest, handleRejectRequest, handleRemoveFriend, handleUnblockUser } from "$lib/handlers/userHandler";
+    import { handleAcceptRequest, handleRejectRequest, handleRemoveFriend, handleSearchUser, handleUnblockUser } from "$lib/handlers/userHandler";
     import {goto} from "$app/navigation";
     import { onMount } from "svelte";
-    
+    import type { User } from "$lib/handlers/accountHandler";
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;    
     $: console.log(filter)
 
     let userOptionsDropdown:any;
     let isGradientRemoved = false;
+    let friendUsername: string;
+    let friendToAdd: User;
+    let friendToAddError: string = '';
     let filter = "All";
+    const filterNamesInBulgarian: any = {
+        'All': 'Всички',
+        'online': 'Активни',
+        'Pending': 'Изчакващи',
+        'Requests': 'Заявки',
+        'Blocked': 'Блокирани',
+        'add': 'Добавяне на приятел',
+    };
+    $: filterName = filterNamesInBulgarian[filter];
 
     onMount(() => {
         const buttonContainer: any = document.getElementById('button-container');
@@ -43,35 +56,56 @@
     async function unblockUser(userId: string){
         await handleUnblockUser(userId);
     }
+    async function searchFriend(username: string){
+        const response = await handleSearchUser(username);
+        if (response.ok){
+            friendToAddError='';
+            const data = await response.json();
+
+            friendToAdd = {
+                id: data.id,
+                userName: data.username,
+                email: data.email,
+                accountCreated: data.accountCreated,
+                profilePictureUrl: backendUrl + data.profilePictureUrl
+            }
+        }
+        else{
+            friendToAddError = await response.text();
+        }
+    }
 
     
     $: filteredFriends = filter === 'All' 
         ? $friendsStore
-        : $friendsStore.filter(friend => $userStatuses[friend.id] === filter);
+        : $friendsStore.filter(friend => $userStatuses[friend.id] === filter || $userStatuses[friend.id] === 'away');
 </script>
 <svelte:window on:click={() => userOptionsDropdown = null} />
 <div class="home-container">
     <div class="header" class:gradient-removed={isGradientRemoved}>
         <div class="friends-span">
-            <span>Friends</span>
+            <span>Приятели</span>
         </div>
         <div class="button-container" id="button-container">
-            <button class="header-button" on:click={() => setFilter('online')}>Online</button>
-            <button class="header-button" on:click={() => setFilter('All')}>All</button>
-            <button class="header-button" on:click={() => setFilter('Pending')}>Pending</button>
-            <button class="header-button" on:click={() => setFilter('Requests')}>Requests</button>
-            <button class="header-button" on:click={() => setFilter('Blocked')}>Blocked</button>
-            <button class="header-button add-friend" on:click={() => setFilter('add')}>Add Friend</button>
+            <button class="header-button" on:click={() => setFilter('online')}>Активни</button>
+            <button class="header-button" on:click={() => setFilter('All')}>Всички</button>
+            <button class="header-button" on:click={() => setFilter('Pending')}>Изчакващи</button>
+            <button class="header-button" on:click={() => setFilter('Requests')}>Заявки</button>
+            <button class="header-button" on:click={() => setFilter('Blocked')}>Блокирани</button>
+            <button class="header-button add-friend" on:click={() => setFilter('add')}>Добавяне на приятел</button>
         </div>
     </div>
+    {#if filter != "add"}
     <div class="searchbar">
-        <input class="searchbar-input" placeholder="Search (WIP)">
+        <input class="searchbar-input" placeholder="Търсене">
     </div>
     <div class="section-title-container">
-        <p class="section-title">{filter}</p>
+        <p class="section-title">{filterName}</p>
     </div>
+    {/if}
     <div class="users-list">
         {#if filter === 'All' || filter === 'online'}
+            
             {#each filteredFriends as friend, index (index)}
                 <div class="user-item">
                     <div class="user-wrap">
@@ -99,6 +133,11 @@
                     </div>
                 </div>
             {/each}
+            {#if filteredFriends.length === 0 && filter == "All"}
+                <p class="empty-message">Нямате приятели. Може да добавите чрез "Добавяне на приятел" бутона.</p>
+            {:else if filteredFriends.length === 0 && filter == "online"}
+                <p class="empty-message">Нямате приятели, които в момента са на линия.</p>
+            {/if}
         {:else if filter === 'Pending'}
         {#each $sentRequestsStore as request, index (index)}
             <div class="user-item">
@@ -118,6 +157,9 @@
                 </div>
             </div>
         {/each}
+        {#if $sentRequestsStore.length === 0}
+            <p class="empty-message">Нямате изпратени заявки за приятелство.</p>
+        {/if}
         {:else if filter === 'Requests'}
             {#each $receivedRequestsStore as request, index (index)}
                 <div class="user-item">
@@ -138,6 +180,9 @@
                     </div>
                 </div>
             {/each}
+            {#if $receivedRequestsStore.length === 0}
+                <p class="empty-message">Нямате получени заявки за приятелство.</p>
+            {/if}
         {:else if filter === 'Blocked'}
             {#each $blockedUsersStore as blockedUser, index (index)}
                 <div class="user-item">
@@ -148,7 +193,7 @@
                         <div class="user-info">
                             <span>{blockedUser.username}</span>
                             <div class="user-note">
-                                <span>Blocked on: {blockedUser?.requestRespondedDate}</span>
+                                <span>Блокиран на: {blockedUser?.requestRespondedDate}</span>
                             </div>
                         </div>
                     </div>
@@ -157,17 +202,109 @@
                     </div>
                 </div>
             {/each}
+            {#if $blockedUsersStore.length === 0}
+                <p class="empty-message">Няма потребители, които сте блокирали.</p>
+            {/if}
         {:else if filter === 'add'}
-            WIP
+        <div class="add-friend-container">
+            <h2>Добавяне на приятел</h2>
+            <p>Пратете покана за приятелство, използвайки потребителското име на приятеля Ви.</p>
+            <div class="add-friend-input" class:red-outline={friendToAddError}>
+                <input type="text" placeholder="Потребителско име" bind:value={friendUsername}/>
+                <button on:click={() => searchFriend(friendUsername)}>Изпращане на покана</button>
+            </div>
+            <p class="text-danger error-message">{friendToAddError}</p>
+        </div>
+        {#if friendToAdd}
+        <div class="user-item">
+            <div class="user-wrap">
+                <div class="user-icon">
+                    <img src={friendToAdd?.profilePictureUrl} alt="user icon" class="user-icon">
+                </div>
+                <div class="user-info">
+                    <span>{friendToAdd?.userName}</span>
+                    <div class="user-note">
+                        <span>Член на бумеранг от: {friendToAdd?.accountCreated}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="user-actions">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+        </div>
+        {/if}
         {/if}
     </div>
     <!-- List of friends goes here -->
 </div>
 
 <style>
-.home-container {
-    width:100%;
+    .add-friend-container {
+    display: flex;
+    flex-direction: column;
+    align-items:start;
+    justify-content: start;
+    padding: 20px;
+}
+
+.add-friend-container h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+.add-friend-container p {
+    font-size: 1em;
+    margin-bottom: 20px;
+}
+
+.add-friend-input {
+    position: relative;
+    width: 100%;
+}
+
+.add-friend-input input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    background: var(--prim-fg);
     
+}
+.add-friend-input input:focus {
+        outline: none; /* Remove the default outline */
+        border: none; /* Remove the border */
+    }
+
+.add-friend-input button {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    padding: 10px 20px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border: none;
+    background-color: #7289da;
+    color: #ffffff;
+    cursor: pointer;
+}
+.red-outline{
+        border-color: red !important;
+        border-radius: 10px;
+        box-shadow: 0 0 0 0.25rem rgba(255,0,0,.25) !important;
+        transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    }
+.home-container {
+    width:100%; 
+}
+.empty-message{
+    font-style: italic;
+    font-size: 1.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9e9e9e;
+    overflow: hidden;
 }
 
 .header {
@@ -182,20 +319,6 @@
     position: relative;
     transition: opacity 0.3s ease-in-out;
 }
-    .header::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: 50px;
-        background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 100%);
-        transition: opacity 0.3s ease-in-out;
-        pointer-events: none;
-    }  
-    .header.gradient-removed::after {
-        opacity: 0;
-    }
     .header span{
         font-size: 1.2rem;
         line-height: 1.25;

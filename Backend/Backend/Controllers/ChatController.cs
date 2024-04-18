@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Backend.Models.InputModels;
 using System.Diagnostics;
 using System.Text.Json;
-using Backend.Models.ViewModels;
+using Backend.Models.OutputModels;
 using Microsoft.Extensions.Logging;
 
 namespace Backend.Controllers
@@ -194,18 +194,19 @@ namespace Backend.Controllers
         }
 
         [HttpPost("sendMessage")]
-        public async Task<IActionResult> SendMessageToRoom([FromBody] string[] requestBody)
+        public async Task<IActionResult> SendMessageToRoom([FromBody] SendMessageInput data)
         {
             var user = await _userManager.GetUserAsync(User);
-            var chat = await _context.Chats.FirstOrDefaultAsync(c => c.Id == Int32.Parse(requestBody[1]));
+            var chat = await _context.Chats.FirstOrDefaultAsync(c => c.Id == Int32.Parse(data.chatId));
+            // Check if the chat exists, if the user is authenticated, and if the user is in the chat
             if (chat == null || user == null || !(await IsUserInChat(user.Id, chat.Id)))
             {
                 return Unauthorized();
             }
             var Message = new Message
             {
-                ChatId = Int32.Parse(requestBody[1]),
-                Text = requestBody[0],
+                ChatId = Int32.Parse(data.chatId),
+                Text = data.message,
                 FromUserId = user.Id,
                 Timestamp = DateTime.Now,
                 IsEdited = false,
@@ -217,7 +218,8 @@ namespace Backend.Controllers
             _context.Messages.Add(Message);
             await _context.SaveChangesAsync();
 
-            await _chat.Clients.Group(requestBody[1]).SendAsync("ReceiveMessage", new { Message, UserPfp = user.ProfilePictureUrl } );
+            // Send the new message to all clients in the chat group
+            await _chat.Clients.Group(data.chatId).SendAsync("ReceiveMessage", new { Message, UserPfp = user.ProfilePictureUrl } );
 
             return Ok();
         }

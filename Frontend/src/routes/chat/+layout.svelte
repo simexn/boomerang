@@ -28,7 +28,7 @@
     
     
     export let groupChats: any =[];
-    export let directChats: any =[];
+
     
     onMount(async() => {
         await fetchFriends();
@@ -48,9 +48,11 @@
 <div class="snd-layout-wrapper">
     <div class="sidebar d-flex flex-column flex-shrink-0 p-3 text-white" class:open={$sidebarOpen}>
         <div class="d-flex flex-row">
-            <button class="dropdown-button" on:click={() => friendsDropdownActive = !friendsDropdownActive}><span>Friends
+            <button class="dropdown-button" on:click={() => friendsDropdownActive = !friendsDropdownActive}><span>Приятели
             <i class="fa fa-caret-right" class:rotate={friendsDropdownActive}></i></span></button>
             <div class="add-group-button-wrap">
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
                 <i class="fa fa-plus add-group-button" on:click={() => friendsModalActive = true}></i>
             </div>
         </div>
@@ -61,6 +63,7 @@
                 {#each $friendsStore as friend}
                 <li class="nav-item" style="" transition:slide={{duration: 300}}>
                     <a class:active={activeChatId === friend?.id} class="nav-link sidebar-group" href={`/chat/me/${friend?.chatId}`} on:click={() => {setActiveChat(friend?.id); $sidebarOpen = false;}}>
+                        <!-- svelte-ignore a11y-missing-attribute -->
                         <img width="40px" height="40px" style="border-radius: 50%" src="{friend.userPfp}">
                         <span class="status-dot" class:online={$userStatuses[friend?.id.toString()] == 'online'} class:away={$userStatuses[friend?.id.toString()] == 'away'}></span>
                         <b>{friend?.username}</b>
@@ -74,9 +77,11 @@
         {/if}
         
         <div class="d-flex flex-row">
-            <button class="dropdown-button" on:click={() => groupDropdownActive = !groupDropdownActive}><span>Groups
+            <button class="dropdown-button" on:click={() => groupDropdownActive = !groupDropdownActive}><span>Групи
             <i class="fa fa-caret-right" class:rotate={groupDropdownActive}></i></span></button>
             <div class="add-group-button-wrap">
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
                 <i class="fa fa-plus add-group-button" on:click={() => groupModalActive = true}></i>
             </div>
         </div>
@@ -116,6 +121,7 @@
             overflow: hidden !important;
             height: 100% !important;
             max-height: 100% !important;
+            z-index: 1000;
         }
         
         .chat-content{

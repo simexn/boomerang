@@ -4,6 +4,5 @@
     {
         public string UsernameEmail { get; set; }
         public string Password { get; set; }
-
     }
 }

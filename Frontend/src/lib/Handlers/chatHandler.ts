@@ -1,4 +1,4 @@
-import {getToken} from './authHandler';
+import {getToken} from './authHandler'
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 export interface Message{
@@ -97,11 +97,7 @@ export async function fetchMessages(chatId: string, page: number, pageSize: numb
 
 export async function handleMessageSubmit(messageToSubmit: string, chatId: string){
     let token = await getToken();
-
-    const array = [messageToSubmit, chatId]
-    
-
-    const requestBody = JSON.stringify(array);
+    const requestBody = JSON.stringify({message: messageToSubmit, chatId: chatId});
 
     const response = await fetch(`${backendUrl}/chat/sendMessage`, {
         method: 'POST',

@@ -1,4 +1,4 @@
-﻿namespace Backend.Models.ViewModels
+﻿namespace Backend.Models.OutputModels
 {
     public class ChatItem
     {
@@ -11,7 +11,6 @@
         public string IsActive { get; set; }
         public string EventType { get; set; }
         public string UserPfp { get; set; }
-        
         public bool IsEdited { get; set; }
         public bool IsDeleted { get; set; }
         public bool WithDetails { get; set; }

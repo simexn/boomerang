@@ -260,3 +260,19 @@ export async function handleUnblockUser(userId: string){
     }
 }
 
+export async function handleSearchUser(username: string) {
+    let token = await getToken()
+
+    const response = await fetch(`${backendUrl}/user/searchUser/${username}`, {
+        method: 'GET',
+        headers:{
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+    });
+
+    return response;
+    
+}
+

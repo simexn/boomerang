@@ -444,13 +444,31 @@ namespace Backend.Controllers
 
             if (blockedUser == null)
             {
-                return NotFound("User not blocked.");
+                return NotFound("Потребителят не е блокиран.");
             }
 
             _context.BlockedUsers.Remove(blockedUser);
             await _context.SaveChangesAsync();
 
             return Ok();
+        }
+
+        [HttpGet("searchUser/{username}")]
+        public async Task<IActionResult> SearchUser(string username)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+            var friend = await _userManager.FindByNameAsync(username);
+
+            if (friend == null)
+            {
+                return NotFound("Не беше намерен потребител с такова име.");
+            }
+
+            return new JsonResult(new {id = friend.Id, username = friend.UserName, email = friend.Email, accountCreated = friend.AccountCreatedDate.ToString("dd/MM/yyyy"), profilePictureUrl = friend.ProfilePictureUrl});
         }
 
        

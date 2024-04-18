@@ -79,7 +79,7 @@
             connection.invoke("UpdateUserStatus", userId.toString(), "offline");
             document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
             
-             location.href = '/welcome';
+             await goto('/welcome');
              location.reload();
         }
     }
@@ -119,11 +119,9 @@ function toggleSidebar() {
             <i class="fa-solid fa-bars"></i>
         </button>
         {/if}
-        <a class="navbar-brand" on:click={() => isLogged ? goto('/chat/home') : goto('/welcome')}>Boomerangr</a>
+        <a class="navbar-brand" on:click={() => isLogged ? goto('/chat/home') : goto('/welcome')}>Boomerang</a>
         <div class="dropdown-wrap">
             {#if isLogged}
-            
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div class="notifications" on:click|stopPropagation={toggleNotifications} role="button" tabindex=0>
                 
                 <i class="fa fa-envelope fa-lg" aria-hidden="true" style="color: white;"></i>
@@ -143,13 +141,11 @@ function toggleSidebar() {
                                 <button class="btn btn-success btn-sm w-100 mb-1" on:click|stopPropagation={() => acceptRequest(request)}>Accept</button>
                                 <button class="btn btn-danger btn-sm w-100" on:click|stopPropagation={() => rejectRequest(request)}>Decline</button>
                             </div>
-                        </div>  
-                        
+                        </div>   
                     {/each}
                     {/if}   
                 </div>
                 {/if}
-            
             </div>
             <ul class="navbar-nav align-items-center">
                 <li class="nav-item dropdown">
@@ -160,9 +156,8 @@ function toggleSidebar() {
                     {#if dropdownOpen}
                         <div class="dropdown-menu" style="padding:0 !important;" class:show={dropdownOpen} transition:slide={{duration:500}} >
                         <a class="dropdown-item" on:click={() => goto("/account")}>Account</a>
-                        <a class="dropdown-item" href="#">Another action</a>
                         <div class="dropdown-divider mb-0"></div>
-                        <a class="dropdown-item logout-item" href="#" on:click={logout}>Logout</a>
+                        <a class="dropdown-item logout-item" href="/welcome" on:click={logout}>Logout</a>
                         </div>
                     {/if}
                 </li>
@@ -197,6 +192,7 @@ function toggleSidebar() {
         margin-left: auto;
         margin-right: 4rem;
         align-items: center;
+        
     }
     .dropdown-menu{
         min-width: 20rem;
@@ -258,6 +254,7 @@ function toggleSidebar() {
     .sidebar-toggle{
         border:none;
         background:transparent;
+        display:none;
     }
         .sidebar-toggle i{
             color: var(--prim-fg);
@@ -265,7 +262,7 @@ function toggleSidebar() {
         }
 
         
-        @media only screen and (max-width: 600px) {
+        @media only screen and (max-width: 768px) {
         .username{
             display: none;
         }
@@ -278,6 +275,9 @@ function toggleSidebar() {
              /* make the dropdown full width */
             width: 10rem;
             min-width: 0;
+        }
+        .sidebar-toggle{
+            display: inline-block;
         }
     }
 </style>

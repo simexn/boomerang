@@ -18,14 +18,12 @@ namespace Backend.Hubs
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<AccountHub> _logger;
         private static readonly ConcurrentDictionary<string, string> _users = new ConcurrentDictionary<string, string>();
-
         public AccountHub(ApplicationDbContext context, UserManager<ApplicationUser> userManager, ILogger<AccountHub> logger)
         {
             _context = context;
             _userManager = userManager;
             _logger = logger;
         }
-
         public override async Task OnConnectedAsync()
         {
             var userId = Context.GetHttpContext().Request.Query["userId"].ToString();
@@ -40,8 +38,6 @@ namespace Backend.Hubs
 
             await base.OnConnectedAsync();
         }
-
-
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             var user = await _userManager.GetUserAsync(Context.User);

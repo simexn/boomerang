@@ -93,6 +93,7 @@ namespace Backend.Controllers
                 Email = model.Email,                
                 ProfilePictureUrl = $"/images/profile_pictures/placeholder.png",
                 AccountCreatedDate = DateTime.UtcNow,
+                Status = "offline"
             };
             var result = await _userManager.CreateAsync(user, model.Password);
 
