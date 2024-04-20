@@ -14,5 +14,6 @@
         public bool IsEdited { get; set; }
         public bool IsDeleted { get; set; }
         public bool WithDetails { get; set; }
+        public string? FileUrl { get; set; }
     }
 }

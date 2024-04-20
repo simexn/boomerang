@@ -2,7 +2,7 @@
     import { friendsStore } from "$lib/stores/friendsStore";
     import { sentRequestsStore, receivedRequestsStore, blockedUsersStore } from "$lib/stores/friendRequestsStore";
     import { userStatuses } from "$lib/stores/userStatusesStore";
-    import { handleAcceptRequest, handleRejectRequest, handleRemoveFriend, handleSearchUser, handleUnblockUser } from "$lib/handlers/userHandler";
+    import { handleAcceptRequest, handleAddFriend, handleRejectRequest, handleRemoveFriend, handleSearchUser, handleUnblockUser } from "$lib/handlers/userHandler";
     import {goto} from "$app/navigation";
     import { onMount } from "svelte";
     import type { User } from "$lib/handlers/accountHandler";
@@ -12,8 +12,9 @@
     let userOptionsDropdown:any;
     let isGradientRemoved = false;
     let friendUsername: string;
-    let friendToAdd: User;
+    let friendToAdd: User | null;
     let friendToAddError: string = '';
+    let friendToAddSuccess: string ='';
     let filter = "All";
     const filterNamesInBulgarian: any = {
         'All': 'Всички',
@@ -74,6 +75,15 @@
             friendToAddError = await response.text();
         }
     }
+    async function addFriend(username: string){
+        const response = await handleAddFriend(username);
+        if (typeof response === 'string') {
+            friendToAddError = response;
+        }
+        else{
+            friendToAddSuccess = 'Поканата за приятелство беше изпратена успешно.';
+            friendToAdd= null;}
+    }
 
     
     $: filteredFriends = filter === 'All' 
@@ -82,7 +92,7 @@
 </script>
 <svelte:window on:click={() => userOptionsDropdown = null} />
 <div class="home-container">
-    <div class="header" class:gradient-removed={isGradientRemoved}>
+    <div class="header">
         <div class="friends-span">
             <span>Приятели</span>
         </div>
@@ -111,11 +121,12 @@
                     <div class="user-wrap">
                         <div class="user-icon">
                             <img src={friend.userPfp} alt="user icon" class="user-icon">
+                            <span class="user-status-dot" class:online={$userStatuses[friend?.id.toString()] == 'online'} class:away={$userStatuses[friend?.id.toString()] == 'away'}></span>
                         </div>
                         <div class="user-info">
                             <span>{friend.username}</span>
                             <div class="user-note">
-                                <span>so real</span>
+                                <span></span>
                             </div>
                         </div>
                     </div>
@@ -126,8 +137,8 @@
                         <i class="fas fa-ellipsis-v" on:click|stopPropagation={()=> userOptionsDropdown = userOptionsDropdown == friend.id ? null : friend.id}></i>
                         {#if userOptionsDropdown == friend.id}
                             <div role="navigation" class="dropdown-menu show">
-                                <button class="dropdown-item" on:click={()=>removeFriend(friend.id)}>Unfriend</button>
-                                <button class="dropdown-item">Block</button>
+                                <button class="dropdown-item" on:click={()=>removeFriend(friend.id)}>Премахване на приятел</button>
+                                <button class="dropdown-item">Блокиране</button>
                             </div>
                         {/if}
                     </div>
@@ -148,7 +159,7 @@
                     <div class="user-info">
                         <span>{request.username}</span>
                         <div class="user-note">
-                            <span>"so real"</span>
+                            <span>{request.requestSentDate}</span>
                         </div>
                     </div>
                 </div>
@@ -170,7 +181,7 @@
                         <div class="user-info">
                             <span>{request.username}</span>
                             <div class="user-note">
-                                <span>"so real"</span>
+                                <span>Получена на: {request.requestSentDate}</span>
                             </div>
                         </div>
                     </div>
@@ -211,9 +222,10 @@
             <p>Пратете покана за приятелство, използвайки потребителското име на приятеля Ви.</p>
             <div class="add-friend-input" class:red-outline={friendToAddError}>
                 <input type="text" placeholder="Потребителско име" bind:value={friendUsername}/>
-                <button on:click={() => searchFriend(friendUsername)}>Изпращане на покана</button>
+                <button on:click={() => searchFriend(friendUsername)}>Търсене на потребител</button>
             </div>
             <p class="text-danger error-message">{friendToAddError}</p>
+            <p class="text-success success-message">{friendToAddSuccess}</p>
         </div>
         {#if friendToAdd}
         <div class="user-item">
@@ -229,16 +241,33 @@
                 </div>
             </div>
             <div class="user-actions">
-                <i class="fa-solid fa-user-plus"></i>
+                <i class="fa-solid fa-user-plus" on:click={() => { if (friendToAdd?.userName) addFriend(friendToAdd.userName); }}></i>
             </div>
         </div>
         {/if}
         {/if}
     </div>
-    <!-- List of friends goes here -->
 </div>
 
 <style>
+    .user-status-dot {
+    height: 10px;
+    width: 10px;
+    background-color: #bbb;
+    border-radius: 50%;
+    border: 1px solid black;
+    display: inline-block;
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    }
+    .user-status-dot.online {
+    background-color: #4CAF50;
+    }
+    .user-status-dot.away{
+        background-color: #FFC107;
+    
+    }
     .add-friend-container {
     display: flex;
     flex-direction: column;
@@ -284,7 +313,7 @@
     border-top-right-radius: 10px;
     border-bottom-right-radius: 10px;
     border: none;
-    background-color: #7289da;
+    background-color: var(--prim-tp);
     color: #ffffff;
     cursor: pointer;
 }
@@ -431,6 +460,7 @@
     width: 32px;
     height: 32px;
     margin-right: 0.8rem;
+    position: relative;
 }
     .user-icon img{
         width: 100%;
@@ -475,7 +505,7 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    font-size: 1rem;
+    font-size: 0.9rem;
 }
 .dropdown-menu{
                 position: absolute;

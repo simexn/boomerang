@@ -24,39 +24,6 @@
     export let withoutUserDetails: boolean = false;
 
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
-
-    onMount(async () => {
-        // if(await isLoggedIn()){
-            
-        //     let token = await getToken();
-        //     const response = await fetch(`${backendUrl}/account/getUserId`, {
-        //         method: 'GET',
-        //         headers: {
-        //             'Authorization': `Bearer ${token}`,
-        //             'Content-Type': 'application/json'
-        //         }
-        //     });
-        //     const data = await response.json();
-        
-        //     if(response.ok){
-        //         let connection = new HubConnectionBuilder()
-        //             .withUrl(`${backendUrl}/accountHub`)
-        //             .build();
-
-        //             connection.on("UpdateUserStatus", async (userId, status) => {
-        //                 console.log("userid" + userId + "status" + status)
-                        
-        //                 userStatuses.update(statuses => ({ ...statuses, [userId]: status }));
-        //             });
-
-        //             await connection.start();
-
-        //             let userId = data.userId.toString();
-
-        //             await connection.invoke("UpdateUserStatus", userId, "online");
-        //             }
-        //     }
-    });
 </script>
 
 {#if !item.withoutDetails}
@@ -85,18 +52,27 @@
         </div>   
         <div class="message-body">                    
             {#if $isEditing === item.id}
-                <p class="message-edit-info" style=""><i>currently editing message:</i></p>
+                <p class="message-edit-info" style=""><i>в момента редактирате това съобщение:</i></p>
                 <input class="message-editing" bind:value={item.content}/><br>
-                <a class="message-edit-confirm" on:click={() => confirmEdit(item.id, item.content)} href="#"><b>save</b></a>
-                <a class="message-edit-confirm" on:click={() => cancelEdit(item.id)} href="#"><b>cancel</b></a>
+                <a class="message-edit-confirm" on:click={() => confirmEdit(item.id, item.content)} href="#"><b>запазване</b></a>
+                <a class="message-edit-confirm" on:click={() => cancelEdit(item.id)} href="#"><b>отказ</b></a>
             {:else if item.isDeleted == true}
-                <p style="color: grey;"><i>This message has been deleted.</i></p>
+                <p style="color: grey;"><i>Това съобщение беше изтрито.</i></p>
             {:else if item.isEdited == true}
                 <p style="display: inline-block;">{item.content}</p>
-                <p style="display: inline-block; font-size: 12px; color: #B8B8B8;"><i>(edited)</i></p>
+                <p style="display: inline-block; font-size: 12px; color: #B8B8B8;"><i>(редактирано)</i></p>
             {:else}
                 <p>{item.content}</p>
-            {/if}                                       
+            {/if}        
+            {#if !item.isDeleted && item.fileUrl && item.fileUrl !== 'null' }
+                <div class="message-file">
+                    {#if item.fileUrl.endsWith('.jpg') || item.fileUrl.endsWith('.png') || item.fileUrl.endsWith('.gif')}
+                        <img src={backendUrl + item.fileUrl} alt="Uploaded file" />
+                    {:else}
+                        <a href={backendUrl + item.fileUrl} download>{item.fileUrl.split('/').pop()}</a>
+                    {/if}
+                </div>
+            {/if}                                  
         </div>
         
         {#if userInfo && item.userName === userInfo.userName && $isEditing !== item.id && !item.isDeleted}
@@ -116,18 +92,27 @@
     <div>
         <div class="message-body">                    
             {#if $isEditing === item.id}
-                <p class="message-edit-info" style=""><i>currently editing message:</i></p>
+                <p class="message-edit-info" style=""><i>в момента редактирате това съобщение:</i></p>
                 <input class="message-editing" bind:value={item.content}/><br>
-                <a class="message-edit-confirm" on:click={() => confirmEdit(item.id, item.content)} href="#"><b>save</b></a>
-                <a class="message-edit-confirm" on:click={() => cancelEdit(item.id)} href="#"><b>cancel</b></a>
+                <a class="message-edit-confirm" on:click={() => confirmEdit(item.id, item.content)} href="#"><b>запазване</b></a>
+                <a class="message-edit-confirm" on:click={() => cancelEdit(item.id)} href="#"><b>отказ</b></a>
             {:else if item.isDeleted == true}
-                <p style="color: grey;"><i>This message has been deleted.</i></p>
+                <p style="color: grey;"><i>Това съобщение беше изтрито.</i></p>
             {:else if item.isEdited == true}
                 <p style="display: inline-block;">{item.content}</p>
-                <p style="display: inline-block; font-size: 12px; color: #B8B8B8;"><i>(edited)</i></p>
+                <p style="display: inline-block; font-size: 12px; color: #B8B8B8;"><i>(редактирано)</i></p>
             {:else}
                 <p>{item.content}</p>
-            {/if}                                       
+            {/if}           
+            {#if !item.isDeleted && item.fileUrl && item.fileUrl !== 'null' }
+                <div class="message-file">
+                    {#if item.fileUrl.endsWith('.jpg') || item.fileUrl.endsWith('.png') || item.fileUrl.endsWith('.gif')}
+                        <img src={backendUrl + item.fileUrl} alt="Uploaded file" />
+                    {:else}
+                        <a href={backendUrl + item.fileUrl} download>{item.fileUrl.split('/').pop()}</a>
+                    {/if}
+                </div>
+            {/if}                    
         </div>
         
         {#if userInfo && item.userName === userInfo.userName && $isEditing !== item.id && !item.isDeleted}
@@ -156,6 +141,10 @@
     right: 0;
     padding: 5px;
 }
+.message-file img {
+        max-width: 500px;
+        max-height: 500px;
+    }
 
     .status-dot {
     height: 10px;

@@ -19,6 +19,7 @@ namespace Backend.Models
 
         public bool IsEdited { get; set; }
         public bool IsDeleted { get; set; }
+        public string? FileUrl { get; set; }
 
         [Required]
         public int ChatId { get; set; }

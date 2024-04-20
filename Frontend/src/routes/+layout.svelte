@@ -122,6 +122,7 @@ function toggleSidebar() {
         <a class="navbar-brand" on:click={() => isLogged ? goto('/chat/home') : goto('/welcome')}>Boomerang</a>
         <div class="dropdown-wrap">
             {#if isLogged}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
             <div class="notifications" on:click|stopPropagation={toggleNotifications} role="button" tabindex=0>
                 
                 <i class="fa fa-envelope fa-lg" aria-hidden="true" style="color: white;"></i>
@@ -129,17 +130,17 @@ function toggleSidebar() {
                 {#if notificationsOpen}
                 <div class="dropdown-menu" class:show={notificationsOpen} transition:slide={{duration: 500}}>
                     {#if $receivedRequestsStore.length === 0}
-                        <span><i>No friend requests</i></span>
+                        <span><i>Нямате нотификации.</i></span>
                     {:else}
                     {#each $receivedRequestsStore as request}
                         <div class="friend-request-wrap">
-                            <div class="display-flex flex-column" style="line-height:2rem; max-width:12rem">
-                                <span style="width: 100%;">{request.username} sent you a friend request</span>
-                                <span style="font-size:1rem;"><i>{request.requestSentDate}</i></span>
+                            <div class="display-flex flex-column" style="line-height:1rem;width:100%; padding:0.4rem;">
+                                <span style="display: block; width: 100%; font-size:1rem;">{request.username} ви изпрати покана за приятелство.</span>
+                                <span style="display:block; font-size:1rem; width:100%;"><i>{request.requestSentDate}</i></span>
                             </div>
-                            <div class="mb-3">
-                                <button class="btn btn-success btn-sm w-100 mb-1" on:click|stopPropagation={() => acceptRequest(request)}>Accept</button>
-                                <button class="btn btn-danger btn-sm w-100" on:click|stopPropagation={() => rejectRequest(request)}>Decline</button>
+                            <div class="d-flex flex-row" style="justify-content: space-around;align-items: center;">
+                                <button class="btn btn-success btn-sm w-30 mb-1" on:click|stopPropagation={() => acceptRequest(request)}>Приемане</button>
+                                <button class="btn btn-danger btn-sm w-30 mb-1" on:click|stopPropagation={() => rejectRequest(request)}>Отхвърляне</button>
                             </div>
                         </div>   
                     {/each}
@@ -155,9 +156,9 @@ function toggleSidebar() {
                     </a>    
                     {#if dropdownOpen}
                         <div class="dropdown-menu" style="padding:0 !important;" class:show={dropdownOpen} transition:slide={{duration:500}} >
-                        <a class="dropdown-item" on:click={() => goto("/account")}>Account</a>
+                        <a class="dropdown-item" on:click={() => goto("/account")}>Профил</a>
                         <div class="dropdown-divider mb-0"></div>
-                        <a class="dropdown-item logout-item" href="/welcome" on:click={logout}>Logout</a>
+                        <a class="dropdown-item logout-item" href="/welcome" on:click={logout}>Изход</a>
                         </div>
                     {/if}
                 </li>
@@ -183,7 +184,7 @@ function toggleSidebar() {
     .friend-request-wrap{
         width:100%;
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         
     }
     .dropdown-wrap{
@@ -235,6 +236,7 @@ function toggleSidebar() {
         flex-direction: column;
         height: 100vh;
         overflow: hidden;
+        z-index: 1000;
     }
         main {
             height:100%;

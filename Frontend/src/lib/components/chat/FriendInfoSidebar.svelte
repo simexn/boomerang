@@ -38,12 +38,14 @@
         event.stopPropagation();
     }
 </script>
+<svelte:window on:click={() => {userOptionsDropdown = false;}}/>
 {#if ready}
+
 <div class="sidebar-info" transition:fly="{{x: 1000, duration: 500}}">
     <div class="sidebar-header">
         <span class="sidebar-title">
             <span style="line-height: 2.4rem;font-family: Metropolis, sans-serif !important;">
-                Info
+                Инфо
             </span>
             <span class="sidebar-subtitle">{friendInfo?.username}</span>
         </span><button class="sidebar-close-btn" aria-label="Close" on:click={() =>isInfoSidebarOpen = false}>
@@ -54,12 +56,12 @@
     <div class="user-info-section">
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div class="user-info-options" on:click={() => userOptionsDropdown = !userOptionsDropdown}>
+        <div class="user-info-options" on:click|stopPropagation={() => userOptionsDropdown = !userOptionsDropdown}>
             <i class="fas fa-ellipsis-v"></i>
             {#if userOptionsDropdown}
                 <div role="navigation" class="dropdown-menu show">
-                    <button class="dropdown-item" on:click={() => removeFriend()}>Unfriend</button>
-                    <button class="dropdown-item" on:click={() => blockFriend()}>Block</button>
+                    <button class="dropdown-item" on:click={() => removeFriend()}>Премахване на приятел</button>
+                    <button class="dropdown-item" on:click={() => blockFriend()}>Блокиране</button>
                 </div>
             {/if}
         </div>
@@ -74,12 +76,12 @@
         </div>
         <hr class="sidebar-info-separator"/>
         <div class="user-info-since">
-            <h5>Boomerang member since:</h5>
+            <h5>Член на Бумеранг от:</h5>
             {friendInfo?.memberSince}
         </div>
         <hr class="sidebar-info-separator"/>
         <div class="user-info-since">
-            <h5>Friends since:</h5>
+            <h5>Приятели от:</h5>
             {friendInfo?.friendsSince}
         </div>
         
@@ -91,14 +93,14 @@
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div class="user-info-servers" on:click={()=>mutualServersDropdown = !mutualServersDropdown}>
             <div class="user-info-mutual-button">
-            <p>Mutual servers </p> <!-- replace with actual data -->
+            <p>Общи групи</p> <!-- replace with actual data -->
             <i class="fas fa-chevron-right" class:rotate={mutualServersDropdown}></i>
             </div>
             {#if mutualServersDropdown}
             <div class="dropdown-container" class:active={mutualFriendsDropdown} transition:slide={{duration: 500}}>
                 {#if friendInfo?.mutualGroups?.length == 0}
                 <div class="dropdown-container" style="justify-content:center; display:flex;">              
-                    <p style="font-size: 0.9rem; margin-top: 0.9rem;"><i>No mutual servers</i></p>                         
+                    <p style="font-size: 0.9rem; margin-top: 0.9rem;"><i>Нямате общи групи</i></p>                         
                 </div>
                 {:else}
                 <div class="dropdown-container" class:active={mutualFriendsDropdown} transition:slide={{duration: 500}}> 
@@ -107,9 +109,6 @@
                         {#each friendInfo?.mutualGroups || [] as group} 
                         <li class="nav-item" style="" transition:slide={{duration: 300}}>
                             <a class="nav-link sidebar-group" href={`/chat/${group?.id}`} style="">
-                                <div style="display:inline-block; position:relative;">
-                                    <span class="user-status-dot" class:online={$userStatuses[group?.id.toString()] == 'online'}></span>
-                                </div>
                                 <b>{group?.name}</b>
                             </a>
                         </li>
@@ -125,18 +124,14 @@
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div class="user-info-friends" on:click={()=>mutualFriendsDropdown = !mutualFriendsDropdown}>
             <div class="user-info-mutual-button">
-            <p>Mutual friends </p>
+            <p>Общи приятели</p>
             <i class="fas fa-chevron-right" class:rotate={mutualFriendsDropdown}></i>
             </div>
             {#if mutualFriendsDropdown}
             <div class="dropdown-container" class:active={mutualFriendsDropdown} transition:slide={{duration: 500}}>
                 {#if friendInfo?.mutualFriends?.length == 0}
                 <div class="dropdown-container" style="justify-content:center; display:flex;"> 
-                    
-                    
-                    <p style="font-size: 0.9rem; margin-top: 0.9rem;"><i>No mutual friends</i></p>
-                    
-                    
+                    <p style="font-size: 0.9rem; margin-top: 0.9rem;"><i>Нямате общи приятели</i></p>
                 </div>
                 {:else}
                 
@@ -147,7 +142,7 @@
                             <a class="nav-link sidebar-group" href={`/chat/me/${friend?.chatId}`} style="">
                                 <div style="display:inline-block; position:relative;">
                                     <img width="40px" height="40px" style="border-radius: 50%;" src="{friend.userPfp}">
-                                    <span class="user-status-dot" class:online={$userStatuses[friend?.id.toString()] == 'online'}></span>
+                                    <span class="user-status-dot" class:online={$userStatuses[friend?.id.toString()] == 'online'} class:away={$userStatuses[friend?.id.toString()] == 'away'}></span>
                                 </div>
                                 <b>{friend?.username}</b>
                             </a>

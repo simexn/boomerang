@@ -56,12 +56,12 @@ namespace Backend.Controllers
             var chat = await _context.Chats.FirstOrDefaultAsync(c => c.InviteCode == inviteCode);
             if (chat == null)
             {
-                return BadRequest(inviteCode + "Chat not found");
+                return BadRequest("Групата не беше намерена");
             }
             var isUserInChat = await _context.ChatUsers.AnyAsync(cu => cu.ChatId == chat.Id && cu.UserId == userId);
             if (isUserInChat)
             {
-                return BadRequest("User already in chat");
+                return BadRequest("Вече сте член на тази група.");
             }
             var chatUser = new ChatUser
             {

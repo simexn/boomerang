@@ -25,6 +25,7 @@ export interface ChatItem {
     isDeleted?:boolean;
     isEvent?:boolean;
     withoutDetails?:boolean;
+    fileUrl?:string;
 }
 
 export async function fetchMessages(chatId: string, page: number, pageSize: number){
@@ -71,7 +72,8 @@ export async function fetchMessages(chatId: string, page: number, pageSize: numb
                     isDeleted: item.isDeleted,
                     isEvent: item.isEvent,
                     userPfp: `${backendUrl}${item.userPfp}`,
-                    withoutDetails: withoutDetails
+                    withoutDetails: withoutDetails,
+                    fileUrl: `${item.fileUrl}`
                 };
             });
     
@@ -95,18 +97,23 @@ export async function fetchMessages(chatId: string, page: number, pageSize: numb
 
 
 
-export async function handleMessageSubmit(messageToSubmit: string, chatId: string){
+export async function handleMessageSubmit(messageToSubmit: string, chatId: string, file?: File) {
     let token = await getToken();
-    const requestBody = JSON.stringify({message: messageToSubmit, chatId: chatId});
+    const formData = new FormData();
+    formData.append('message', messageToSubmit);
+    formData.append('chatId', chatId);
+    if (file) {
+        console.log("file: " + file);
+        formData.append('file', file);
+    }
 
     const response = await fetch(`${backendUrl}/chat/sendMessage`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
         },
         credentials: 'include',
-        body: requestBody
+        body: formData
     });
 
     if (!response.ok) {

@@ -121,7 +121,7 @@
             overflow: hidden !important;
             height: 100% !important;
             max-height: 100% !important;
-            z-index: 1000;
+            z-index: 500;
         }
         
         .chat-content{

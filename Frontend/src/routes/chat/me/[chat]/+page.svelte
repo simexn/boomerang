@@ -30,6 +30,31 @@
     let connection: HubConnection;
     let _connectionId: string;
     let sendMessageText = '';
+    let fileInput: any;
+    let file: any;
+    let fileName = '';
+
+    let maxFileSize = 2 * 1024 * 1024; // 2MB
+
+    function handleFileUpload() {
+        if (fileInput.files.length > 0) {
+            file = fileInput.files[0];
+            fileName = file.name; // Set the file name
+
+            if (file.size > maxFileSize) {
+                alert("File size exceeds the limit of 2MB");
+                return;
+            }
+
+            // Now you can send the file to the chat
+            // This will depend on how your chat is implemented
+        }
+    }
+    function removeFile() { // New function to remove the file
+        file = null;
+        fileName = '';
+        fileInput.value = ''; // Clear the file input
+    }
 
     let isLoading = false;
     let pageCurrent = 1;
@@ -91,7 +116,7 @@
         }
     }
     async function sendMessage() {
-        message = await handleMessageSubmit(sendMessageText, chatId);
+        message = await handleMessageSubmit(sendMessageText, chatId, file);
         sendMessageText = "";
     }
     function createChatItem(data: any, eventType: string): ChatItem {
@@ -121,7 +146,8 @@
             userName: data.message.fromUser.userName,
             userId: data.message.fromUser.id,
             isActive: data.message.fromUser.isActive,
-            withoutDetails: lastMessage.userId === data.message.fromUser.id && timeDifference < 5
+            withoutDetails: lastMessage.userId === data.message.fromUser.id && timeDifference < 5,
+            fileUrl: data.message.fileUrl
         };
         
     } else {
@@ -250,21 +276,40 @@ return chatItem as ChatItem;
                         }
                     }}></textarea>
             </div>
+            {#if fileName}
+                <div class="file-preview">
+                    <div class="file-name">
+                        {fileName}
+                        <button on:click={removeFile}>X</button> <!-- New button to remove the file -->
+                    </div>
+                    {#if file && file.type.startsWith('image/')} <!-- Preview for image files -->
+                        <img src={URL.createObjectURL(file)} alt={fileName} />
+                    {/if}
+                </div>
+            {/if}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
             <div class="message-options">
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <!-- svelte-ignore a11y-no-static-element-interactions -->
+                <div class="d-flex flex-row">
                 <div class="message-option emoji" on:click={togglePicker}>
                     <i class="fa-regular fa-face-smile"></i>
                     {#if isPickerOpen}
                     <emoji-picker class="light" on:emoji-click={addEmoji}></emoji-picker>
                     {/if}
                 </div>
-                
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <div class="message-option emoji">
+                    <input type="file" bind:this={fileInput} on:change={handleFileUpload} style="display: none" />
+                    <i class="fa-regular fa-image" on:click={() => fileInput.click()}></i>
+                </div>
+                </div>
                 <!-- svelte-ignore a11y-no-static-element-interactions -->
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <div class="send-message-button" class:disabled={sendMessageText == null || sendMessageText == ""} on:click={sendMessage}>
                     
-                    <i class="material-icons" class:disabled={sendMessageText == null || sendMessageText == ""} >send</i>
+                    <i class="material-icons" class:disabled={sendMessageText == null || sendMessageText == ""}>send</i>
                 </div>
             </div>
         </div>

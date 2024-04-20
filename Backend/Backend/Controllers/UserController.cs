@@ -43,15 +43,15 @@ namespace Backend.Controllers
             {
                 if (doesFriendshipExist.Status == "pending")
                 {
-                    return BadRequest("Request already sent.");
+                    return BadRequest("Вече сте изпратили покана на този потребител.");
                 }
                 else if (doesFriendshipExist.Status == "accepted")
                 {
-                    return BadRequest("Already friends with user");
+                    return BadRequest("Вече сте приятели с този потребител.");
                 }
                 else if (doesFriendshipExist.Status == "blocked")
                 {
-                    return Unauthorized(new { userBlocked = true });
+                    return Unauthorized("Възникна грешка при добавянето.");
                 }
             }
 
@@ -284,10 +284,15 @@ namespace Backend.Controllers
             await _context.SaveChangesAsync();
 
             var friendConnectionId = AccountHub.GetConnectionIdForUser(friend.Id.ToString());
-            await _user.Clients.Client(friendConnectionId).SendAsync("FriendRequestAccepted", new { user, friend, chatId = chat.Id });
-
+            if (!string.IsNullOrEmpty(friendConnectionId))
+            {
+                await _user.Clients.Client(friendConnectionId).SendAsync("FriendRequestAccepted", new { user, friend, chatId = chat.Id });
+            }
             var userConnectionId = AccountHub.GetConnectionIdForUser(user.Id.ToString());
-            await _user.Clients.Client(userConnectionId).SendAsync("FriendRequestAccepted", new { user, friend, chatId = chat.Id });
+            if (!string.IsNullOrEmpty(userConnectionId))
+            {
+                await _user.Clients.Client(userConnectionId).SendAsync("FriendRequestAccepted", new { user, friend, chatId = chat.Id });
+            }
 
             return new JsonResult(new { requestAccepted = true });
         }
@@ -315,10 +320,17 @@ namespace Backend.Controllers
             await _context.SaveChangesAsync();
 
             var friendConnectionId = AccountHub.GetConnectionIdForUser(friend.Id.ToString());
-            await _user.Clients.Client(friendConnectionId).SendAsync("FriendRequestRejected", new {user, friend});
+            if (!string.IsNullOrEmpty(friendConnectionId))
+            {
+                await _user.Clients.Client(friendConnectionId).SendAsync("FriendRequestRejected", new { user, friend });
+            }
 
             var userConnectionId = AccountHub.GetConnectionIdForUser(user.Id.ToString());
-            await _user.Clients.Client(userConnectionId).SendAsync("FriendRequestRejected", new {user, friend});
+
+            if (!string.IsNullOrEmpty(userConnectionId))
+            {
+                await _user.Clients.Client(userConnectionId).SendAsync("FriendRequestRejected", new { user, friend });
+            }
 
             return new JsonResult(new { requestRejected = true });
         }
@@ -358,11 +370,16 @@ namespace Backend.Controllers
             await _chat.Clients.Groups(chatId.ToString()).SendAsync("FriendRemoved");
 
             var friendConnectionId = AccountHub.GetConnectionIdForUser(friend.Id.ToString());
-            await _user.Clients.Client(friendConnectionId).SendAsync("FriendRemoved", new { user, friend, chatId = friendship.ChatId });
+            if (!string.IsNullOrEmpty(friendConnectionId))
+            {
+                await _user.Clients.Client(friendConnectionId).SendAsync("FriendRemoved", new { user, friend, chatId = friendship.ChatId });
+            }
 
             var userConnectionId = AccountHub.GetConnectionIdForUser(user.Id.ToString());
-            await _user.Clients.Client(userConnectionId).SendAsync("FriendRemoved", new { user, friend, chatId = friendship.ChatId});
-
+            if (!string.IsNullOrEmpty(userConnectionId))
+            {
+                await _user.Clients.Client(userConnectionId).SendAsync("FriendRemoved", new { user, friend, chatId = friendship.ChatId });
+            }
             
 
             return Ok(new { message = "Friend removed successfully" });
@@ -390,19 +407,23 @@ namespace Backend.Controllers
                 var chatId = friendship.ChatId;
 
                 var chat = await _context.Chats.FirstOrDefaultAsync(c => c.Id == friendship.ChatId);
-                
-                if(chat != null)
+
+                if (chat != null)
                 {
                     _context.Chats.Remove(chat);
                 }
                 await _chat.Clients.Groups(chatId.ToString()).SendAsync("FriendRemoved");
 
                 var friendConnectionId = AccountHub.GetConnectionIdForUser(friend.Id.ToString());
-                await _user.Clients.Client(friendConnectionId).SendAsync("FriendRemoved", new { user, friend, chatId = friendship.ChatId });
-
+                if (!string.IsNullOrEmpty(friendConnectionId))
+                {
+                    await _user.Clients.Client(friendConnectionId).SendAsync("FriendRemoved", new { user, friend, chatId = friendship.ChatId });
+                }
                 var userConnectionId = AccountHub.GetConnectionIdForUser(user.Id.ToString());
-                await _user.Clients.Client(userConnectionId).SendAsync("FriendRemoved", new { user, friend, chatId = friendship.ChatId });
-
+                if (!string.IsNullOrEmpty(userConnectionId))
+                {
+                    await _user.Clients.Client(userConnectionId).SendAsync("FriendRemoved", new { user, friend, chatId = friendship.ChatId });
+                }
             }
 
             // Block the user

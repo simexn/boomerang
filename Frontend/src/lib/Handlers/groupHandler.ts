@@ -10,6 +10,7 @@ export interface Group {
     inviteCode: string;
     users: User[];
     admins: User[];
+    bannedUsers?: User[];
 }
 export interface GroupPreview{
     id: number;
@@ -49,7 +50,8 @@ export async function fetchGroupInfo(groupId: string){
             creatorId: data.chat.creatorId,
             inviteCode: data.chat.inviteCode,
             users: data.users,
-            admins: data.admins
+            admins: data.admins,
+            bannedUsers: data.bannedUsers
         }
         return groupInfo;
     } else {
@@ -134,14 +136,7 @@ export async function handleRoomSubmit(formData: {newGroupName: string, inviteCo
         body: requestBody 
     });
 
-    if (response.ok){
-        const data = await response.json();
-        return { ok: response.ok, data };
-    }
-    if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text);
-    }
+    return response;
 }
 
 export async function handleJoinRoom(inviteCode: string) {
@@ -158,16 +153,7 @@ export async function handleJoinRoom(inviteCode: string) {
 
     });
 
-    if (response.ok){
-        var chats = await fetchChats();
-        return chats;
-    }
-    if (!response.ok) {
-        console.log("losh otgovor");
-        return response.text().then(text => { throw new Error(text) });
-    }
-
-    const data = await response.text();
+    return response;
 }
 
 export async function handleLeaveGroup(chatId: string) {

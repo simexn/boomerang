@@ -1,4 +1,4 @@
-using Backend.Data;
+﻿using Backend.Data;
 using Backend.Hubs;
 using Backend.Models;
 using Microsoft.AspNetCore.Identity;
@@ -55,11 +55,10 @@ namespace Backend.Controllers
             var user = await _userManager.GetUserAsync(User);
 
             var chat = await _context.Chats.FirstOrDefaultAsync(c => c.InviteCode == createChatInput.InviteCode);
-            _logger.LogCritical("Checking if chat exists with invite code {0}", createChatInput.InviteCode);
 
             if (chat != null)
             {
-                return new JsonResult(new { groupExists = true }); 
+                return BadRequest("Вече съществува група с този код."); 
             }
 
             var newChat = new Chat
@@ -148,7 +147,8 @@ namespace Backend.Controllers
                     UserPfp = m.FromUser.ProfilePictureUrl,
                     IsActive = m.FromUser.Status,
                     IsEdited = m.IsEdited,
-                    IsDeleted = m.IsDeleted
+                    IsDeleted = m.IsDeleted,
+                    FileUrl = m.FileUrl
                     
                 })
                 .OrderByDescending(m => m.Timestamp) // Order by timestamp descending to get the latest messages first
@@ -192,9 +192,8 @@ namespace Backend.Controllers
             await _chat.Groups.RemoveFromGroupAsync(connectionId, roomId);
             return Ok();
         }
-
         [HttpPost("sendMessage")]
-        public async Task<IActionResult> SendMessageToRoom([FromBody] SendMessageInput data)
+        public async Task<IActionResult> SendMessageToRoom([FromForm] SendMessageInput data, IFormFile file = null)
         {
             var user = await _userManager.GetUserAsync(User);
             var chat = await _context.Chats.FirstOrDefaultAsync(c => c.Id == Int32.Parse(data.chatId));
@@ -203,6 +202,7 @@ namespace Backend.Controllers
             {
                 return Unauthorized();
             }
+
             var Message = new Message
             {
                 ChatId = Int32.Parse(data.chatId),
@@ -212,14 +212,34 @@ namespace Backend.Controllers
                 IsEdited = false,
                 FromUser = user,
                 IsDeleted = false
-
             };
 
             _context.Messages.Add(Message);
             await _context.SaveChangesAsync();
 
+            string fileUrl = null;
+            if (file != null)
+            {
+                // Save the file to a directory on the server
+                var fileName = $"{Message.Id}_{file.FileName}";
+                var directoryPath = Path.Combine("wwwroot", "files");
+                var filePath = Path.Combine(directoryPath, fileName);
+                using (var stream = System.IO.File.Create(filePath))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // Store the URL or path of the saved file
+                fileUrl = "/files/" + fileName;
+
+                // Update the Message object with the FileUrl
+                Message.FileUrl = fileUrl;
+                _context.Messages.Update(Message);
+                await _context.SaveChangesAsync();
+            }
+
             // Send the new message to all clients in the chat group
-            await _chat.Clients.Group(data.chatId).SendAsync("ReceiveMessage", new { Message, UserPfp = user.ProfilePictureUrl } );
+            await _chat.Clients.Group(data.chatId).SendAsync("ReceiveMessage", new { Message, UserPfp = user.ProfilePictureUrl });
 
             return Ok();
         }
