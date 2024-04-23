@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { User } from "$lib/handlers/accountHandler";
-    import { handleLeaveGroup, type Group, handleDeleteGroup } from "$lib/handlers/groupHandler";
+    import type {Group} from "$lib/handlers/groupHandler";
     import type { FriendInfo } from "$lib/handlers/userHandler";
 
     export let groupInfo: Group;
@@ -10,21 +10,8 @@
     export let userInfo: User;
     export let chatId: string;
 
-    function toggleSidebar() {
-        isUsersSidebarOpen = !isUsersSidebarOpen;
-    }
 
-    async function leaveGroup(){
-        await handleLeaveGroup(chatId);
-        window.location.href = '/chat/home';
 
-    }
-    async function deleteGroup(){
-        if (groupInfo.creatorId === userInfo.id) {
-            await handleDeleteGroup(chatId);
-            window.location.href = '/chat/home';
-        }
-    }
 </script>
 
 <div class="chat-header d-flex justify-content-between align-items-center p-3 border-bottom">
@@ -32,23 +19,21 @@
     <div class="header-content">
         <div>
             <h3>{groupInfo?.name}</h3>
-            <i class="fa fa-users" aria-hidden="true" on:click={toggleSidebar}></i>
+            <i class="fa fa-users" aria-hidden="true" on:click={() => {isUsersSidebarOpen = !isUsersSidebarOpen; isInfoSidebarOpen = false;}}></i>
         </div>
-        <i class="fa fa-circle-info" aria-hidden="true" on:click={()=>isInfoSidebarOpen = !isInfoSidebarOpen}></i>
+        <div class="info-icon">
+            <i class="fa fa-circle-info" aria-hidden="true" on:click={()=>{isInfoSidebarOpen = !isInfoSidebarOpen; isUsersSidebarOpen = false;}}></i>
+        </div>
     </div>
     {:else}
         <div class="header-content">
             <h3>{friendInfo?.username}</h3>
-            <i class="fa fa-circle-info" aria-hidden="true" on:click={()=>isInfoSidebarOpen = !isInfoSidebarOpen}></i>
+            <div class="info-icon">
+                <i class="fa fa-circle-info" aria-hidden="true" on:click={()=>isInfoSidebarOpen = !isInfoSidebarOpen}></i>
+            </div>
          </div>
     {/if}
     <div>
-        {#if (groupInfo?.isGroup)}
-            <button class="btn btn-danger" on:click={leaveGroup}>Leave</button>
-            {#if groupInfo?.creatorId === userInfo?.id}
-            <button class="btn btn-danger" on:click={deleteGroup}>Delete</button>
-            {/if}
-        {/if}
     </div>
 </div>
 
@@ -88,5 +73,12 @@
         }
         .fa-circle-info{
             font-size: 1.5rem;
+            
+        }
+        .info-icon {
+            margin-left: auto;
+            align-items: center;
+            justify-content: center;
+            display: flex;
         }
 </style>

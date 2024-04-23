@@ -48,7 +48,9 @@ export async function fetchMessages(chatId: string, page: number, pageSize: numb
             const chatItems: ChatItem[] = await data.chatItems.map((item: any, index: number, array: any[]) => {
                 const dateObject = new Date(item.timestamp);
                 const date = dateObject.toLocaleDateString();
-                const time = new Intl.DateTimeFormat('default', { hour: '2-digit', minute: '2-digit', hour12: false }).format(dateObject);
+                const hours = dateObject.getHours().toString().padStart(2, '0');
+                const minutes = dateObject.getMinutes().toString().padStart(2, '0');
+                const time = `${hours}:${minutes}`;
                 const timestamp = dateObject.getTime();
             
                 let withoutDetails = false;
@@ -103,7 +105,6 @@ export async function handleMessageSubmit(messageToSubmit: string, chatId: strin
     formData.append('message', messageToSubmit);
     formData.append('chatId', chatId);
     if (file) {
-        console.log("file: " + file);
         formData.append('file', file);
     }
 

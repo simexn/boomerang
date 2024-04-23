@@ -41,14 +41,14 @@
     <div class="sidebar-header">
         <span class="sidebar-title">
             <span style="line-height: 2.4rem;font-family: Metropolis, sans-serif !important;">
-                Members
+                Членове
             </span>
-            <span class="sidebar-subtitle">{groupInfo.users.length} members</span>
+            <span class="sidebar-subtitle">{groupInfo.users.length} члена</span>
         </span><button class="sidebar-close-btn" aria-label="Close" on:click={() => isUsersSidebarOpen = false}>
             <i class="fa-solid fa-x"></i>
         </button>
     </div>
-    <h5>Group admins: </h5>
+    <h5>Администратори: </h5>
     {#each groupInfo.users as user (user.id)}
         {#if groupInfo.admins.some(admin => admin.id === user.id)}
             <div class="user-section">
@@ -60,22 +60,24 @@
                     <div class="d-flex d-row align-items-center">
                         <img width="20px" height="20px" src={imageUrl} alt={user.userName} />
                         <p class="pb-0 mb-0">{user.userName}</p>
+                        {#if user.id === groupInfo.creatorId}
+                            <i class="fa-solid fa-crown"></i>
+                        {/if}
                     </div>
                     <div class="d-flex flex-row">
                         <i role="navigation" class="dots fa-solid fa-ellipsis-vertical" on:click|stopPropagation={(event) => openDropdown(user.id, event)}></i>
                         {#if user.id === userSidebarDropdown}
                             <div role="navigation" class="dropdown-menu show">
-                                <a class="dropdown-item" href="#">View Info</a>
                                 {#if user.id !== userInfo.id && (groupInfo.creatorId === userInfo.id || (groupInfo.admins.some(admin => admin.id === userInfo.id) && user.id !== groupInfo.creatorId))}
                                     {#if groupInfo.creatorId === userInfo.id}
-                                        <button class="dropdown-item" on:click|stopPropagation={() => transferOwnership(user.id)}>Transfer Ownership</button>
+                                        <button class="dropdown-item" on:click|stopPropagation={() => transferOwnership(user.id)}>Направи собственик</button>
                                         {#if groupInfo.admins.some(admin => admin.id === user.id)}
-                                            <button class="dropdown-item" on:click|stopPropagation={() => demoteUser(user.id)}>Demote to Member</button>
+                                            <button class="dropdown-item" on:click|stopPropagation={() => demoteUser(user.id)}>Премахни админ</button>
                                         {/if}
                                     {/if}
                                     <div class="dropdown-divider"></div>
-                                    <button class="dropdown-item" on:click|stopPropagation={() => kickUser(user.id)}>Kick</button>
-                                    <button class="dropdown-item" on:click|stopPropagation={null}>Ban</button>
+                                    <button class="dropdown-item" on:click|stopPropagation={() => kickUser(user.id)}>Изгони от групата</button>
+                                    <button class="dropdown-item" on:click|stopPropagation={null}>Забрани достъп до групата</button>
                                 {/if}
                             </div>
                         {/if}
@@ -84,7 +86,7 @@
             </div>
         {/if}
     {/each}
-    <h5>Group members: </h5>
+    <h5>Членове: </h5>
     {#each groupInfo.users as user (user.id)}
         {#if !groupInfo.admins.some(admin => admin.id === user.id)}
             <div class="user-section">
@@ -101,21 +103,20 @@
                         <i class="dots fa-solid fa-ellipsis-vertical" on:click|stopPropagation={(event) => openDropdown(user.id, event)}></i>
                         {#if user.id === userSidebarDropdown}
                             <div role="navigation" class="dropdown-menu show">
-                                <a class="dropdown-item" href="#">View Info</a>
                                 <div class="dropdown-divider"></div>
                                 {#if user.id !== userInfo.id && (groupInfo.creatorId === userInfo.id || (groupInfo.admins.some(admin => admin.id === userInfo.id) && user.id !== groupInfo.creatorId))}
                                     {#if groupInfo.creatorId === userInfo.id}
-                                        <button class="dropdown-item" on:click|stopPropagation={() => transferOwnership(user.id)}>Transfer Ownership</button>
+                                        <button class="dropdown-item" on:click|stopPropagation={() => transferOwnership(user.id)}>Направи собственик</button>
                                         {#if groupInfo.admins.some(admin => admin.id === user.id)}
-                                            <button class="dropdown-item" on:click|stopPropagation={null}>Demote to Member</button>
+                                            <button class="dropdown-item" on:click|stopPropagation={null}>Премахни админ</button>
                                         {/if}
                                     {/if}
                                     {#if groupInfo.creatorId === userInfo.id || groupInfo.admins.some(admin => admin.id === userInfo.id)}
-                                        <button class="dropdown-item" on:click|stopPropagation={() => promoteUser(user.id)}>Promote to Admin</button>
+                                        <button class="dropdown-item" on:click|stopPropagation={() => promoteUser(user.id)}>Направи админ</button>
                                     {/if}
                                     <div class="dropdown-divider"></div>
-                                    <button class="dropdown-item" on:click|stopPropagation={() => kickUser(user.id)}>Kick</button>
-                                    <button class="dropdown-item" on:click|stopPropagation={null}>Ban</button>
+                                    <button class="dropdown-item" on:click|stopPropagation={() => kickUser(user.id)}>Изгони от групата</button>
+                                    <button class="dropdown-item" on:click|stopPropagation={null}>Забрани достъп до групата</button>
                                 {/if}
                             </div>
                         {/if}

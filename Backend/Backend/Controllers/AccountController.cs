@@ -44,7 +44,10 @@ namespace Backend.Controllers
                 user.UserName,
                 user.Email,
                 user.AccountCreatedDate,
-                user.ProfilePictureUrl
+                user.Birthdate,
+                user.Pronouns,
+                user.ProfilePictureUrl,
+                user.IsAdmin
                 
             };
 
@@ -93,6 +96,8 @@ namespace Backend.Controllers
                 Email = model.Email,                
                 ProfilePictureUrl = $"/images/profile_pictures/placeholder.png",
                 AccountCreatedDate = DateTime.UtcNow,
+                Birthdate = model.Birthdate,
+                Pronouns = model.Pronouns,
                 Status = "offline"
             };
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -155,6 +160,8 @@ namespace Backend.Controllers
             // Update the user's information
             user.UserName = model.Username;
             user.Email = model.Email;
+            user.Birthdate = model.Birthdate;
+            user.Pronouns = model.Pronouns;
             if (!string.IsNullOrEmpty(model.Password))
             {
                 user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, model.Password);

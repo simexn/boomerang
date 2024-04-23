@@ -3,20 +3,22 @@
     export let item: ChatItem;
 </script>
 
-<p style="color: {item.content === 'UserPromoted' ? 'green' : item.content === 'UserDemoted' ? 'red' : item.content === 'OwnershipTransferred' ? 'yellow' : 'grey'}; font-style: italic;">
-    {item.userName} has 
+<p style="color: {item.content === 'UserPromoted' ? 'green' : item.content === 'UserDemoted' ? `red` : item.content === 'OwnershipTransferred' ? '#3962b0c0' : 'grey'}; font-style: italic;">
+    {item.userName}
     {#if item.content === 'UserJoined'}
-        joined
+        се присъедини към групата.
     {:else if item.content === 'UserLeft'}
-        left
+        напусна групата.
     {:else if item.content === 'UserPromoted'}
-        been promoted in
+        получи администраторски права в групата.
     {:else if item.content === 'UserDemoted'}
-        been demoted in
+        загуби администраторските си права в групата.
     {:else if item.content === 'OwnershipTransferred'}
-        transferred ownership in
+        стана собственик на групата.
+    {:else if item.content === 'UserKicked'}
+        беше изгонен от групата.
     {:else}
-        performed an action in
+        {item.content}
+        извърши действие в групата.
     {/if}
-    the chat
 </p>

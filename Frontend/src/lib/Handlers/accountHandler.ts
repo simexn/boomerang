@@ -16,6 +16,9 @@ export interface User{
     email: string;
     accountCreated: string;
     profilePictureUrl: string;
+    birthdate?: Date;
+    pronouns: string;
+    isAdmin: boolean;
 
 }
 
@@ -32,14 +35,18 @@ export async function fetchUserInfo() {
     const data = await response.json();
 
     if (response.ok && data.userInfo) {
-        
+        console.log("userinfo is" + data.userInfo.isAdmin)
         const user: User = {
             id: data.userInfo.id,
             userName: data.userInfo.userName,
             email: data.userInfo.email,
             accountCreated: new Date(data.userInfo.accountCreated).toLocaleString(),
-            profilePictureUrl: `${backendUrl}${data.userInfo.profilePictureUrl}?${Date.now()}`
+            pronouns: data.userInfo.pronouns,
+            birthdate: new Date(data.userInfo.birthdate),
+            profilePictureUrl: `${backendUrl}${data.userInfo.profilePictureUrl}?${Date.now()}`,
+            isAdmin: data.userInfo.isAdmin
         }
+        console.log("user is admin: "+ user.isAdmin)
         return user;   
     }
     else{
@@ -48,7 +55,9 @@ export async function fetchUserInfo() {
             userName: '',
             email: '',
             accountCreated: '',
-            profilePictureUrl: ''
+            pronouns: '',
+            profilePictureUrl: '',
+            isAdmin: false
         }
         return user;
     }
@@ -163,7 +172,7 @@ export async function handleAccountLogin(formData:{usernameEmail: string, passwo
     return data;
 }
 
-export async function handleUpdateInformation(formData: {username: string, email: string, password: string, confirmPassword: string}) {
+export async function handleUpdateInformation(formData: {username: string, email: string, birthdate:Date, pronouns: string, password: string, confirmPassword: string}) {
     let token = await getToken();
     const requestBody = JSON.stringify(formData);
     const response = await fetch(`${backendUrl}/account/updateInformation`, {
@@ -191,13 +200,13 @@ export function validateUsername(username: string) {
     if (username.length === 0) {
         return ' ';
     } else if (!/^[a-zA-Z]/.test(username)) {
-        return 'Username must start with a letter.';
+        return 'Името трябва да започва с латинска буква.';
     } else if (!/^[a-zA-Z0-9]*$/.test(username)) {
-        return 'Username can have only letters and numbers.';
+        return 'Потребителското име може да съдържа само латински букви и цифри.';
     } else if (username.length > 20) {
-        return 'Username too long.';
+        return 'Потребителското име е прекалено дълго.';
     } else if(username.length < 4){
-        return 'Username must be at least 4 characters long.';
+        return 'Потребителското име трябва да е поне 4 символа.';
     } else {
         return ' ';
     }
@@ -209,7 +218,7 @@ export function validateEmail(email: string) {
     if (email.length === 0) {
         return ' ';
     } else if (!emailRegex.test(email)) {
-        return 'Invalid email address.';
+        return 'Невалиден имейл адрес.';
     } else {
         return ' ';
     }
@@ -220,13 +229,13 @@ export function validatePassword(password: string) {
     if (password.length === 0) {
         return ' ';
     } else if (password.length < 6) {
-        return 'Password must contain at least 6 characters.';
+        return 'Паролата трябва да съдържа поне 6 символа.';
     } else if (!/[A-Z]/.test(password)){
-        return 'Password must contain at least one uppercase letter.';
+        return 'Паролата трябва да съдържа поне една главна буква.';
     } else if (!/[0-9]/.test(password)){
-        return 'Password must contain at least one number.';
+        return 'Паролата трябва да съдържа поне една цифра.';
     } else if (!/[!@#$%^&*]/.test(password)){
-        return 'Password must contain at least one special character.';
+        return 'Паролата трябва да съдържа поне един специален символ.';
     } else {
         return ' ';
     }
@@ -236,7 +245,7 @@ export function validateConfirmPassword(password: string, confirmPassword: strin
     if (confirmPassword.length === 0) {
         return ' ';
     } else if (confirmPassword !== password) {
-        return 'Passwords do not match.';
+        return 'Паролите не съвпадат.';
     } else {
         return ' ';
     }

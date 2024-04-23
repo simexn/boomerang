@@ -229,10 +229,8 @@ namespace Backend.Controllers
                     await file.CopyToAsync(stream);
                 }
 
-                // Store the URL or path of the saved file
                 fileUrl = "/files/" + fileName;
 
-                // Update the Message object with the FileUrl
                 Message.FileUrl = fileUrl;
                 _context.Messages.Update(Message);
                 await _context.SaveChangesAsync();

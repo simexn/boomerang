@@ -18,6 +18,9 @@ namespace Backend.Models
         public string? Bio { get; set; }
         [Required]
         public bool IsAdmin { get; set; }
+        [Required]
+        public string Pronouns { get; set; }
+        public string? Birthdate { get; set; }
 
 
 

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
-    import { handleAccountRegister, handleAccountLogin, isLoggedIn } from '$lib/handlers/accountHandler';
+    import { handleAccountRegister, handleAccountLogin, isLoggedIn, validateUsername, validateEmail, validatePassword, validateConfirmPassword } from '$lib/handlers/accountHandler';
     import { updateUserInfo } from '$lib/stores/userInfoStore';
     import { onMount } from 'svelte';
     import { fade } from 'svelte/transition';
@@ -13,7 +13,6 @@
     let loginErrorMessage: string;
     let username = '';
     let email = '';
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     let usernameEmail: string;
     let password = '';
     let confirmPassword = '';
@@ -31,55 +30,12 @@
         }
     });
     $: {
-        if (username.length === 0) {
-            usernameMessage = ' ';
-        } else if (!/^[a-zA-Z]/.test(username)) {
-            usernameMessage = 'Името трябва да започва с латинска буква.';
-        } else if (!/^[a-zA-Z0-9]*$/.test(username)) {
-            usernameMessage = 'Потребителското име може да съдържа само латински букви и цифри.';
-        }else if (username.length > 20) {
-            usernameMessage = 'Потребителското име е прекалено дълго.';
-        } else if(username.length < 4){
-            usernameMessage = 'Потребителското име трябва да е поне 4 символа.';
-        } else {
-            usernameMessage = ' ';
-        }
+        usernameMessage = validateUsername(username);
+        emailMessage = validateEmail(email);
+        passwordMessage = validatePassword(password);
+        confirmPasswordMessage = validateConfirmPassword(password, confirmPassword);
     }
 
-    $: {
-        if (email.length === 0) {
-            emailMessage = ' ';
-        } else if (!emailRegex.test(email)) {
-            emailMessage = 'Невалиден имейл адрес.';
-        } else {
-            emailMessage = ' ';
-        }
-    }
-    $: {
-        if (password.length === 0) {
-            passwordMessage = ' ';
-        } else if (password.length < 6) {
-            passwordMessage = 'Паролата трябва да съдържа поне 6 символа.';
-        } else if (password.length > 0 && !/[A-Z]/.test(password)){
-            passwordMessage = 'Паролата трябва да съдържа поне една главна буква.';
-        } else if (password.length > 0 && !/[0-9]/.test(password)){
-            passwordMessage = 'Паролата трябва да съдържа поне една цифра.';
-        } else if (password.length > 0 && !/[!@#$%^&?*]/.test(password)){
-            passwordMessage = 'Паролата трябва да съдържа поне един специален символ.';
-        
-        } else {
-            passwordMessage = ' ';
-        }
-    }
-    $: {
-        if (confirmPassword.length === 0) {
-            confirmPasswordMessage = ' ';
-        } else if (confirmPassword !== password) {
-            confirmPasswordMessage = 'Паролите не съвпадат.';
-        } else {
-            confirmPasswordMessage = ' ';
-        }
-    }
     let registerSubmittable = false;
     $: {
         if (usernameMessage === ' ' && emailMessage === ' ' && passwordMessage === ' ' && confirmPasswordMessage === ' ' && username !== ' ' && email !== ' ' && password !== '' && confirmPassword !== '') {
@@ -96,9 +52,6 @@
             loginSubmittable = true;
         }
     }
-
-
-    console.log(import.meta.env.VITE_BACKEND_URL);
     async function userRegister(event: Event) {
         event.preventDefault();
         const formData = { 
@@ -108,11 +61,8 @@
             confirmPassword, 
             birthDate: new Date(birthDate), 
             pronouns
-
         };
         const response = await handleAccountRegister(formData);
-
-        // If the operation was successful, redirect the user to another page
         if(response.userExists) {
             registerError = true;
             registerErrorMessage = 'Потребителското име вече е заето.';
@@ -126,7 +76,6 @@
         }
         
     }
-
     async function userLogin(event: Event) {
         event.preventDefault();
         const formData = { 
@@ -145,9 +94,6 @@
 
         updateUserInfo();
         
-    }
-    function switchForm() {
-        isLoginForm = !isLoginForm;
     }
 </script>
 
@@ -192,26 +138,26 @@
                     <div class="row">
                         <div class="col-md-6 mb-4 d-flex align-items-center">
                         <div class="form-outline datepicker w-100">
-                            <input type="date" class="form-control form-control-lg" id="birthdayDate" />
+                            <input type="date" class="form-control form-control-lg" bind:value={birthDate} id="birthdayDate" />
                             <label for="birthdayDate" class="form-label">Дата на раждане</label>
                         </div>
                         </div>
                         <div class="col-md-6 mb-4">
                         <h6 class="mb-2 pb-1">Пол: </h6>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="femaleGender"
+                            <input class="form-check-input" type="radio" bind:group={pronouns} name="inlineRadioOptions" id="femaleGender"
                             value="female" checked />
                             <label class="form-check-label" for="femaleGender">Жена</label>
                         </div>
         
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="maleGender"
+                            <input class="form-check-input" type="radio" bind:group={pronouns} name="inlineRadioOptions" id="maleGender"
                             value="male" />
                             <label class="form-check-label" for="maleGender">Мъж</label>
                         </div>
         
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="otherGender"
+                            <input class="form-check-input" type="radio" bind:group={pronouns} name="inlineRadioOptions" id="otherGender"
                             value="other" />
                             <label class="form-check-label" for="otherGender">Друг</label>
                         </div>

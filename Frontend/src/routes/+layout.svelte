@@ -157,6 +157,10 @@ function toggleSidebar() {
                     {#if dropdownOpen}
                         <div class="dropdown-menu" style="padding:0 !important;" class:show={dropdownOpen} transition:slide={{duration:500}} >
                         <a class="dropdown-item" on:click={() => goto("/account")}>Профил</a>
+                        <a class="dropdown-item" on:click={() => goto("/chat/home")}>Приятели</a>
+                        {#if $userStore?.isAdmin}
+                            <a class="dropdown-item" on:click={() => goto("/account/admin")}>Администрация</a>
+                        {/if}
                         <div class="dropdown-divider mb-0"></div>
                         <a class="dropdown-item logout-item" href="/welcome" on:click={logout}>Изход</a>
                         </div>

@@ -245,9 +245,11 @@
             font-size: 18px;
             font-weight: bold;
         }
-    .message-date{
-        max-width: 100%;flex-basis: 0;flex-grow: 1;
-    }
+        .message-date {
+            max-width: 100%;
+            flex-basis: 0;
+            flex-grow: 1;
+        }
         .message-date-button{
             display: inline-block;
             font-size: 1em;
@@ -307,27 +309,29 @@
     border-radius: 6px;
 
     position: absolute;
-    z-index: 1;
-    bottom: 125%; /* Position the tooltip above the text */
-    left: 73%;
-    margin-left: -3.5rem; /* Use half of the width to center the tooltip */
+    top: 50%;
+    left: 3rem;
+    transform: translate(0, -50%);
+
 
     opacity: 0;
     transition: opacity 0.3s;
-  }
+    z-index: 1000;
+}
 
-  .tooltips:hover .tooltiptext {
+.tooltips:hover .tooltiptext {
     visibility: visible;
     opacity: 1;
-  }
-  .tooltips .tooltiptext::after {
+}
+.tooltips .tooltiptext::after {
     content: "";
     position: absolute;
-    top: 100%; /* Position the arrow at the bottom of the tooltip */
-    left: 50%;
-    margin-left: -5px;
+    top: 50%;
+    left: 0;
+    margin-top: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: #555 transparent transparent transparent;
+    border-color: transparent #555 transparent transparent;
+    transform: translateX(-100%);
 }
 </style>

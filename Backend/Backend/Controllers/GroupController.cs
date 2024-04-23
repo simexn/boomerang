@@ -84,7 +84,7 @@ namespace Backend.Controllers
             await _context.SaveChangesAsync();
 
 
-            await _chat.Clients.Group(chat.Id.ToString()).SendAsync("UserJoined", user);
+            await _chat.Clients.Group(chat.Id.ToString()).SendAsync("UserJoined", new { user, message = chatEvent } );
 
             return new JsonResult(new { chat });
         }
@@ -127,7 +127,7 @@ namespace Backend.Controllers
                 .FirstOrDefaultAsync(c => c.Id == chatId);
 
             // Send a "UserLeft" message to the clients in the group chat
-            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserLeft", user);
+            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserLeft", new { user, message = chatEvent } );
 
             if (userId == group.CreatorId)
             {
@@ -266,7 +266,7 @@ namespace Backend.Controllers
 
             await _context.SaveChangesAsync();
 
-            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserKicked", user);
+            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserKicked", new { user, message = chatEvent } );
 
             return Ok();
         }
@@ -316,7 +316,7 @@ namespace Backend.Controllers
 
             await _context.SaveChangesAsync();
 
-            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserPromoted", user);
+            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserPromoted", new { user, message = chatEvent });
 
             return Ok();
         }
@@ -359,7 +359,7 @@ namespace Backend.Controllers
 
             await _context.SaveChangesAsync();
 
-            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserDemoted", user);
+            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserDemoted",new { user, message = chatEvent } );
 
             return Ok();
         }
@@ -414,7 +414,7 @@ namespace Backend.Controllers
 
             await _context.SaveChangesAsync();
 
-            await _chat.Clients.Group(chatId.ToString()).SendAsync("OwnershipTransferred", user);
+            await _chat.Clients.Group(chatId.ToString()).SendAsync("OwnershipTransferred", new { user, message = chatEvent} );
 
             return Ok();
         }

@@ -14,14 +14,11 @@
     import FriendInfoSidebar from "$lib/components/chat/FriendInfoSidebar.svelte";
     import { goto } from "$app/navigation";
     import "$lib/css/chatstyles.css"
-
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
-
     let chatId: string;
     let groupInfo:Group;
     let isUsersSidebarOpen:boolean = false;
     let isInfoSidebarOpen:boolean = false;
-    let isCreator:boolean = false;
     let chatItems: ChatItem[] = [];
     let userInfo: User;
     let friendInfo: FriendInfo;
@@ -33,54 +30,39 @@
     let fileInput: any;
     let file: any;
     let fileName = '';
-
-    let maxFileSize = 2 * 1024 * 1024; // 2MB
-
+    let maxFileSize = 2 * 1024 * 1024;
     function handleFileUpload() {
         if (fileInput.files.length > 0) {
             file = fileInput.files[0];
-            fileName = file.name; // Set the file name
-
+            fileName = file.name;
             if (file.size > maxFileSize) {
                 alert("File size exceeds the limit of 2MB");
                 return;
             }
-
-            // Now you can send the file to the chat
-            // This will depend on how your chat is implemented
         }
     }
-    function removeFile() { // New function to remove the file
+    function removeFile() {
         file = null;
         fileName = '';
-        fileInput.value = ''; // Clear the file input
+        fileInput.value = '';
     }
-
     let isLoading = false;
     let pageCurrent = 1;
     const pageSize = 40;
-
     let isPickerOpen = false;
     let EmojiPicker: any;
-
     let ready = false;
-
     let imageUrl = '/user-icon-placeholder.png';
-
     $: chatId = $page.params.chat;
     $: chatId && setupConnection();
-
     userStore.subscribe(value => {
         userInfo = value;
     });
-    
+
     onMount(async() => {
         console.log(chatId);
         await getGroupInfo();
-        await getFriendInfo();
-        
-
-        
+        await getFriendInfo();   
         if (typeof window !== 'undefined') {
             const module = await import('emoji-picker-element');
             EmojiPicker = module.default;
@@ -103,10 +85,10 @@
     }
 
     async function loadMessages() {
-    pageCurrent = 1;
-    chatItems = await fetchMessages(chatId, pageCurrent, pageSize);
-    pageCurrent++;
-}
+        pageCurrent = 1;
+        chatItems = await fetchMessages(chatId, pageCurrent, pageSize);
+        pageCurrent++;
+    }
 
     function handleScroll(event: any) {
         const { scrollTop, clientHeight, scrollHeight } = event.target;
@@ -122,7 +104,6 @@
     function createChatItem(data: any, eventType: string): ChatItem {
     const dateObject = new Date();
     const time = new Intl.DateTimeFormat('default', { hour: '2-digit', minute: '2-digit', hour12: false }).format(dateObject);
-    
     let chatItem: Partial<ChatItem> = {
         id: data.message.id,
         timestamp: Date.now(),
@@ -132,14 +113,12 @@
         withoutDetails: false,
         userPfp: `${backendUrl}${data.userPfp}`,
     };
-    
     if (eventType === 'ReceiveMessage') {
         if (chatItems.length > 0) {
         const lastMessage = chatItems[chatItems.length - 1];
         const lastMessageTime = new Date(lastMessage.timestamp);
         const newMessageTime = new Date();
         const timeDifference = (newMessageTime.getTime() - lastMessageTime.getTime()) / 60000; // difference in minutes
-
         chatItem = {
             ...chatItem,
             content: data.message.text,
@@ -149,7 +128,6 @@
             withoutDetails: lastMessage.userId === data.message.fromUser.id && timeDifference < 5,
             fileUrl: data.message.fileUrl
         };
-        
     } else {
         chatItem = {
             ...chatItem,
@@ -160,35 +138,29 @@
             withoutDetails: false
         };
     }
-} else {
-    chatItem = {
-        ...chatItem,
-        content: eventType,
-        userName: data.message.userName,
-        userId: data.message.id,
-        isActive: data.message.isActive
-    };
-}
-
-return chatItem as ChatItem;
-}
-
+    } else {
+        chatItem = {
+            ...chatItem,
+            content: eventType,
+            userName: data.message.userName,
+            userId: data.message.id,
+            isActive: data.message.isActive
+        };
+    }
+        return chatItem as ChatItem;
+    }
     async function setupConnection() {
         if (connection) {
             ready=false;
             await connection.stop();
-        }
-        
-
+        }     
         connection = new HubConnectionBuilder()
             .withUrl(`${backendUrl}/chatHub`)
             .build();
-
             connection.on("ReceiveMessage", async function(data: any){
                 
                 console.log("message received")
                 console.log(data);
-
                try {
                     let chatItemToAdd = createChatItem(data, 'ReceiveMessage');
                     console.log(chatItemToAdd);
@@ -196,7 +168,6 @@ return chatItem as ChatItem;
                 } catch (error) {
                     console.error('Error creating chat item:', error);
                 }
-
                 await tick();
                 scrollContainer.scrollTop = scrollContainer.scrollHeight;
             });
@@ -210,29 +181,24 @@ return chatItem as ChatItem;
         connection.on("FriendRemoved", async function(){
             console.log("friendremove accessed")
             await goto('/chat/home');
-        });
-        
-        
+        }); 
         await connection.start()
             .then(function(){
                 connection.invoke('getConnectionId')
                 .then(async function(connectionId: string){
-                    _connectionId = connectionId;
-                    
+                    _connectionId = connectionId;       
                     await loadMessages();
                     await getGroupInfo();
                     await getFriendInfo();
                     await joinRoom();
                     await tick();
-                    ready=true;
-                    
+                    ready=true;  
                 })
             })
             .catch(function(err: any){
                 console.error(err.toString());
             });
     }
-
     async function joinRoom() {
         let token = await getToken();
 
@@ -268,7 +234,7 @@ return chatItem as ChatItem;
     <div class="chat-footer" style="min-height:6rem; height:6rem;" >
         <div class="send-message-wrap">
             <div class="textarea-container">
-                <textarea placeholder="Type a message..." bind:value={sendMessageText} 
+                <textarea placeholder="Въведете съобщение..." bind:value={sendMessageText} 
                     on:keydown={e => {
                         if (e.key === 'Enter') {
                             e.preventDefault();

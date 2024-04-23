@@ -16,11 +16,7 @@
     export let groupInfo: Group;
     export let handleScroll: any;
     const isEditing = writable();
-
     let originalMessage = '';
-
-    let previousTimestamp:any = null;
-
     onMount(() => {
         scrollContainer.scrollTop = scrollContainer.scrollHeight;
     });
@@ -43,15 +39,12 @@
     
     async function deleteMessage(id: number) {
         await handleDeleteMessage(chatId, id);
-    }
-
-    
-    
+    } 
 </script>
 
 <div class="messages-container" bind:this={scrollContainer} on:scroll={handleScroll}>
     
-    {#each chatItems as item (item.id)}
+    {#each chatItems as item (`${item.id}-${item.isEvent ? 'event' : 'message'}`)}
     <div class="message" style="display: flex; align-items: start;">
         {#if item.isEvent}
             <EventMessage {item} />
@@ -73,6 +66,7 @@
     max-height: 100% !important;
     box-sizing: border-box;
     overflow: auto;
+    z-index: 400;
 }
 .message {
     transition: background-color 100ms;

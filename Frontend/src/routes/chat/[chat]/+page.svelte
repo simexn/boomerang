@@ -2,24 +2,21 @@
     import { page } from '$app/stores';
     import { tick } from 'svelte';
     import { handleMessageSubmit, fetchMessages } from "$lib/handlers/chatHandler";
-    import { handleLeaveGroup, handleDeleteGroup, handleKickUser, handlePromoteUser, handleDemoteUser, handleTransferOwnership } from "$lib/handlers/groupHandler";
     import {getToken} from "$lib/handlers/authHandler"; 
     import { onMount } from 'svelte';
     import { HubConnectionBuilder } from '@microsoft/signalr';
     import { fetchGroupInfo} from '$lib/handlers/groupHandler';
     import { fetchUserInfo } from '$lib/handlers/accountHandler';
-    
-
     import type { User } from "$lib/handlers/accountHandler";
     import type { Group } from "$lib/handlers/groupHandler";
-    import type { Message } from "$lib/handlers/chatHandler";
     import type {ChatItem} from "$lib/handlers/chatHandler";
-    import { userStore, updateUserInfo } from '$lib/stores/userInfoStore';
+    import { userStore} from '$lib/stores/userInfoStore';
     import { goto } from '$app/navigation';
     import UserSidebar from '$lib/components/chat/UserSidebar.svelte';
     import ChatHeader from '$lib/components/chat/ChatHeader.svelte';
     import ChatMessage from '$lib/components/chat/ChatMessage.svelte';
     import "$lib/css/chatstyles.css";
+    import GroupInfoSidebar from '$lib/components/chat/GroupInfoSidebar.svelte';
 
 
 
@@ -31,8 +28,9 @@
     let scrollContainer: any;
     let groupInfo: Group;
     let chatItems: ChatItem[] = [];
-    let chatUsers: User[]= [];
+
     let isUsersSidebarOpen = false;
+    let isInfoSidebarOpen = false;
     let isPickerOpen = false;
     let EmojiPicker: any;
     let userSidebarDropdown : any = null;
@@ -43,26 +41,25 @@
     let file: any;
     let fileName = '';
 
-    let maxFileSize = 2 * 1024 * 1024; // 2MB
+    let maxFileSize = 2 * 1024 * 1024;
 
     function handleFileUpload() {
         if (fileInput.files.length > 0) {
             file = fileInput.files[0];
-            fileName = file.name; // Set the file name
+            fileName = file.name;
 
             if (file.size > maxFileSize) {
                 alert("File size exceeds the limit of 2MB");
                 return;
             }
 
-            // Now you can send the file to the chat
-            // This will depend on how your chat is implemented
+
         }
     }
-    function removeFile() { // New function to remove the file
+    function removeFile() {
         file = null;
         fileName = '';
-        fileInput.value = ''; // Clear the file input
+        fileInput.value = '';
     }
 
     let chatId: string;
@@ -128,6 +125,7 @@
     const dateObject = new Date();
     const time = new Intl.DateTimeFormat('default', { hour: '2-digit', minute: '2-digit', hour12: false }).format(dateObject);
 
+    
     let chatItem: Partial<ChatItem> = {
         id: data.message.id,
         timestamp: Date.now(),
@@ -135,7 +133,7 @@
         time: time,
         isEvent: eventType !== 'ReceiveMessage',
         withoutDetails: false,
-        userPfp: `${backendUrl}${data.userPfp}`,
+        
     };
 
     if (eventType === 'ReceiveMessage') {
@@ -151,6 +149,7 @@
                 ...chatItem,
                 content: data.message.text,
                 userName: data.message.fromUser.userName,
+                userPfp: `${backendUrl}${data.userPfp}`,
                 userId: data.message.fromUserId,
                 isActive: data.message.fromUser.isActive,
                 withoutDetails: lastMessage.userId.toString() === data.message.fromUser.id.toString() && timeDifference < 5
@@ -166,12 +165,13 @@
             };
         }
     } else {
+        console.log('else chatitem accessd' + eventType)
         chatItem = {
             ...chatItem,
             content: eventType,
-            userName: data.message.userName,
-            userId: data.message.id,
-            isActive: data.message.isActive
+            userName: data.user.userName,
+            userId: data.user.id,
+            isActive: data.user.isActive
         };
     }
 
@@ -200,12 +200,14 @@
                 scrollContainer.scrollTop = scrollContainer.scrollHeight;
             });
 
-            connection.on("UserJoined", async function(user: any) {
-                groupInfo.users = [...groupInfo.users, user];
+            connection.on("UserJoined", async function(data: any) {
+                console.log("User joined: ", data, );
+                groupInfo.users = [...groupInfo.users, data.user];
 
-                groupInfo.admins = groupInfo.admins.filter(admin => admin.id !== user.id);
+                groupInfo.admins = groupInfo.admins.filter(admin => admin.id !== data.user.id);
 
-                let chatItemToAdd = createChatItem(user, 'UserJoined');
+                let chatItemToAdd = createChatItem(data, 'UserJoined');
+                console.log("chatItem: ", chatItemToAdd);
 
                 chatItems = [...chatItems, chatItemToAdd];
 
@@ -214,11 +216,11 @@
             });
 
 
-        connection.on("UserLeft", async function(user: any) {
-            groupInfo.users = groupInfo.users.filter(u => u.id !== user.id);
-            groupInfo.admins = groupInfo.admins.filter(admin => admin.id !== user.id);
+        connection.on("UserLeft", async function(data: any) {
+            groupInfo.users = groupInfo.users.filter(u => u.id !== data.user.id);
+            groupInfo.admins = groupInfo.admins.filter(admin => admin.id !== data.user.id);
 
-            let chatItemToAdd = createChatItem(user, 'UserLeft');
+            let chatItemToAdd = createChatItem(data, 'UserLeft');
 
                 chatItems = [...chatItems, chatItemToAdd];
 
@@ -226,14 +228,14 @@
                 scrollContainer.scrollTop = scrollContainer.scrollHeight;
         });
 
-        connection.on("UserKicked", async function(user: any) {
-            if (user.id === userInfo.id) {
+        connection.on("UserKicked", async function(data: any) {
+            if (data.user.id === userInfo.id) {
                 goto('/chat/home');
                 
             }
-            groupInfo.users = groupInfo.users.filter(u => u.id !== user.id);
+            groupInfo.users = groupInfo.users.filter(u => u.id !== data.user.id);
 
-            let chatItemToAdd = createChatItem(user, 'UserKicked');
+            let chatItemToAdd = createChatItem(data, 'UserKicked');
 
                 chatItems = [...chatItems, chatItemToAdd];
 
@@ -247,21 +249,10 @@
             }
         });
 
-        connection.on("UserPromoted", async function(user: any){
-            groupInfo.admins = [...groupInfo.admins, user];
+        connection.on("UserPromoted", async function(data: any){
+            groupInfo.admins = [...groupInfo.admins, data.user];
 
-            let chatItemToAdd = createChatItem(user, 'UserPromoted');
-
-            chatItems = [...chatItems, chatItemToAdd];
-
-            await tick();
-            scrollContainer.scrollTop = scrollContainer.scrollHeight;
-        });
-
-        connection.on("UserDemoted", async function(user: any){
-            groupInfo.admins = groupInfo.admins.filter(admin => admin.id !== user.id);
-
-            let chatItemToAdd = createChatItem(user, 'UserDemoted');
+            let chatItemToAdd = createChatItem(data, 'UserPromoted');
 
             chatItems = [...chatItems, chatItemToAdd];
 
@@ -269,11 +260,22 @@
             scrollContainer.scrollTop = scrollContainer.scrollHeight;
         });
 
-        connection.on("OwnershipTransferred", async function(user: any){
-            console.log("Ownership transferred to: ", user);
-            groupInfo = { ...groupInfo, creatorId: user.id, admins: [...groupInfo.admins, user] };
+        connection.on("UserDemoted", async function(data: any){
+            groupInfo.admins = groupInfo.admins.filter(admin => admin.id !== data.user.id);
 
-            let chatItemToAdd = createChatItem(user, 'OwnershipTransferred');
+            let chatItemToAdd = createChatItem(data, 'UserDemoted');
+
+            chatItems = [...chatItems, chatItemToAdd];
+
+            await tick();
+            scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        });
+
+        connection.on("OwnershipTransferred", async function(data: any){
+            console.log("Ownership transferred to: ", data);
+            groupInfo = { ...groupInfo, creatorId: data.user.id, admins: [...groupInfo.admins, data.user] };
+
+            let chatItemToAdd = createChatItem(data, 'OwnershipTransferred');
 
             chatItems = [...chatItems, chatItemToAdd];
 
@@ -347,8 +349,6 @@
   function togglePicker() {
     isPickerOpen = !isPickerOpen;
   }
-    
-    
 </script>
 
 
@@ -356,7 +356,7 @@
 
 {#if ready}
 <div class="chat-container d-flex flex-column container-fluid">   
-    <ChatHeader  bind:groupInfo bind:isUsersSidebarOpen {userInfo} {chatId} />       
+    <ChatHeader  bind:groupInfo bind:isInfoSidebarOpen bind:isUsersSidebarOpen {userInfo} {chatId} />       
     {#if isUsersSidebarOpen}
         <UserSidebar bind:isUsersSidebarOpen {groupInfo} {userSidebarDropdown} {userInfo} {imageUrl} {chatId}/>
     {/if}           
@@ -364,7 +364,7 @@
     <div class="chat-footer" style="min-height:6rem; height:6rem;" >
         <div class="send-message-wrap">
             <div class="textarea-container">
-                <textarea placeholder="Type a message..." bind:value={sendMessageText} 
+                <textarea placeholder="Въведете съобщение..." bind:value={sendMessageText} 
                     on:keydown={e => {
                         if (e.key === 'Enter') {
                             e.preventDefault();
@@ -410,7 +410,9 @@
             </div>
         </div>
     </div>  
-    
+    {#if isInfoSidebarOpen}
+        <GroupInfoSidebar bind:isInfoSidebarOpen {groupInfo} {userInfo} {chatId}/>
+    {/if}
 </div>
 {/if}
 
