@@ -38,6 +38,8 @@
             fileName = file.name;
             if (file.size > maxFileSize) {
                 alert("File size exceeds the limit of 2MB");
+                file=null;
+                fileName = '';
                 return;
             }
         }
@@ -98,53 +100,52 @@
     }
     function createChatItem(data: any, eventType: string): ChatItem {
     const dateObject = new Date();
-    const time = new Intl.DateTimeFormat('default', { hour: '2-digit', minute: '2-digit', hour12: false }).format(dateObject);   
+    const time = new Intl.DateTimeFormat('default', { hour: '2-digit', minute: '2-digit', hour12: false }).format(dateObject);
     let chatItem: Partial<ChatItem> = {
         id: data.message.id,
         timestamp: Date.now(),
         date: dateObject.toLocaleDateString(),
         time: time,
         isEvent: eventType !== 'ReceiveMessage',
-        withoutDetails: false,      
+        withoutDetails: false,
+        userPfp: `${backendUrl}${data.userPfp}`,
     };
     if (eventType === 'ReceiveMessage') {
         if (chatItems.length > 0) {
-            const lastMessage = chatItems[chatItems.length - 1];
-            console.log('Last message: ', lastMessage.timestamp)
-            const lastMessageTime = new Date(lastMessage.timestamp);
-            const newMessageTime = new Date();
-            const timeDifference = (newMessageTime.getTime() - lastMessageTime.getTime()) / 60000;
-            chatItem = {
-                ...chatItem,
-                content: data.message.text,
-                userName: data.message.fromUser.userName,
-                userPfp: `${backendUrl}${data.userPfp}`,
-                userId: data.message.fromUserId,
-                isActive: data.message.fromUser.isActive,
-                withoutDetails: lastMessage.userId.toString() === data.message.fromUser.id.toString() && timeDifference < 5
-            };
-        } else {
-            chatItem = {
-                ...chatItem,
-                content: data.message.text,
-                userName: data.message.fromUser.userName,
-                userId: data.message.fromUserId,
-                isActive: data.message.fromUser.isActive,
-                withoutDetails: false
-            };
-        }
+        const lastMessage = chatItems[chatItems.length - 1];
+        const lastMessageTime = new Date(lastMessage.timestamp);
+        const newMessageTime = new Date();
+        const timeDifference = (newMessageTime.getTime() - lastMessageTime.getTime()) / 60000; // difference in minutes
+        chatItem = {
+            ...chatItem,
+            content: data.message.text,
+            userName: data.message.fromUser.userName,
+            userId: data.message.fromUser.id,
+            isActive: data.message.fromUser.isActive,
+            withoutDetails: lastMessage.userId === data.message.fromUser.id && timeDifference < 5,
+            fileUrl: data.message.fileUrl
+        };
     } else {
-        console.log('else chatitem accessd' + eventType)
+        chatItem = {
+            ...chatItem,
+            content: data.message.text,
+            userName: data.message.fromUser.userName,
+            userId: data.message.fromUser.id,
+            isActive: data.message.fromUser.isActive,
+            withoutDetails: false
+        };
+    }
+    } else {
         chatItem = {
             ...chatItem,
             content: eventType,
-            userName: data.user.userName,
-            userId: data.user.id,
-            isActive: data.user.isActive
+            userName: data.message.userName,
+            userId: data.message.id,
+            isActive: data.message.isActive
         };
     }
-    return chatItem as ChatItem;
-}
+        return chatItem as ChatItem;
+    }
     async function setupConnection() {
         if (connection) {
             ready=false;
@@ -288,8 +289,10 @@
         groupInfo = await fetchGroupInfo(chatId);        
     }
     async function sendMessage() {
-        message = await handleMessageSubmit(sendMessageText, chatId);
+        message = await handleMessageSubmit(sendMessageText, chatId, file);
         sendMessageText = "";
+        file = null;
+        fileName = '';
     }
     function addEmoji(event: any) {
     sendMessageText += event?.detail?.unicode;
@@ -306,7 +309,7 @@
         <UserSidebar bind:isUsersSidebarOpen {groupInfo} {userSidebarDropdown} {userInfo} {imageUrl} {chatId}/>
     {/if}           
     <ChatMessage {groupInfo} {chatId} {chatItems} {userInfo} {imageUrl} bind:scrollContainer {handleScroll}/>  
-    <div class="chat-footer" style="min-height:6rem; height:6rem;" >
+    <div class="chat-footer">
         <div class="send-message-wrap">
             <div class="textarea-container">
                 <textarea placeholder="Въведете съобщение..." bind:value={sendMessageText} 
@@ -324,7 +327,7 @@
                         <button on:click={removeFile}>X</button> <!-- New button to remove the file -->
                     </div>
                     {#if file && file.type.startsWith('image/')} <!-- Preview for image files -->
-                        <img src={URL.createObjectURL(file)} alt={fileName} />
+                        <img class="imgfilepreview" src={URL.createObjectURL(file)} alt={fileName} />
                     {/if}
                 </div>
             {/if}
@@ -343,7 +346,7 @@
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <div class="message-option emoji">
                     <input type="file" bind:this={fileInput} on:change={handleFileUpload} style="display: none" />
-                    <i class="fa-regular fa-image" on:click={() => fileInput.click()}></i>
+                    <i class="fa fa-upload" on:click={() => fileInput.click()}></i>
                 </div>
                 </div>
                 <!-- svelte-ignore a11y-no-static-element-interactions -->

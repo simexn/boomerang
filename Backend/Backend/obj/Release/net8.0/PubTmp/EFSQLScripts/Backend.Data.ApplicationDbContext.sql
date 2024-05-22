@@ -13,7 +13,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE TABLE [AspNetRoles] (
@@ -28,7 +28,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE TABLE [AspNetUsers] (
@@ -36,6 +36,8 @@ BEGIN
         [UserName] nvarchar(256) NOT NULL,
         [ProfilePictureUrl] nvarchar(max) NULL,
         [AccountCreatedDate] datetime2 NOT NULL,
+        [BirthDate] nvarchar(max) NOT NULL,
+        [Pronouns] nvarchar(max) NOT NULL,
         [Status] nvarchar(max) NOT NULL,
         [Bio] nvarchar(max) NULL,
         [IsAdmin] bit NOT NULL,
@@ -59,7 +61,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE TABLE [AspNetRoleClaims] (
@@ -75,7 +77,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE TABLE [AspNetUserClaims] (
@@ -91,7 +93,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE TABLE [AspNetUserLogins] (
@@ -107,7 +109,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE TABLE [AspNetUserRoles] (
@@ -122,7 +124,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE TABLE [AspNetUserTokens] (
@@ -138,7 +140,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE TABLE [BlockedUsers] (
@@ -154,7 +156,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE TABLE [Chats] (
@@ -162,16 +164,32 @@ BEGIN
         [Name] nvarchar(max) NOT NULL,
         [IsGroup] bit NOT NULL,
         [InviteCode] nvarchar(max) NULL,
-        [CreatorId] int NULL,
+        [CreatorId] int NOT NULL,
         CONSTRAINT [PK_Chats] PRIMARY KEY ([Id]),
-        CONSTRAINT [FK_Chats_AspNetUsers_CreatorId] FOREIGN KEY ([CreatorId]) REFERENCES [AspNetUsers] ([Id])
+        CONSTRAINT [FK_Chats_AspNetUsers_CreatorId] FOREIGN KEY ([CreatorId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE CASCADE
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
+)
+BEGIN
+    CREATE TABLE [BannedChatUsers] (
+        [UserId] int NOT NULL,
+        [ChatId] int NOT NULL,
+        [BannedOn] nvarchar(max) NOT NULL,
+        CONSTRAINT [PK_BannedChatUsers] PRIMARY KEY ([ChatId], [UserId]),
+        CONSTRAINT [FK_BannedChatUsers_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE CASCADE,
+        CONSTRAINT [FK_BannedChatUsers_Chats_ChatId] FOREIGN KEY ([ChatId]) REFERENCES [Chats] ([Id]) ON DELETE NO ACTION
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE TABLE [ChatAdmins] (
@@ -179,14 +197,14 @@ BEGIN
         [ChatId] int NOT NULL,
         CONSTRAINT [PK_ChatAdmins] PRIMARY KEY ([ChatId], [UserId]),
         CONSTRAINT [FK_ChatAdmins_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE CASCADE,
-        CONSTRAINT [FK_ChatAdmins_Chats_ChatId] FOREIGN KEY ([ChatId]) REFERENCES [Chats] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_ChatAdmins_Chats_ChatId] FOREIGN KEY ([ChatId]) REFERENCES [Chats] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE TABLE [ChatEvents] (
@@ -197,14 +215,14 @@ BEGIN
         [ChatId] int NOT NULL,
         CONSTRAINT [PK_ChatEvents] PRIMARY KEY ([Id]),
         CONSTRAINT [FK_ChatEvents_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE CASCADE,
-        CONSTRAINT [FK_ChatEvents_Chats_ChatId] FOREIGN KEY ([ChatId]) REFERENCES [Chats] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_ChatEvents_Chats_ChatId] FOREIGN KEY ([ChatId]) REFERENCES [Chats] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE TABLE [ChatUsers] (
@@ -212,14 +230,14 @@ BEGIN
         [ChatId] int NOT NULL,
         CONSTRAINT [PK_ChatUsers] PRIMARY KEY ([ChatId], [UserId]),
         CONSTRAINT [FK_ChatUsers_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE CASCADE,
-        CONSTRAINT [FK_ChatUsers_Chats_ChatId] FOREIGN KEY ([ChatId]) REFERENCES [Chats] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_ChatUsers_Chats_ChatId] FOREIGN KEY ([ChatId]) REFERENCES [Chats] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE TABLE [Friendships] (
@@ -239,7 +257,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE TABLE [Messages] (
@@ -249,17 +267,18 @@ BEGIN
         [Timestamp] datetime2 NOT NULL,
         [IsEdited] bit NOT NULL,
         [IsDeleted] bit NOT NULL,
+        [FileUrl] nvarchar(max) NULL,
         [ChatId] int NOT NULL,
         CONSTRAINT [PK_Messages] PRIMARY KEY ([Id]),
         CONSTRAINT [FK_Messages_AspNetUsers_FromUserId] FOREIGN KEY ([FromUserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE CASCADE,
-        CONSTRAINT [FK_Messages_Chats_ChatId] FOREIGN KEY ([ChatId]) REFERENCES [Chats] ([Id]) ON DELETE CASCADE
+        CONSTRAINT [FK_Messages_Chats_ChatId] FOREIGN KEY ([ChatId]) REFERENCES [Chats] ([Id]) ON DELETE NO ACTION
     );
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE INDEX [IX_AspNetRoleClaims_RoleId] ON [AspNetRoleClaims] ([RoleId]);
@@ -268,7 +287,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     EXEC(N'CREATE UNIQUE INDEX [RoleNameIndex] ON [AspNetRoles] ([NormalizedName]) WHERE [NormalizedName] IS NOT NULL');
@@ -277,7 +296,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE INDEX [IX_AspNetUserClaims_UserId] ON [AspNetUserClaims] ([UserId]);
@@ -286,7 +305,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE INDEX [IX_AspNetUserLogins_UserId] ON [AspNetUserLogins] ([UserId]);
@@ -295,7 +314,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE INDEX [IX_AspNetUserRoles_RoleId] ON [AspNetUserRoles] ([RoleId]);
@@ -304,7 +323,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE INDEX [EmailIndex] ON [AspNetUsers] ([NormalizedEmail]);
@@ -313,7 +332,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     EXEC(N'CREATE UNIQUE INDEX [UserNameIndex] ON [AspNetUsers] ([NormalizedUserName]) WHERE [NormalizedUserName] IS NOT NULL');
@@ -322,182 +341,7 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
-)
-BEGIN
-    CREATE INDEX [IX_BlockedUsers_BlockedId] ON [BlockedUsers] ([BlockedId]);
-END;
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
-)
-BEGIN
-    CREATE INDEX [IX_ChatAdmins_UserId] ON [ChatAdmins] ([UserId]);
-END;
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
-)
-BEGIN
-    CREATE INDEX [IX_ChatEvents_ChatId] ON [ChatEvents] ([ChatId]);
-END;
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
-)
-BEGIN
-    CREATE INDEX [IX_ChatEvents_UserId] ON [ChatEvents] ([UserId]);
-END;
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
-)
-BEGIN
-    CREATE INDEX [IX_Chats_CreatorId] ON [Chats] ([CreatorId]);
-END;
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
-)
-BEGIN
-    CREATE INDEX [IX_ChatUsers_UserId] ON [ChatUsers] ([UserId]);
-END;
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
-)
-BEGIN
-    CREATE INDEX [IX_Friendships_ChatId] ON [Friendships] ([ChatId]);
-END;
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
-)
-BEGIN
-    CREATE INDEX [IX_Friendships_FriendId] ON [Friendships] ([FriendId]);
-END;
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
-)
-BEGIN
-    CREATE INDEX [IX_Messages_ChatId] ON [Messages] ([ChatId]);
-END;
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
-)
-BEGIN
-    CREATE INDEX [IX_Messages_FromUserId] ON [Messages] ([FromUserId]);
-END;
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120735_init'
-)
-BEGIN
-    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20240416120735_init', N'8.0.3');
-END;
-GO
-
-COMMIT;
-GO
-
-BEGIN TRANSACTION;
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120839_UpdatedCreatorId'
-)
-BEGIN
-    ALTER TABLE [Chats] DROP CONSTRAINT [FK_Chats_AspNetUsers_CreatorId];
-END;
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120839_UpdatedCreatorId'
-)
-BEGIN
-    DROP INDEX [IX_Chats_CreatorId] ON [Chats];
-    DECLARE @var0 sysname;
-    SELECT @var0 = [d].[name]
-    FROM [sys].[default_constraints] [d]
-    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
-    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Chats]') AND [c].[name] = N'CreatorId');
-    IF @var0 IS NOT NULL EXEC(N'ALTER TABLE [Chats] DROP CONSTRAINT [' + @var0 + '];');
-    EXEC(N'UPDATE [Chats] SET [CreatorId] = 0 WHERE [CreatorId] IS NULL');
-    ALTER TABLE [Chats] ALTER COLUMN [CreatorId] int NOT NULL;
-    ALTER TABLE [Chats] ADD DEFAULT 0 FOR [CreatorId];
-    CREATE INDEX [IX_Chats_CreatorId] ON [Chats] ([CreatorId]);
-END;
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120839_UpdatedCreatorId'
-)
-BEGIN
-    ALTER TABLE [Chats] ADD CONSTRAINT [FK_Chats_AspNetUsers_CreatorId] FOREIGN KEY ([CreatorId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE NO ACTION;
-END;
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416120839_UpdatedCreatorId'
-)
-BEGIN
-    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20240416120839_UpdatedCreatorId', N'8.0.3');
-END;
-GO
-
-COMMIT;
-GO
-
-BEGIN TRANSACTION;
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416122803_bannedchatusers'
-)
-BEGIN
-    CREATE TABLE [BannedChatUsers] (
-        [UserId] int NOT NULL,
-        [ChatId] int NOT NULL,
-        [BannedOn] nvarchar(max) NOT NULL,
-        CONSTRAINT [PK_BannedChatUsers] PRIMARY KEY ([ChatId], [UserId]),
-        CONSTRAINT [FK_BannedChatUsers_AspNetUsers_UserId] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE CASCADE,
-        CONSTRAINT [FK_BannedChatUsers_Chats_ChatId] FOREIGN KEY ([ChatId]) REFERENCES [Chats] ([Id]) ON DELETE CASCADE
-    );
-END;
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416122803_bannedchatusers'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     CREATE INDEX [IX_BannedChatUsers_UserId] ON [BannedChatUsers] ([UserId]);
@@ -506,52 +350,101 @@ GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240416122803_bannedchatusers'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
-    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20240416122803_bannedchatusers', N'8.0.3');
-END;
-GO
-
-COMMIT;
-GO
-
-BEGIN TRANSACTION;
-GO
-
-IF NOT EXISTS (
-    SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240419114621_fileuploadattempt'
-)
-BEGIN
-    ALTER TABLE [Messages] ADD [FileUrl] nvarchar(max) NULL;
+    CREATE INDEX [IX_BlockedUsers_BlockedId] ON [BlockedUsers] ([BlockedId]);
 END;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240419114621_fileuploadattempt'
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
-    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20240419114621_fileuploadattempt', N'8.0.3');
+    CREATE INDEX [IX_ChatAdmins_UserId] ON [ChatAdmins] ([UserId]);
 END;
-GO
-
-COMMIT;
-GO
-
-BEGIN TRANSACTION;
 GO
 
 IF NOT EXISTS (
     SELECT * FROM [__EFMigrationsHistory]
-    WHERE [MigrationId] = N'20240419123740_fixdb'
+    WHERE [MigrationId] = N'20240521234122_init'
+)
+BEGIN
+    CREATE INDEX [IX_ChatEvents_ChatId] ON [ChatEvents] ([ChatId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240521234122_init'
+)
+BEGIN
+    CREATE INDEX [IX_ChatEvents_UserId] ON [ChatEvents] ([UserId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240521234122_init'
+)
+BEGIN
+    CREATE INDEX [IX_Chats_CreatorId] ON [Chats] ([CreatorId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240521234122_init'
+)
+BEGIN
+    CREATE INDEX [IX_ChatUsers_UserId] ON [ChatUsers] ([UserId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240521234122_init'
+)
+BEGIN
+    CREATE INDEX [IX_Friendships_ChatId] ON [Friendships] ([ChatId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240521234122_init'
+)
+BEGIN
+    CREATE INDEX [IX_Friendships_FriendId] ON [Friendships] ([FriendId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240521234122_init'
+)
+BEGIN
+    CREATE INDEX [IX_Messages_ChatId] ON [Messages] ([ChatId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240521234122_init'
+)
+BEGIN
+    CREATE INDEX [IX_Messages_FromUserId] ON [Messages] ([FromUserId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20240521234122_init'
 )
 BEGIN
     INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
-    VALUES (N'20240419123740_fixdb', N'8.0.3');
+    VALUES (N'20240521234122_init', N'8.0.3');
 END;
 GO
 

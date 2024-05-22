@@ -20,8 +20,11 @@
 .textarea-container{
     position: relative;
    
-    
-    
+}
+
+.imgfilepreview{
+    max-width: 80px;
+    max-height: 80px;
 }
     .textarea-container textarea{
         width: 100%;

@@ -19,7 +19,7 @@ export interface GroupPreview{
 
 }
 
-function generateInviteCode(length: number) {
+export async function generateInviteCode(length: number) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let result = '';
     for (let i = 0; i < length; i++) {
@@ -71,28 +71,6 @@ export async function fetchGroupInfo(groupId: string){
     }
 }
 
-async function fetchGroupUsers(groupId: string){
-    let token = await getToken();
-    
-    const response = await fetch(`${backendUrl}/group/getGroupUsers?chatId=${groupId}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        },
-        credentials: 'include'
-    });
-    
-    const data = await response.json();
-    
-    if (response.ok && data) {
-        let users: User[] = data.users;
-        return users;
-    } else {
-        console.error('Error fetching chat:', await response.text());
-        return [];
-    }
-}
 
 export async function fetchChats() {
     try {
@@ -120,10 +98,6 @@ export async function fetchChats() {
 
 export async function handleRoomSubmit(formData: {newGroupName: string, inviteCode: string}) {
     let token = await getToken();
-    
-    if (formData.inviteCode === '' || formData.inviteCode === null || formData.inviteCode === undefined) {
-        formData.inviteCode = generateInviteCode(6);
-    }
 
     console.log(formData)
     const requestBody = JSON.stringify(formData);

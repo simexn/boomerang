@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { fetchChats, handleJoinRoom, handleRoomSubmit } from '$lib/handlers/groupHandler';
+    import { fetchChats, generateInviteCode, handleJoinRoom, handleRoomSubmit } from '$lib/handlers/groupHandler';
     import {fade, fly} from 'svelte/transition';
     let activeTab = 'create';
     let modalBody: any;
@@ -23,7 +23,9 @@
         isNewGroupNameValid = false;
         return;
     }
-
+    if(formData.inviteCode == null || formData.inviteCode == undefined){
+        formData.inviteCode = await generateInviteCode(8);
+    }
     if(formData.inviteCode.length < 8 && formData.inviteCode.length > 1){
         isInviteCodeValid = false;
         return;

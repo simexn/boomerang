@@ -37,6 +37,8 @@
             fileName = file.name;
             if (file.size > maxFileSize) {
                 alert("File size exceeds the limit of 2MB");
+                file=null;
+                fileName = '';
                 return;
             }
         }
@@ -100,6 +102,8 @@
     async function sendMessage() {
         message = await handleMessageSubmit(sendMessageText, chatId, file);
         sendMessageText = "";
+        file = null;
+        fileName = '';
     }
     function createChatItem(data: any, eventType: string): ChatItem {
     const dateObject = new Date();
@@ -231,7 +235,7 @@
 <div class="chat-container d-flex flex-column container-fluid">   
     <ChatHeader bind:isInfoSidebarOpen {groupInfo} {friendInfo} {isUsersSidebarOpen} {userInfo} {chatId}  />
     <ChatMessage {groupInfo} {chatId} {chatItems} {userInfo} {imageUrl} bind:scrollContainer {handleScroll}/>  
-    <div class="chat-footer" style="min-height:6rem; height:6rem;" >
+    <div class="chat-footer">
         <div class="send-message-wrap">
             <div class="textarea-container">
                 <textarea placeholder="Въведете съобщение..." bind:value={sendMessageText} 
@@ -268,7 +272,7 @@
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <div class="message-option emoji">
                     <input type="file" bind:this={fileInput} on:change={handleFileUpload} style="display: none" />
-                    <i class="fa-regular fa-image" on:click={() => fileInput.click()}></i>
+                    <i class="fa fa-upload" on:click={() => fileInput.click()}></i>
                 </div>
                 </div>
                 <!-- svelte-ignore a11y-no-static-element-interactions -->
