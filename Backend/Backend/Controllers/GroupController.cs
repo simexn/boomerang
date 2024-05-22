@@ -34,6 +34,8 @@ namespace Backend.Controllers
                 .ThenInclude(cu => cu.User)
                 .Include(c => c.Admins)
                 .ThenInclude(ca => ca.User)
+                .Include(c => c.BannedChatUsers)
+                .ThenInclude(bcu => bcu.User)
                 .FirstOrDefaultAsync(c => c.Id == chatId);
 
             if (chat == null)
@@ -41,10 +43,18 @@ namespace Backend.Controllers
                 return NotFound("Chat not found");
             }
 
+            var isUserInChat = await _context.ChatUsers.AnyAsync(cu => cu.ChatId == chatId && cu.UserId == chat.CreatorId);
+            if (!isUserInChat)
+            {
+                return Unauthorized();
+            }
+
             var users = chat.Users.Select(cu => cu.User).ToList();
             var admins = chat.Admins.Select(ca => ca.User).ToList();
+            var bannedUsers = chat.BannedChatUsers.Select(bcu => bcu.User).ToList();
+            
 
-            return new JsonResult(new { chat, users, admins });
+            return new JsonResult(new { chat, users, admins, bannedUsers });
         }
 
         [HttpPost("joinGroup/{inviteCode}")]
@@ -62,6 +72,11 @@ namespace Backend.Controllers
             if (isUserInChat)
             {
                 return BadRequest("Вече сте член на тази група.");
+            }
+            var isUserBanned = await _context.BannedChatUsers.AnyAsync(bcu => bcu.ChatId == chat.Id && bcu.UserId == userId);
+            if (isUserBanned)
+            {
+                return BadRequest("Възникна грешка при присъединяване към групата.");
             }
             var chatUser = new ChatUser
             {
@@ -84,7 +99,7 @@ namespace Backend.Controllers
             await _context.SaveChangesAsync();
 
 
-            await _chat.Clients.Group(chat.Id.ToString()).SendAsync("UserJoined", user);
+            await _chat.Clients.Group(chat.Id.ToString()).SendAsync("UserJoined", new { user, message = chatEvent });
 
             return new JsonResult(new { chat });
         }
@@ -266,7 +281,7 @@ namespace Backend.Controllers
 
             await _context.SaveChangesAsync();
 
-            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserKicked", user);
+            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserKicked", new { user, message = chatEvent});
 
             return Ok();
         }
@@ -316,7 +331,7 @@ namespace Backend.Controllers
 
             await _context.SaveChangesAsync();
 
-            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserPromoted", user);
+            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserPromoted", new { user, message = chatEvent });
 
             return Ok();
         }
@@ -359,7 +374,7 @@ namespace Backend.Controllers
 
             await _context.SaveChangesAsync();
 
-            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserDemoted", user);
+            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserDemoted", new { user, message = chatEvent } );
 
             return Ok();
         }
@@ -414,7 +429,107 @@ namespace Backend.Controllers
 
             await _context.SaveChangesAsync();
 
-            await _chat.Clients.Group(chatId.ToString()).SendAsync("OwnershipTransferred", user);
+            await _chat.Clients.Group(chatId.ToString()).SendAsync("OwnershipTransferred", new { user, message = chatEvent });
+
+            return Ok();
+        }
+
+        [HttpPost("banUser/{chatId}/{userId}")]
+        public async Task<IActionResult> BanUser(int chatId, int userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            var chat = await _context.Chats
+                .Include(c => c.Users)
+                .Include(c => c.Admins)
+                .FirstOrDefaultAsync(c => c.Id == chatId);
+
+            if (chat == null)
+            {
+                return NotFound("Chat not found");
+            }
+
+            var chatUser = chat.Users.FirstOrDefault(cu => cu.UserId == userId);
+            if (chatUser == null)
+            {
+                return NotFound("User not found in group");
+            }
+
+            chat.Users.Remove(chatUser);
+
+            var chatAdmin = chat.Admins.FirstOrDefault(ca => ca.UserId == userId );
+            if (chatAdmin != null)
+            {
+                chat.Admins.Remove(chatAdmin);
+            }
+
+            _context.BannedChatUsers.Add(new BannedChatUser
+            {
+                UserId = userId,
+                ChatId = chat.Id,
+                BannedOn = DateTime.Now.ToString()
+            });
+
+            var chatEvent = new ChatEvent
+            {
+                UserId = userId,
+                ChatId = chat.Id,
+                Timestamp = DateTime.Now,
+                Event = ChatEvent.EventType.UserBanned
+            };
+
+            _context.ChatEvents.Add(chatEvent);
+
+            await _context.SaveChangesAsync();
+
+            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserBanned", new { user, message = chatEvent });
+
+            return Ok();
+        }
+
+        [HttpPost("unbanUser/{chatId}/{userId}")]
+        public async Task<IActionResult> UnbanUser(int chatId, int userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            var chat = await _context.Chats
+                .Include(c => c.BannedChatUsers)
+                .FirstOrDefaultAsync(c => c.Id == chatId);
+
+            if (chat == null)
+            {
+                return NotFound("Chat not found");
+            }
+
+            var bannedUser = chat.BannedChatUsers.FirstOrDefault(bcu => bcu.UserId == userId);
+            if (bannedUser == null)
+            {
+                return NotFound("User not found in group");
+            }
+
+            chat.BannedChatUsers.Remove(bannedUser);
+
+            var chatEvent = new ChatEvent
+            {
+                UserId = userId,
+                ChatId = chat.Id,
+                Timestamp = DateTime.Now,
+                Event = ChatEvent.EventType.UserUnbanned
+            };
+
+            _context.ChatEvents.Add(chatEvent);
+
+            await _context.SaveChangesAsync();
+
+            await _chat.Clients.Group(chatId.ToString()).SendAsync("UserUnbanned", user);
 
             return Ok();
         }

@@ -2,7 +2,7 @@
     import '$lib/css/mainstyles.css'
     import { onDestroy, onMount } from 'svelte';
     import { userStatuses } from '$lib/stores/userStatusesStore';
-    import { fetchUserId, isLoggedIn, type User } from '$lib/handlers/accountHandler';
+    import { fetchUserId, isLoggedIn} from '$lib/handlers/accountHandler';
     import { browser } from '$app/environment';
     import type { HubConnection } from '@microsoft/signalr';
     import { startConnection } from '$lib/hubs/UserStatusHub';
@@ -13,15 +13,11 @@
     import { receivedRequestsStore } from '$lib/stores/friendRequestsStore';
     import { goto } from '$app/navigation';
     import {sidebarOpen} from '$lib/stores/sidebarToggleStore';
-    
-    const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
     let connection: HubConnection;
     let userId: string;
     let isLogged: boolean;
-    
-    let imageUrl = '/images/profile-pictures/placeholder.png'
-
     let ready: boolean = false;
 
     $: {
@@ -33,17 +29,17 @@
     onMount(async () => {
         connection = await startConnection();
         connectionStore.set(connection);
-        console.log("isLogged:" + isLogged);
-
-       
-        
+    
         if(isLogged){
             await updateUserInfo();
+            console.log("userstore username" + $userStore.userName)
+            if($userStore.userName == "Deleted User"){
+                document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                await goto('/welcome');
+                location.reload();
+            }
             userId = await fetchUserId();
-
             await fetchFriendRequests();
-        
-
             const response = await fetch(`${backendUrl}/account/getActiveUsers`);
             const data = await response.json();
             userStatuses.set(data.activeUsers);
@@ -157,6 +153,10 @@ function toggleSidebar() {
                     {#if dropdownOpen}
                         <div class="dropdown-menu" style="padding:0 !important;" class:show={dropdownOpen} transition:slide={{duration:500}} >
                         <a class="dropdown-item" on:click={() => goto("/account")}>Профил</a>
+                        <a class="dropdown-item" on:click={() => goto("/chat/home")}>Приятели</a>
+                        {#if $userStore?.isAdmin}
+                            <a class="dropdown-item" on:click={() => goto("/account/admin")}>Администрация</a>
+                        {/if}
                         <div class="dropdown-divider mb-0"></div>
                         <a class="dropdown-item logout-item" href="/welcome" on:click={logout}>Изход</a>
                         </div>

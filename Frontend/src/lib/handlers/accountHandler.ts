@@ -16,6 +16,7 @@ export interface User{
     email: string;
     accountCreated: string;
     profilePictureUrl: string;
+    isAdmin: boolean;
 
 }
 
@@ -38,7 +39,8 @@ export async function fetchUserInfo() {
             userName: data.userInfo.userName,
             email: data.userInfo.email,
             accountCreated: new Date(data.userInfo.accountCreated).toLocaleString(),
-            profilePictureUrl: `${backendUrl}${data.userInfo.profilePictureUrl}?${Date.now()}`
+            profilePictureUrl: `${backendUrl}${data.userInfo.profilePictureUrl}?${Date.now()}`,
+            isAdmin: data.userInfo.isAdmin
         }
         return user;   
     }
@@ -48,7 +50,8 @@ export async function fetchUserInfo() {
             userName: '',
             email: '',
             accountCreated: '',
-            profilePictureUrl: ''
+            profilePictureUrl: '',
+            isAdmin: false
         }
         return user;
     }

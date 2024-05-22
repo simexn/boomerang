@@ -14,6 +14,10 @@ namespace Backend.Models
         [Required]
         public DateTime AccountCreatedDate { get; set; }
         [Required]
+        public string BirthDate { get; set; }
+        [Required]
+        public string Pronouns { get; set; }
+        [Required]
         public string Status { get; set; }
         public string? Bio { get; set; }
         [Required]

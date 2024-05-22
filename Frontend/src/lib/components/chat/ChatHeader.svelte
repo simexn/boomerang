@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { User } from "$lib/handlers/accountHandler";
-    import { handleLeaveGroup, type Group, handleDeleteGroup } from "$lib/handlers/groupHandler";
+    import type { Group } from "$lib/handlers/groupHandler";
     import type { FriendInfo } from "$lib/handlers/userHandler";
 
     export let groupInfo: Group;
@@ -14,17 +14,7 @@
         isUsersSidebarOpen = !isUsersSidebarOpen;
     }
 
-    async function leaveGroup(){
-        await handleLeaveGroup(chatId);
-        window.location.href = '/chat/home';
 
-    }
-    async function deleteGroup(){
-        if (groupInfo.creatorId === userInfo.id) {
-            await handleDeleteGroup(chatId);
-            window.location.href = '/chat/home';
-        }
-    }
 </script>
 
 <div class="chat-header d-flex justify-content-between align-items-center p-3 border-bottom">
@@ -42,14 +32,6 @@
             <i class="fa fa-circle-info" aria-hidden="true" on:click={()=>isInfoSidebarOpen = !isInfoSidebarOpen}></i>
          </div>
     {/if}
-    <div>
-        {#if (groupInfo?.isGroup)}
-            <button class="btn btn-danger" on:click={leaveGroup}>Leave</button>
-            {#if groupInfo?.creatorId === userInfo?.id}
-            <button class="btn btn-danger" on:click={deleteGroup}>Delete</button>
-            {/if}
-        {/if}
-    </div>
 </div>
 
 <style>

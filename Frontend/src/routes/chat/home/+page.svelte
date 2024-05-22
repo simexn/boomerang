@@ -2,7 +2,7 @@
     import { friendsStore } from "$lib/stores/friendsStore";
     import { sentRequestsStore, receivedRequestsStore, blockedUsersStore } from "$lib/stores/friendRequestsStore";
     import { userStatuses } from "$lib/stores/userStatusesStore";
-    import { handleAcceptRequest, handleAddFriend, handleRejectRequest, handleRemoveFriend, handleSearchUser, handleUnblockUser } from "$lib/handlers/userHandler";
+    import { handleAcceptRequest, handleAddFriend, handleBlockUser, handleRejectRequest, handleRemoveFriend, handleSearchUser, handleUnblockUser } from "$lib/handlers/userHandler";
     import {goto} from "$app/navigation";
     import { onMount } from "svelte";
     import type { User } from "$lib/handlers/accountHandler";
@@ -16,6 +16,7 @@
     let friendToAddError: string = '';
     let friendToAddSuccess: string ='';
     let filter = "All";
+    let searchTerm = '';
     const filterNamesInBulgarian: any = {
         'All': 'Всички',
         'online': 'Активни',
@@ -54,6 +55,9 @@
         await handleRejectRequest(username);
     }
 
+    async function blockUser(userId: string){
+        await handleBlockUser(userId);
+    }
     async function unblockUser(userId: string){
         await handleUnblockUser(userId);
     }
@@ -68,7 +72,8 @@
                 userName: data.username,
                 email: data.email,
                 accountCreated: data.accountCreated,
-                profilePictureUrl: backendUrl + data.profilePictureUrl
+                profilePictureUrl: backendUrl + data.profilePictureUrl,
+                isAdmin: data.isAdmin
             }
         }
         else{
@@ -87,8 +92,8 @@
 
     
     $: filteredFriends = filter === 'All' 
-        ? $friendsStore
-        : $friendsStore.filter(friend => $userStatuses[friend.id] === filter || $userStatuses[friend.id] === 'away');
+        ? $friendsStore.filter(friend => friend.username.toLowerCase().includes(searchTerm.toLowerCase()))
+        : $friendsStore.filter(friend => ($userStatuses[friend.id] === filter || $userStatuses[friend.id] === 'away') && friend.username.toLowerCase().includes(searchTerm.toLowerCase()));
 </script>
 <svelte:window on:click={() => userOptionsDropdown = null} />
 <div class="home-container">
@@ -107,7 +112,7 @@
     </div>
     {#if filter != "add"}
     <div class="searchbar">
-        <input class="searchbar-input" placeholder="Търсене">
+        <input class="searchbar-input" placeholder="Търсене" bind:value={searchTerm}>
     </div>
     <div class="section-title-container">
         <p class="section-title">{filterName}</p>
@@ -138,7 +143,7 @@
                         {#if userOptionsDropdown == friend.id}
                             <div role="navigation" class="dropdown-menu show">
                                 <button class="dropdown-item" on:click={()=>removeFriend(friend.id)}>Премахване на приятел</button>
-                                <button class="dropdown-item">Блокиране</button>
+                                <button class="dropdown-item" on:click={() => blockUser(friend.id)}>Блокиране</button>
                             </div>
                         {/if}
                     </div>

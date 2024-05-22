@@ -44,7 +44,8 @@ namespace Backend.Controllers
                 user.UserName,
                 user.Email,
                 user.AccountCreatedDate,
-                user.ProfilePictureUrl
+                user.ProfilePictureUrl,
+                user.IsAdmin
                 
             };
 
@@ -92,7 +93,9 @@ namespace Backend.Controllers
                 UserName = model.UserName,
                 Email = model.Email,                
                 ProfilePictureUrl = $"/images/profile_pictures/placeholder.png",
-                AccountCreatedDate = DateTime.UtcNow,
+                AccountCreatedDate = DateTime.Now,
+                BirthDate = model.BirthDate,
+                Pronouns = model.Pronouns,
                 Status = "offline"
             };
             var result = await _userManager.CreateAsync(user, model.Password);

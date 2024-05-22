@@ -129,6 +129,12 @@
 
     async function userLogin(event: Event) {
         event.preventDefault();
+
+        if(usernameEmail == "Deleted User" || usernameEmail == "deleted@user.com"){
+            loginError = true;
+            loginErrorMessage = 'Невалидни данни';
+            return;
+        }
         const formData = { 
             usernameEmail, 
             password
@@ -192,27 +198,24 @@
                     <div class="row">
                         <div class="col-md-6 mb-4 d-flex align-items-center">
                         <div class="form-outline datepicker w-100">
-                            <input type="date" class="form-control form-control-lg" id="birthdayDate" />
+                            <input type="date" class="form-control form-control-lg" bind:value={birthDate} id="birthdayDate" />
                             <label for="birthdayDate" class="form-label">Дата на раждане</label>
                         </div>
                         </div>
                         <div class="col-md-6 mb-4">
                         <h6 class="mb-2 pb-1">Пол: </h6>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="femaleGender"
-                            value="female" checked />
+                            <input class="form-check-input" type="radio" name="inlineRadioOptions" bind:group={pronouns} id="femaleGender" value="female" />
                             <label class="form-check-label" for="femaleGender">Жена</label>
                         </div>
-        
+                        
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="maleGender"
-                            value="male" />
+                            <input class="form-check-input" type="radio" name="inlineRadioOptions" bind:group={pronouns} id="maleGender" value="male" />
                             <label class="form-check-label" for="maleGender">Мъж</label>
                         </div>
-        
+                        
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="otherGender"
-                            value="other" />
+                            <input class="form-check-input" type="radio" name="inlineRadioOptions" bind:group={pronouns} id="otherGender" value="other" />
                             <label class="form-check-label" for="otherGender">Друг</label>
                         </div>
         

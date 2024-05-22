@@ -1,5 +1,6 @@
 import { getToken } from './authHandler';
 import type { User } from './accountHandler';
+import { goto } from '$app/navigation';
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 export interface Group {
@@ -10,7 +11,7 @@ export interface Group {
     inviteCode: string;
     users: User[];
     admins: User[];
-    bannedUsers?: User[];
+    bannedUsers: User[];
 }
 export interface GroupPreview{
     id: number;
@@ -63,7 +64,8 @@ export async function fetchGroupInfo(groupId: string){
             creatorId: 0,
             inviteCode: '',
             users: [],
-            admins: []
+            admins: [],
+            bannedUsers: []
         };
         return groupInfo;
     }
@@ -209,6 +211,39 @@ export async function handleKickUser(chatId: string, userId: number) {
         const message = `An error has occurred: ${response.status}`;
         throw new Error(message);
     }
+
+    return response;
+}
+
+export async function handleBanUser(chatId: string, userId: number) {
+    const token = await getToken();
+
+    const response = await fetch(`${backendUrl}/group/banUser/${chatId}/${userId}`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+    });
+
+    if (!response.ok) {
+        const message = `An error has occurred: ${response.status}`;
+        throw new Error(message);
+    }
+
+    return response;
+}
+
+export async function handleUnbanUser(chatId: string, userId: number) {
+    const token = await getToken();
+
+    const response = await fetch(`${backendUrl}/group/unbanUser/${chatId}/${userId}`, {
+        method: 'post',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+    });
 
     return response;
 }

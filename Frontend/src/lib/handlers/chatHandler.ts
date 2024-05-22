@@ -91,7 +91,9 @@ export async function fetchMessages(chatId: string, page: number, pageSize: numb
         }
         
     } else {
+        window.location.href = '/chat/home';
         throw new Error(data);
+        
     }
 };
 

@@ -39,6 +39,10 @@ namespace Backend.Migrations
                     b.Property<string>("Bio")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("BirthDate")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -77,6 +81,10 @@ namespace Backend.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("ProfilePictureUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Pronouns")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SecurityStamp")
@@ -439,7 +447,7 @@ namespace Backend.Migrations
                     b.HasOne("Backend.Models.Chat", "Chat")
                         .WithMany("BannedChatUsers")
                         .HasForeignKey("ChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Backend.Models.ApplicationUser", "User")
@@ -488,7 +496,7 @@ namespace Backend.Migrations
                     b.HasOne("Backend.Models.Chat", "Chat")
                         .WithMany("Admins")
                         .HasForeignKey("ChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Backend.Models.ApplicationUser", "User")
@@ -507,7 +515,7 @@ namespace Backend.Migrations
                     b.HasOne("Backend.Models.Chat", "Chat")
                         .WithMany()
                         .HasForeignKey("ChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Backend.Models.ApplicationUser", "User")
@@ -526,7 +534,7 @@ namespace Backend.Migrations
                     b.HasOne("Backend.Models.Chat", "Chat")
                         .WithMany("Users")
                         .HasForeignKey("ChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Backend.Models.ApplicationUser", "User")
@@ -570,7 +578,7 @@ namespace Backend.Migrations
                     b.HasOne("Backend.Models.Chat", "Chat")
                         .WithMany("Messages")
                         .HasForeignKey("ChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Backend.Models.ApplicationUser", "FromUser")

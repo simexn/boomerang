@@ -2,16 +2,16 @@
     import type { User } from "$lib/handlers/accountHandler";
     import type { Group } from "$lib/handlers/groupHandler";
     import { fly, slide } from "svelte/transition";
-    import { handleKickUser, handlePromoteUser, handleDemoteUser, handleTransferOwnership } from "$lib/handlers/groupHandler";
+    import { handleKickUser, handlePromoteUser, handleDemoteUser, handleTransferOwnership, handleLeaveGroup, handleDeleteGroup, handleUnbanUser } from "$lib/handlers/groupHandler";
     import "$lib/css/sidebarstyles.css"
     import { userStatuses } from "$lib/stores/userStatusesStore";
-    import { handleRemoveFriend, type FriendInfo } from "$lib/handlers/userHandler";
+
     import { goto } from "$app/navigation";
     import { onMount } from "svelte";
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
     export let groupInfo: Group;
     export let userInfo: User;
-    export let friendInfo: FriendInfo;
     export let imageUrl: string = '/user-icon-placeholder.png';
     export let chatId: string;
     export let isInfoSidebarOpen: boolean;
@@ -19,31 +19,27 @@
             let mutualFriendsDropdown: boolean = false;
             let userOptionsDropdown: boolean = false;
 
-    let isUserHovered = false;
+ 
 
-    onMount(() => {
-        console.log("friend pfp" + friendInfo.userPfp)
+            groupInfo.bannedUsers.forEach(user => {
+        console.log("backend url is: ", backendUrl);
     });
+    async function leaveGroup(){
+        await handleLeaveGroup(chatId);
+        window.location.href = '/chat/home';
 
-    export async function kickUser(userId: number){
-        await handleKickUser(chatId, userId);
-        //groupInfo.users = groupInfo.users.filter(user => user.id !== userId);
+    }
+    async function deleteGroup(){
+        if (groupInfo.creatorId === userInfo.id) {
+            await handleDeleteGroup(chatId);
+            window.location.href = '/chat/home';
+        }
+    }
+    async function unbanUser(userId: number){
+        await handleUnbanUser(chatId, userId);
     }
 
-    export async function promoteUser(userId: number){
-        await handlePromoteUser(chatId, userId);
-    }
-    export async function demoteUser(userId: number){
-        await handleDemoteUser(chatId, userId);
-    }
-    export async function transferOwnership(userId: number){
-        await handleTransferOwnership(chatId, userId);
-    }
 
-    async function removeFriend(){
-        await handleRemoveFriend(friendInfo.id);
-        await goto('/chat/home');
-    }
     function openDropdown(userId : any, event: any) {
         event.stopPropagation();
     }
@@ -52,9 +48,9 @@
     <div class="sidebar-header">
         <span class="sidebar-title">
             <span style="line-height: 2.4rem;font-family: Metropolis, sans-serif !important;">
-                Info
+                Инфо
             </span>
-            <span class="sidebar-subtitle">{friendInfo?.username}</span>
+            <span class="sidebar-subtitle">{groupInfo?.name}</span>
         </span><button class="sidebar-close-btn" aria-label="Close" on:click={() =>isInfoSidebarOpen = false}>
             <i class="fa-solid fa-x"></i>
         </button>
@@ -67,29 +63,25 @@
             <i class="fas fa-ellipsis-v"></i>
             {#if userOptionsDropdown}
                 <div role="navigation" class="dropdown-menu show">
-                    <button class="dropdown-item" on:click={() => removeFriend()}>Unfriend</button>
-                    <button class="dropdown-item" on:click|stopPropagation={null}>Block</button>
+                    <button class="dropdown-item" on:click={leaveGroup}>Напускане на групата</button>
+                    {#if groupInfo.creatorId === userInfo.id}
+                    <button class="dropdown-item" on:click|stopPropagation={deleteGroup}>Изтриване на групата</button>
+                    {/if}
                 </div>
             {/if}
         </div>
-        <div class="user-info-image-container">
-            <div class="user-info-image">
-                <img src={friendInfo.userPfp} style="border-radius:50%;" width="50px" height="50px" alt="user image" />
-                <span class="user-status-dot" class:online={$userStatuses[friendInfo?.id.toString()] == 'online'}></span>
-            </div>
-        </div>
         <div class="user-info-details">
-            <p class="user-info-username">{friendInfo?.username}</p>
+            <p class="user-info-username">{groupInfo?.name}</p>
         </div>
         <hr class="sidebar-info-separator"/>
         <div class="user-info-since">
-            <h5>Boomerang member since:</h5>
-            {friendInfo?.memberSince}
+            <h5>Код за покана:</h5>
+            {groupInfo?.inviteCode}
         </div>
         <hr class="sidebar-info-separator"/>
         <div class="user-info-since">
-            <h5>Friends since:</h5>
-            {friendInfo?.friendsSince}
+            <h5>Създадена на:</h5>
+            {groupInfo?.name}
         </div>
         
     </div>
@@ -97,53 +89,20 @@
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="user-info-section-mutual">
        
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div class="user-info-servers" on:click={()=>mutualServersDropdown = !mutualServersDropdown}>
-            <div class="user-info-mutual-button">
-            <p>Mutual servers </p> <!-- replace with actual data -->
-            <i class="fas fa-chevron-right" class:rotate={mutualServersDropdown}></i>
-            </div>
-            {#if mutualServersDropdown}
-            <div class="dropdown-container" class:active={mutualFriendsDropdown} transition:slide={{duration: 500}}>
-                {#if friendInfo?.mutualGroups?.length == 0}
-                <div class="dropdown-container" style="justify-content:center; display:flex;">              
-                    <p style="font-size: 0.9rem; margin-top: 0.9rem;"><i>No mutual servers</i></p>                         
-                </div>
-                {:else}
-                <div class="dropdown-container" class:active={mutualFriendsDropdown} transition:slide={{duration: 500}}> 
-                    <ul class="nav nav-pills flex-column mb-auto">
-                            
-                        {#each friendInfo?.mutualGroups || [] as group} 
-                        <li class="nav-item" style="" transition:slide={{duration: 300}}>
-                            <a class="nav-link sidebar-group" href={`/chat/${group?.id}`} style="">
-                                <div style="display:inline-block; position:relative;">
-                                    <span class="user-status-dot" class:online={$userStatuses[group?.id.toString()] == 'online'}></span>
-                                </div>
-                                <b>{group?.name}</b>
-                            </a>
-                        </li>
-                        {/each}
-                    </ul>
-                </div>
-                {/if}
-            </div>
-            {/if}
-            
-        </div>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div class="user-info-friends" on:click={()=>mutualFriendsDropdown = !mutualFriendsDropdown}>
             <div class="user-info-mutual-button">
-            <p>Mutual friends </p>
+            <p>Потребители със забранен достъп</p>
             <i class="fas fa-chevron-right" class:rotate={mutualFriendsDropdown}></i>
             </div>
             {#if mutualFriendsDropdown}
             <div class="dropdown-container" class:active={mutualFriendsDropdown} transition:slide={{duration: 500}}>
-                {#if friendInfo?.mutualFriends?.length == 0}
+                {#if groupInfo?.bannedUsers?.length == 0 || groupInfo?.bannedUsers == undefined}
                 <div class="dropdown-container" style="justify-content:center; display:flex;"> 
                     
                     
-                    <p style="font-size: 0.9rem; margin-top: 0.9rem;"><i>No mutual friends</i></p>
+                    <p style="font-size: 0.9rem; margin-top: 0.9rem;"><i>Няма членове със забранен достъп</i></p>
                     
                     
                 </div>
@@ -151,16 +110,16 @@
                 
                     <ul class="nav nav-pills flex-column mb-auto">
 
-                        {#each friendInfo?.mutualFriends || [] as friend} 
-                        <li class="nav-item" style="" transition:slide={{duration: 300}}>
-                            <a class="nav-link sidebar-group" href={`/chat/me/${friend?.chatId}`} style="">
-                                <div style="display:inline-block; position:relative;">
-                                    <img width="40px" height="40px" style="border-radius: 50%;" src="{friend.userPfp}">
-                                    <span class="user-status-dot" class:online={$userStatuses[friend?.id.toString()] == 'online'} class:away={$userStatuses[friend?.id.toString()] == 'away'}></span>
+                        {#each groupInfo?.bannedUsers || [] as user} 
+                            <li class="nav-item" style="" transition:slide={{duration: 300}}>
+                                <div class="nav-link sidebar-group" style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display:inline-block; position:relative;">
+                                        <img width="40px" height="40px" style="border-radius: 50%;" src="{`${backendUrl}${user.profilePictureUrl}`}">
+                                        <b>{user?.userName}</b>
+                                    </div>
+                                    <i class="fa-solid fa-x" on:click|stopPropagation={() => unbanUser(user.id)}></i>
                                 </div>
-                                <b>{friend?.username}</b>
-                            </a>
-                        </li>
+                            </li>
                         {/each}
                     </ul>
                 
@@ -172,6 +131,15 @@
 </div>
 
 <style>
+    .nav-item i{
+        padding: 0.4rem;
+        border-radius: 25%;
+    }
+    .nav-item i:hover {
+        color: red;
+        background-color: var(--hover-dark);
+        
+    }
     .dropdown-menu{
                 position: absolute;
                 top: 100%; /* This positions the dropdown right under the user div */
@@ -213,10 +181,6 @@
             flex-direction: column;
             justify-content: space-between;
             
-        }
-        .user-info-friends{
-            
-            border-top: 1px solid rgb(var(--bg-sec))
         }
         .user-info-servers i, .user-info-friends i {
             font-size: 12px; /* adjust as needed */
@@ -313,7 +277,7 @@
             }   
 
             .nav-item :hover{
-                background-color: var(--hover-dark);
+                background-color: var(--hover-light);
             }
 .rotate{
     transform: rotate(90deg);
