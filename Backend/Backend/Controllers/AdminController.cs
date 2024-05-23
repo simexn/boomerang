@@ -76,11 +76,12 @@ namespace Backend.Controllers
             user.IsAdmin = model.IsAdmin;
             user.ProfilePictureUrl = model.ProfilePictureUrl;
 
-            if (model.NewPassword != null || model.NewPassword != "" || model.NewPassword.Length !< 6)
+            if (model.NewPassword != null && model.NewPassword != "" && model.NewPassword.Length >= 6)
             {
                 _logger.LogCritical("New password: " + model.NewPassword.Length);
                 user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, model.NewPassword);
             }
+
 
             await _userManager.UpdateAsync(user);
 
