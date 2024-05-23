@@ -134,57 +134,56 @@
 </script>
 
 <div class="container-fluid" style="overflow:auto; ">
-    <h1>Edit Profile</h1>
+    <h1>Редактиране на профил</h1>
     <hr>
     <div class="row">
         <div class="col-md-3">
             <div class="text-center">
                 <img src={$userStore?.profilePictureUrl} style="border-radius:50%;"width="200px" height="200px" class="avatar img-circle" alt="avatar" bind:this={imageElement}>
-                <h6>Upload a different photo...</h6>
                 <input type="file" class="form-control" on:change="{handleFileChange}">
-                <button on:click="{uploadFile}">Upload</button>
+                <button on:click="{uploadFile}">Качване</button>
             </div>
         </div>
       
       <!-- edit form column -->
       <div class="col-md-9 personal-info">
-        <h3>Personal info</h3>
+        <h3>Информация за профил</h3>
           <div class="info-wrap">
           <form class="form-horizontal" role="form">
             <div class="form-group">
-              <label class="col-lg-3 control-label">Username:</label>
+              <label class="col-lg-3 control-label">Потребителско име:</label>
               <div class="col-lg-8">
                   <input class="form-control" type="text" bind:value={username} placeholder="{$userStore?.userName}" disabled={!infoEditable}>
                   <p class="text-danger error-message"><i>{usernameMessage}</i></p>
               </div>
             </div>
             <div class="form-group">
-              <label class="col-lg-3 control-label">E-mail:</label>
+              <label class="col-lg-3 control-label">Имейл:</label>
               <div class="col-lg-8">
                   <input class="form-control" type="text" bind:value={email} placeholder="{$userStore?.email}" disabled={!infoEditable}>
                   <p class="text-danger error-message"><i>{emailMessage}</i></p>
               </div>
             </div>
             <div class="form-group">
-              <label class="col-lg-3 control-label">Birthday:</label>
+              <label class="col-lg-3 control-label">Дата на раждане:</label>
               <div class="col-lg-8">
                       <input class="form-control date-input" type="date" value="null" disabled={!infoEditable}>     
                       <p class="text-danger error-message"><i></i></p>
               </div>
           </div>
             <div class="form-group">
-              <label class="col-lg-3 control-label">Password:</label>
+              <label class="col-lg-3 control-label">Парола:</label>
               <div class="col-lg-8">              
                   <input class="form-control" type="password" bind:value={password} placeholder="12345678" disabled={!infoEditable}>   
                   <p class="text-danger error-message"><i>{passwordMessage}</i></p>    
               </div>
               {#if infoEditable}
-              <label class="col-lg-3 control-label">New password:</label>
+              <label class="col-lg-3 control-label">Нова парола:</label>
               <div class="col-lg-8">
                   <input class="form-control" type="password" bind:value={newPassword} placeholder="12345678" disabled={password == null}>
                   <p class="text-danger error-message"><i>{newPasswordMessage}</i></p>
               </div>
-              <label class="col-lg-3 control-label">Confirm password:</label>
+              <label class="col-lg-3 control-label">Потвърди паролата:</label>
               <div class="col-lg-8">
                   <input class="form-control" type="password" bind:value={confirmPassword} placeholder="12345678" disabled={password == null}>
                   <p class="text-danger error-message"><i>{confirmPasswordMessage}</i></p>
