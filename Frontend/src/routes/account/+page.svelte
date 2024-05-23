@@ -167,7 +167,7 @@
             <div class="form-group">
               <label class="col-lg-3 control-label">Дата на раждане:</label>
               <div class="col-lg-8">
-                      <input class="form-control" type="text" value="{$userStore?.email}" disabled={!infoEditable}>     
+                      <input class="form-control" type="text" value="23.05.2024" disabled={!infoEditable}>     
                       <p class="text-danger error-message"><i></i></p>
               </div>
           </div>
