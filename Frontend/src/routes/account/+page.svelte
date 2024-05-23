@@ -193,10 +193,10 @@
               <div class="form-group">
                 <label class="col-md-3 control-label"></label>
                 <div class="col-md-8 center-inputs">
-                    <input type="button" class="btn btn-primary" on:click={() => infoEditable ? updateInfo() : isEditing()} value={infoEditable ? 'Update information' : 'Edit information'}>
+                    <input type="button" class="btn btn-primary" on:click={() => infoEditable ? updateInfo() : isEditing()} value={infoEditable ? 'Актуализиране на информация' : 'Редактиране на информация'}>
                     <span></span>
                     {#if infoEditable}
-                      <input type="reset" class="btn btn-default" value="Cancel" on:click={resetFields}>
+                      <input type="reset" class="btn btn-default" value="Отказ" on:click={resetFields}>
                     {/if}
                 </div>
             </div>
