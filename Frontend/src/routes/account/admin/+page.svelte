@@ -13,11 +13,11 @@
 
     onMount(async () => {
         await updateUserInfo();
-        const currentUser = $userStore; // get the value from the user store
+        const currentUser = $userStore;
         isAdmin = currentUser.isAdmin;
-        // if (!isAdmin) {
-        //     window.location.href = '/chat/home'; // redirect to home page if user is not admin
-        // }
+        if (!isAdmin) {
+           window.location.href = '/chat/home';
+        }
     });
   
     async function findUser() {
