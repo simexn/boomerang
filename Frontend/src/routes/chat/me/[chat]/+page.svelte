@@ -253,7 +253,7 @@
                         <button on:click={removeFile}>X</button> <!-- New button to remove the file -->
                     </div>
                     {#if file && file.type.startsWith('image/')} <!-- Preview for image files -->
-                        <img src={URL.createObjectURL(file)} alt={fileName} />
+                        <img class="imgfilepreview" src={URL.createObjectURL(file)} alt={fileName} />
                     {/if}
                 </div>
             {/if}
