@@ -78,7 +78,7 @@ namespace Backend.Controllers
 
             if (model.NewPassword != null || model.NewPassword != "" || model.NewPassword.Length !< 6)
             {
-                _logger.LogCritical("New password: " + model.NewPassword);
+                _logger.LogCritical("New password: " + model.NewPassword.Length);
                 user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, model.NewPassword);
             }
 

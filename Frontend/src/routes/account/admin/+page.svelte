@@ -15,9 +15,9 @@
         await updateUserInfo();
         const currentUser = $userStore;
         isAdmin = currentUser.isAdmin;
-        if (!isAdmin) {
-           window.location.href = '/chat/home';
-        }
+        // if (!isAdmin) {
+        //    window.location.href = '/chat/home';
+        // }
     });
   
     async function findUser() {
